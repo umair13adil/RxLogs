@@ -17,38 +17,37 @@ class Compress() {
         fun create(): Compress = Compress()
     }
 
-    fun zip(_files: Array<File>, outputPath: String, _zipFile: String) {
+    internal var BUFFER_SIZE: Int? = 1024
+
+    @Throws(IOException::class)
+    fun zip(files: Array<File>, outputPath: String, zipFile: String) {
+        var origin: BufferedInputStream? = null
+
+        val out = ZipOutputStream(BufferedOutputStream(FileOutputStream(outputPath + zipFile)))
+
         try {
-            var fos: FileOutputStream? = null
-            try {
-                fos = FileOutputStream(outputPath + _zipFile)
+            val data = ByteArray(BUFFER_SIZE!!)
 
-                val zos = ZipOutputStream(fos)
+            for (file: File in files) {
+                if (!file.name.contains(".zip")) {
 
-                for (i in _files.indices) {
-                    if (!_files[i].name.contains(".zip")) {
+                    val fi = FileInputStream(file)
+                    origin = BufferedInputStream(fi, BUFFER_SIZE!!)
+                    try {
+                        Log.i(TAG, "Adding file: " + file.name)
 
-                        val f = _files[i]
+                        val entry = ZipEntry(file.name)
+                        out.putNextEntry(entry)
 
-                        Log.i(TAG, "Adding file: " + f.name)
-                        val buffer = ByteArray(1024)
-                        val fis = FileInputStream(f)
-                        zos.putNextEntry(ZipEntry(f.name))
-                        var length: Int = fis.read(buffer)
-                        while ((length) > 0) {
-                            zos.write(buffer, 0, length)
-                        }
-                        zos.closeEntry()
-                        fis.close()
+                        var count: Int = origin.read(data, 0, BUFFER_SIZE!!)
+                        out.write(data, 0, count)
+                    } finally {
+                        origin.close()
                     }
                 }
-                zos.close()
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
             }
-
-        } catch (ioe: IOException) {
-            Log.e(TAG, ioe.message)
+        } finally {
+            out.close()
         }
 
     }

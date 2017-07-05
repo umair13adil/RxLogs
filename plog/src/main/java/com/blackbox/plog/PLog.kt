@@ -5,12 +5,10 @@ package com.blackbox.plog
  */
 
 import android.os.Environment
-import android.text.TextUtils
 import android.util.Log
 import de.mindpipe.android.logging.log4j.LogConfigurator
 import org.apache.log4j.Logger
 import java.io.File
-import java.io.RandomAccessFile
 
 class PLog {
 
@@ -28,29 +26,12 @@ class PLog {
     val TYPE_INFO = "Info"
     val TYPE_ERROR = "Error"
 
-    private val LOG_TAG_MAIN = "<LOGS" + " appid=\"" + BuildConfig.APPLICATION_ID + "\" date=\"" + dateControl.today + "\" >"
-    private val LOG_TAG_INNER = "<LOG>"
-    private val LOG_TAG_SCREEN = "<SCREEN>"
-    private val LOG_TAG_FUNCTION = "<FUNCTION>"
-    private val LOG_TAG_DATA = "<DATA>"
-    private val LOG_TAG_TIME = "<TIME>"
-    private val LOG_TAG_TYPE = "<TYPE>"
-
-    private val LOG_TAG_MAIN_C = "</LOGS>"
-    private val LOG_TAG_INNER_C = "</LOG>"
-    private val LOG_TAG_SCREEN_C = "</SCREEN>"
-    private val LOG_TAG_FUNCTION_C = "</FUNCTION>"
-    private val LOG_TAG_DATA_C = "</DATA>"
-    private val LOG_TAG_TIME_C = "</TIME>"
-    private val LOG_TAG_TYPE_C = "</TYPE>"
-
     val LOG_TODAY = 1
     val LOG_LAST_HOUR = 2
     val LOG_WEEK = 3
 
     /**
      * Configure Log4j
-
      * @param fileName      Name of the log file
      * *
      * @param filePattern   Output format of the log line
@@ -76,24 +57,12 @@ class PLog {
 
     }
 
-    public fun logThis(className: String, functionName: String, text: String, type: String) {
+    fun logThis(className: String, functionName: String, text: String, type: String) {
         try {
 
             val folderPath = logPath + dateControl.today
 
             Utils.instance.createDirIfNotExists(folderPath)
-            val fileName = dateControl.today + dateControl.hour
-            val path = folderPath + File.separator + fileName
-            val exists = Utils.instance.checkFileExists(path)
-            if (!exists) {
-                val filePattern = "%m%n"
-                val maxBackupSize = 250
-                val maxFileSize = (2048 * 2048).toLong()
-                Configure(path, filePattern, maxBackupSize, maxFileSize, false)
-                addHeader(path)
-            }
-
-            Logger.getLogger(TAG).info(format(className, functionName, cleanString(text), dateTime.getTimeFormatted(System.currentTimeMillis()), type))
 
 
             val fileName_raw = dateControl.today + dateControl.hour + "_raw"
@@ -114,41 +83,8 @@ class PLog {
 
     }
 
-    private fun format(SCREEN: String, FUNCTION: String, DATA: String, TIME: String, TYPE: String): String {
-        return LOG_TAG_INNER +
-                LOG_TAG_SCREEN + SCREEN + LOG_TAG_SCREEN_C +
-                LOG_TAG_FUNCTION + FUNCTION + LOG_TAG_FUNCTION_C +
-                LOG_TAG_DATA + DATA + LOG_TAG_DATA_C +
-                LOG_TAG_TIME + TIME + LOG_TAG_TIME_C +
-                LOG_TAG_TYPE + TYPE + LOG_TAG_TYPE_C +
-                LOG_TAG_INNER_C
-    }
-
-    private fun isEmpty(`val`: String): Boolean {
-        return TextUtils.isEmpty(`val`)
-    }
-
     private fun formatSimple(SCREEN: String, FUNCTION: String, DATA: String, TIME: String, TYPE: String): String {
         return "{$SCREEN}  {$FUNCTION}  {$DATA}  {$TIME}  {$TYPE}"
-    }
-
-    private fun addHeader(path: String) {
-        var f: RandomAccessFile? = null
-        val file = File(path)
-        try {
-            f = RandomAccessFile(file, "rw")
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        try {
-            f!!.seek(0) // to the beginning
-            f.write(LOG_TAG_MAIN.toByteArray())
-            f.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
     }
 
     private val outputPath: String
@@ -185,10 +121,8 @@ class PLog {
         val directory = File(folderPath)
         val files = directory.listFiles()
 
-        Log.i(TAG, "Files: "+files.size)
-
         if (files.isNotEmpty()) {
-            for (file:File in files) {
+            for (file: File in files) {
                 Utils.instance.copyFile(folderPath, file.name, outputPath)
             }
         } else {
@@ -198,13 +132,6 @@ class PLog {
 
     private val logPath: String = Environment.getExternalStorageDirectory().path + File.separator + "PLOG" + File.separator + Constants.FOLDER_LOG + File.separator
 
-
-    private fun cleanString(text: String): String {
-        val t1 = text.replace("<--".toRegex(), "")
-        val t2 = t1.replace("-->".toRegex(), "")
-        val t3 = t2.replace("&".toRegex(), "&amp;")
-        return t2
-    }
 
     fun getLogs(type: Int): String {
 
