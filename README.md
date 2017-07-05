@@ -21,3 +21,18 @@ An android kotlin based logger.
 DDMMYYY-> 02072017
 
 
+# Usage:
+
+    Write Logs:
+
+    val pLog = PLog.create()
+    
+    button_log.setOnClickListener {
+            pLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), pLog.TYPE_INFO)
+    }
+    
+    Get Logs:
+    
+        pLog.getLogs(pLog.LOG_TODAY) //For Today's
+        pLog.getLogs(pLog.LOG_LAST_HOUR) //For Last Hour
+        pLog.getLogs(pLog.LOG_WEEK) //For Week's
