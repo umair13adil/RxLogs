@@ -1,55 +1,102 @@
 package com.blackbox.library.plog
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.widget.Button
+import android.widget.Toast
+import com.blackbox.plog.LogFormatter
 import com.blackbox.plog.PLog
-import io.vrinda.kotlinpermissions.PermissionCallBack
-import io.vrinda.kotlinpermissions.PermissionsActivity
+import com.blackbox.plog.PLogBuilder
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableObserver
+import io.reactivex.schedulers.Schedulers
+import java.io.File
 
-class MainActivity : PermissionsActivity() {
+class MainActivity : AppCompatActivity() {
 
     val TAG: String = "MainActivity"
-    val pLog = PLog.create()
+    var PERMISSION_CODE = 9234;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var button_log = findViewById(R.id.button) as Button
-        var button_export = findViewById(R.id.export) as Button
+        //This must be initialized before calling PLog
+        PLogBuilder()
+                .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest")
+                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" + File.separator + "ZippedLogs")
+                .setExportFileName("MYFILENAME")
+                .attachNoOfFilesToFiles(false)
+                .attachTimeStampToFiles(false)
+                .setLogFormatType(LogFormatter.FORMAT_CURLY)
+                .debuggable(true)
+                .build()
 
-        requestPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, object : PermissionCallBack {
-            override fun permissionGranted() {
-                super.permissionGranted()
-                pLog.logThis(TAG, "requestPermissions", "Permission Granted!", pLog.TYPE_INFO)
-            }
+        val button_log = findViewById<Button>(R.id.button)
+        val button_export = findViewById<Button>(R.id.export)
+        val button_clear = findViewById<Button>(R.id.delete)
 
-            override fun permissionDenied() {
-                super.permissionDenied()
-                Log.v("Permissions", "Denied")
-            }
-        })
 
-        requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, object : PermissionCallBack {
-            override fun permissionGranted() {
-                super.permissionGranted()
-                pLog.logThis(TAG, "requestPermissions", "Permission Granted!", pLog.TYPE_INFO)
-            }
+        //Check read write permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-            override fun permissionDenied() {
-                super.permissionDenied()
-                Log.v("Permissions", "Denied")
-            }
-        })
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_CODE);
+        }
 
         button_log.setOnClickListener {
-            pLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), pLog.TYPE_INFO)
+            PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+        }
+
+        button_clear.setOnClickListener {
+            PLog.clearLogs()
+            Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
 
         button_export.setOnClickListener {
-            pLog.getLogs(pLog.LOG_TODAY)
+
+            CompositeDisposable().add(PLog.getLogs(PLog.LOG_TODAY)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableObserver<String>() {
+
+                        override fun onNext(filePath: String) {
+                            PLog.logThis(TAG, "export", "Path: " + filePath, PLog.TYPE_ERROR)
+                            Toast.makeText(this@MainActivity, "Exported to: " + filePath, Toast.LENGTH_SHORT).show()
+                        }
+
+                        override fun onError(e: Throwable) {
+                            e.printStackTrace()
+                            PLog.logThis(TAG, "export", "Error: " + e.message, PLog.TYPE_ERROR)
+                        }
+
+                        override fun onComplete() {
+
+                        }
+                    }))
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PERMISSION_CODE) {
+
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", PLog.TYPE_INFO)
+            } else {
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", PLog.TYPE_WARNING)
+            }
+
         }
     }
 }
