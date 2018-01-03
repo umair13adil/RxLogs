@@ -14,11 +14,13 @@ An android kotlin based logger.
 
 # Format:
 
-{TAG}  {FUNCTION_NAME}  {YOUR_LOGGED_EVENT}  {07:05:2017 11:22:17 AM}  {Info}
+{TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
 
 # File Name Format:
 
-DDMMYYY-> 02072017
+DDMMYYYHH-> 0207201700
+
+File Name consists of: {Day} {Month} {Year} {Hour}
 
 
 # Usage:
