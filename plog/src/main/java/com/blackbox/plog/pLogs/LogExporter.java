@@ -182,7 +182,7 @@ public class LogExporter {
                 if (attachTimeStamp)
                     timeStamp = "_" + DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis());
 
-                zipName = exportFileName + timeStamp + noOfFiles + ".zip";
+                String zipName = exportFileName + timeStamp + noOfFiles + ".zip";
 
                 final File outputDirectory = new File(exportPath);
                 final File[] filesToSend = outputDirectory.listFiles();
