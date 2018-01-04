@@ -1,4 +1,5 @@
 # RxLogs
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-RxLogs-green.svg?style=flat )]
 ### PLogs and DataLogs
 ##### `An android/kotlin RxJava based advanced logging framework`. 
 
