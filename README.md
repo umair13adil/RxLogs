@@ -17,6 +17,14 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 9. Custom timestamps support
 10. Custom data logging support with 'DataLogs'
 
+### Usage:
+
+Add module to your project:
+
+    dependencies {
+        implementation project(':plog')
+    }
+
 ###### Apply Custom Formats:
 
 You can apply following log formats:
@@ -56,7 +64,7 @@ By default it will be like this:
     3. PLog.LOG_WEEK
     4. PLog.LOG_LAST_TWO_DAYS
     
-###### Export Filters:
+###### Log Types:
 
 You can use following Log Types to identify type:
 
