@@ -1,5 +1,5 @@
 # Rx PLogs & DataLogs
-An android/kotlin RxJava based advanced logging framework.
+An android/kotlin RxJava based advanced logging framework. All logs are saved to files in storage patch provided. These logs are helpful when developer wants to analyze user activites within the app. A new log file is created every hour on a user event. These logs can be filtered and sorted easily. Logs can easily be exported as zip file base on filter type. This zip file can be uploaded to server easily. PLogs also provide functinality to log seperate data logs. These logs can be for a specif event with the app. For example they can be used to log location events of users, so that file will only contain location logs.
 
 ### Features:
 1. Logs events in files created seprately every hour. (24 hours)
@@ -20,6 +20,16 @@ An android/kotlin RxJava based advanced logging framework.
 
 ###### Apply Custom Formats:
 
+You can apply following log formats:
+
+*1. LogFormatter.FORMAT_CURLY
+*2. LogFormatter.FORMAT_SQUARE
+*3. LogFormatter.FORMAT_CSV
+*4. LogFormatter.FORMAT_CUSTOM
+
+To apply CSV format, you need to provide deliminator, by default it is comma ','.
+To apply custom formats you need to provide opening & closing character. Like {},[], ' ' etc
+
 1. {TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
 2. [TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
 
@@ -29,8 +39,14 @@ TAG;FUNCTION_NAME;YOUR_LOGGED_EVENT;07:05:2017 11:22:17 AM;Info
 ###### File Name Format:
 DDMMYYYHH-> 0207201700
 
-File Name consists of: {Day} {Month} {Year} {Hour}
+File Name consists of: {Day} {Month} {Year} {Hour} Hours are in 24h format.
 
+###### Time Stamp Format:
+
+Each log entry has timestamp associated with it. You can modify it's format. 
+By default it will be like this:
+
+    "dd MMMM yyyy hh:mm:ss a"
 
 # Usage:
 
