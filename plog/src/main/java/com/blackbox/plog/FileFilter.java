@@ -123,8 +123,7 @@ class FileFilter {
         }
     }
 
-    static void prepareOutputFile() {
-        String outputPath = PLog.getOutputPath();
+    static void prepareOutputFile(String outputPath) {
         Utils.getInstance().deleteDir(new File(outputPath));
         Utils.getInstance().createDirIfNotExists(outputPath);
     }
@@ -149,6 +148,32 @@ class FileFilter {
 
                 for (int i = 0; i < files.length; i++) {
                     Utils.getInstance().copyFile(folderPath, files[i].getName(), outputPath);
+                }
+            }
+        }
+
+        return size;
+    }
+
+    static int getFilesForLogName(String logsPath, String outputPath, String logFileName, boolean debug) {
+
+        int size = 0;
+
+        File directory = new File(logsPath);
+        File[] files = directory.listFiles();
+
+        if (files != null && files.length > 0) {
+
+            size = files.length;
+
+            if (debug)
+                Log.i(TAG, "Total Files: " + size);
+
+            if (files.length > 0) {
+
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].getName().contains(logFileName))
+                        Utils.getInstance().copyFile(logsPath, files[i].getName(), outputPath);
                 }
             }
         }

@@ -1,6 +1,5 @@
 package com.blackbox.plog.utils;
 
-import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,29 +17,23 @@ import java.io.OutputStream;
 public class Utils {
 
     private String TAG = Utils.class.getSimpleName();
-    private static Context context;
-    private static Utils ourInstance = new Utils(context);
+    private static Utils ourInstance = new Utils();
 
     private static String loggedItem = "";
-    private static String loggedLocation = "";
 
     public static Utils getInstance() {
         return ourInstance;
     }
 
-    public Utils(Context context) {
-        Utils.context = context;
+    public Utils() {
+
     }
 
-    public boolean createDirIfNotExists(String path) {
-        boolean ret = true;
-        File file = new File(Environment.getExternalStorageDirectory(), path);
+    public void createDirIfNotExists(String path) {
+        File file = new File(path);
         if (!file.exists()) {
-            if (!file.mkdirs()) {
-                ret = false;
-            }
+            file.mkdirs();
         }
-        return ret;
     }
 
     public boolean checkFileExists(String path) {

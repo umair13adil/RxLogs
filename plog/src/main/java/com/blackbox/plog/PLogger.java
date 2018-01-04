@@ -12,22 +12,25 @@ public class PLogger {
 
     private String TAG = PLogger.class.getSimpleName();
 
-    private String savePath = Environment.getExternalStorageDirectory() + File.separator + TAG;
-    private String exportPath = Environment.getExternalStorageDirectory() + File.separator + TAG;
-    private String exportFileName = "Output";
-    private Boolean attachTimeStamp = true;
-    private Boolean attachNoOfFiles = true;
-    private Boolean debug = true;
+    private String savePath;
+    private String exportPath;
+    private String exportFileName;
+    private Boolean attachTimeStamp;
+    private Boolean attachNoOfFiles;
+    private Boolean debug;
+    private Boolean silentLogs;
     private String formatType = LogFormatter.FORMAT_CURLY;
-    private String customFormatOpen = "";
-    private String customFormatClose = "";
-    private String csvDeliminator = ",";
+    private String customFormatOpen;
+    private String customFormatClose;
+    private String csvDeliminator;
+    private String timeStampFormat;
+    private String logFileExtension;
 
     public PLogger() {
 
     }
 
-    public PLogger(String savePath, String exportPath, String fileName, Boolean attachTimeStamp, Boolean attachNoOfFiles, String formatType, String customFormatOpen, String customFormatClose, String csvDeliminator, Boolean debug) {
+    public PLogger(String savePath, String exportPath, String fileName, Boolean attachTimeStamp, Boolean attachNoOfFiles, String formatType, String customFormatOpen, String customFormatClose, String csvDeliminator, Boolean debug, String timeStampFormat, String logFileExtension, Boolean silentLogs) {
         this.savePath = savePath;
         this.exportPath = exportPath;
         this.exportFileName = fileName;
@@ -38,46 +41,100 @@ public class PLogger {
         this.customFormatClose = customFormatClose;
         this.csvDeliminator = csvDeliminator;
         this.debug = debug;
+        this.timeStampFormat = timeStampFormat;
+        this.logFileExtension = logFileExtension;
+        this.silentLogs = silentLogs;
     }
 
     public String getSavePath() {
-        return savePath;
+        if (savePath != null)
+            return savePath;
+        else
+            return Environment.getExternalStorageDirectory() + File.separator + TAG;
     }
 
     public String getExportPath() {
-        return exportPath;
+        if (exportPath != null)
+            return exportPath;
+        else
+            return Environment.getExternalStorageDirectory() + File.separator + TAG;
     }
 
     public String getExportFileName() {
-        return exportFileName;
+        if (exportFileName != null)
+            return exportFileName;
+        else
+            return "Output";
     }
 
     public Boolean getAttachTimeStamp() {
-        return attachTimeStamp;
+        if (attachTimeStamp != null)
+            return attachTimeStamp;
+        else
+            return true;
     }
 
     public Boolean getAttachNoOfFiles() {
-        return attachNoOfFiles;
+        if (attachNoOfFiles != null)
+            return attachNoOfFiles;
+        else
+            return true;
     }
 
     public Boolean isDebuggable() {
-        return debug;
+        if (debug != null)
+            return debug;
+        else
+            return false;
+    }
+
+    public Boolean isSilentLog() {
+        if (silentLogs != null)
+            return silentLogs;
+        else
+            return false;
     }
 
     public String getFormatType() {
-        return formatType;
+        if (formatType != null)
+            return formatType;
+        else
+            return LogFormatter.FORMAT_CURLY;
     }
 
     public String getCustomFormatOpen() {
-        return customFormatOpen;
+        if (customFormatOpen != null)
+            return customFormatOpen;
+        else
+            return " ";
     }
 
     public String getCustomFormatClose() {
-        return customFormatClose;
+        if (customFormatClose != null)
+            return customFormatClose;
+        else
+            return " ";
     }
 
     public String getCsvDeliminator() {
-        return csvDeliminator;
+        if (csvDeliminator != null)
+            return csvDeliminator;
+        else
+            return ",";
+    }
+
+    public String getTimeStampFormat() {
+        if (timeStampFormat != null)
+            return timeStampFormat;
+        else
+            return "dd MMMM yyyy hh:mm:ss a";
+    }
+
+    public String getLogFileExtension() {
+        if (logFileExtension != null)
+            return logFileExtension;
+        else
+            return ".txt";
     }
 
 }
