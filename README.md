@@ -51,10 +51,18 @@ By default it will be like this:
    
    Logs can be exported with following filters:
    
-   a. Last Hour
-   b. Today
-   c. Last Week
-   d. Last 2 Days
+    1. PLog.LOG_TODAY
+    2. PLog.LOG_LAST_HOUR
+    3. PLog.LOG_WEEK
+    4. PLog.LOG_LAST_TWO_DAYS
+    
+###### Export Filters:
+
+You can use following Log Types to identify type:
+
+    1. PLog.TYPE_INFO
+    2. PLog.TYPE_WARNING
+    3. PLog.TYPE_ERROR
 
 # Usage:
 
