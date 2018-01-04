@@ -22,6 +22,7 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 Add module to your project:
 
     dependencies {
+        implementation 'io.reactivex.rxjava2:rxandroid:2.0.1' //For RxJava
         implementation project(':plog')
     }
 
