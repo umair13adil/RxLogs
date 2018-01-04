@@ -9,9 +9,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.Toast
-import com.blackbox.plog.LogFormatter
-import com.blackbox.plog.PLog
-import com.blackbox.plog.PLogBuilder
+import com.blackbox.plog.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
@@ -35,8 +33,22 @@ class MainActivity : AppCompatActivity() {
                 .attachNoOfFilesToFiles(false)
                 .attachTimeStampToFiles(false)
                 .setLogFormatType(LogFormatter.FORMAT_CURLY)
-                .debuggable(true)
+                .debuggable(false)
+                .logSilently(false)
+                .setTimeStampFormat("DDMMYYYY")
                 .build()
+
+        //This must be initialized before calling DataLogger
+        //Each DataLogger builder can be used to log different data files
+        val myLogs: DataLogger = DataLogBuilder()
+                .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "DataLogTest")
+                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "DataLogTest" + File.separator + "ZippedLogs")
+                .setLogFileName("myLogs.txt")
+                .setExportFileName("myLogsExported")
+                .attachTimeStampToFiles(false)
+                .debuggable(false)
+                .build()
+
 
         val button_log = findViewById<Button>(R.id.button)
         val button_export = findViewById<Button>(R.id.export)
@@ -52,30 +64,63 @@ class MainActivity : AppCompatActivity() {
                     PERMISSION_CODE);
         }
 
+
         button_log.setOnClickListener {
+
+            //Will log to PLogs
             PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+
+            //Will Log to custom data logs, in Log File name & path provided in Builder
+            myLogs.appendToFile("Log: " + Math.random() + "\n");
         }
 
         button_clear.setOnClickListener {
+
+            //Will clear All PLogs
             PLog.clearLogs()
+
+            //Will clear All data logs for tha data location provided in builder
+            myLogs.clearLogs()
+
             Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
 
         button_export.setOnClickListener {
 
+            //Will export PLogs
             CompositeDisposable().add(PLog.getLogs(PLog.LOG_TODAY)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(object : DisposableObserver<String>() {
 
                         override fun onNext(filePath: String) {
-                            PLog.logThis(TAG, "export", "Path: " + filePath, PLog.TYPE_ERROR)
+                            PLog.logThis(TAG, "exportPLogs", "PLogs Path: " + filePath, PLog.TYPE_ERROR)
                             Toast.makeText(this@MainActivity, "Exported to: " + filePath, Toast.LENGTH_SHORT).show()
                         }
 
                         override fun onError(e: Throwable) {
                             e.printStackTrace()
-                            PLog.logThis(TAG, "export", "Error: " + e.message, PLog.TYPE_ERROR)
+                            PLog.logThis(TAG, "exportPLogs", "Error: " + e.message, PLog.TYPE_ERROR)
+                        }
+
+                        override fun onComplete() {
+
+                        }
+                    }))
+
+            //Will Export custom data log
+            CompositeDisposable().add(myLogs.getLogs()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableObserver<String>() {
+
+                        override fun onNext(filePath: String) {
+                            PLog.logThis(TAG, "exportDataLogs", "DataLog Path: " + filePath, PLog.TYPE_ERROR)
+                        }
+
+                        override fun onError(e: Throwable) {
+                            e.printStackTrace()
+                            PLog.logThis(TAG, "exportDataLogs", "Error: " + e.message, PLog.TYPE_ERROR)
                         }
 
                         override fun onComplete() {
