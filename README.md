@@ -22,22 +22,22 @@ An android/kotlin RxJava based advanced logging framework. All logs are saved to
 
 You can apply following log formats:
 
-1. LogFormatter.FORMAT_CURLY.
-2. LogFormatter.FORMAT_SQUARE.
-3. LogFormatter.FORMAT_CSV.
-4. LogFormatter.FORMAT_CUSTOM.
+    1. LogFormatter.FORMAT_CURLY.
+    2. LogFormatter.FORMAT_SQUARE.
+    3. LogFormatter.FORMAT_CSV.
+    4. LogFormatter.FORMAT_CUSTOM.
 
 To apply CSV format, you need to provide deliminator, by default it is comma ','.
 To apply custom formats you need to provide opening & closing character. Like {},[], ' ' etc
 
-1. *{TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
-2. *[TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
+    1. {TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
+    2. [TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
 
 ###### CSV Support:
-TAG;FUNCTION_NAME;YOUR_LOGGED_EVENT;07:05:2017 11:22:17 AM;Info
+    TAG;FUNCTION_NAME;YOUR_LOGGED_EVENT;07:05:2017 11:22:17 AM;Info
 
 ###### File Name Format:
-DDMMYYYHH-> 0207201700
+    DDMMYYYHH-> 0207201700
 
 File Name consists of: {Day} {Month} {Year} {Hour} Hours are in 24h format.
 
