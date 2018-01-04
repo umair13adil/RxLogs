@@ -1,7 +1,7 @@
 # Rx PLogs & DataLogs
 An android/kotlin RxJava based advanced logging framework.
 
-# Features:
+## Features:
 1. Logs events in files created seprately every hour. (24 hours)
 2. Files can be compressed and exported for these filters:
     a. Last Hour
@@ -18,16 +18,16 @@ An android/kotlin RxJava based advanced logging framework.
 10. Custom data logging support with 'DataLogs'.
   
 
-# Apply Custom Formats:
+## Apply Custom Formats:
 
 {TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
 
 [TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
 
-# CSV Support:
+## CSV Support:
 TAG;FUNCTION_NAME;YOUR_LOGGED_EVENT;07:05:2017 11:22:17 AM;Info
 
-# File Name Format:
+## File Name Format:
 DDMMYYYHH-> 0207201700
 
 File Name consists of: {Day} {Month} {Year} {Hour}
@@ -36,10 +36,10 @@ File Name consists of: {Day} {Month} {Year} {Hour}
 # Usage:
 
 ## For PLogs:
-        //This must be initialized before calling PLog
-        PLogBuilder()
+
+    PLogBuilder()
                 .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest")
-                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" + File.separator + "ZippedLogs")
+                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" +   File.separator + "ZippedLogs")
                 .setExportFileName("MYFILENAME")
                 .attachNoOfFilesToFiles(false)
                 .attachTimeStampToFiles(false)
@@ -50,7 +50,7 @@ File Name consists of: {Day} {Month} {Year} {Hour}
                 .build()
                 
 ### To Log to File:
-      PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
                 
                 
                 
