@@ -7,11 +7,7 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 ### Features:
 
 1. Logs events in files created seprately every hour. (24 hours)
-2. Files can be compressed and exported for these filters:
-   a. Last Hour
-   b. Today
-   c. Last Week
-   d. Last 2 Days
+2. Files can be compressed and exported for time & day filters
 3. Clear Logs easily
 4. Save logs to custom path
 5. Export Logs to custom path as zip file
@@ -50,6 +46,15 @@ Each log entry has timestamp associated with it. You can modify it's format.
 By default it will be like this:
 
     "dd MMMM yyyy hh:mm:ss a"
+
+###### Export Filters:
+   
+   Logs can be exported with following filters:
+   
+   a. Last Hour
+   b. Today
+   c. Last Week
+   d. Last 2 Days
 
 # Usage:
 
