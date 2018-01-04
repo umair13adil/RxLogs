@@ -1,4 +1,4 @@
-package com.blackbox.plog;
+package com.blackbox.plog.pLogs;
 
 import android.util.Log;
 
@@ -16,15 +16,15 @@ import java.util.zip.ZipOutputStream;
 
 import io.reactivex.Observable;
 
-import static com.blackbox.plog.PLog.LOG_LAST_HOUR;
-import static com.blackbox.plog.PLog.LOG_LAST_TWO_DAYS;
-import static com.blackbox.plog.PLog.LOG_TODAY;
-import static com.blackbox.plog.PLog.LOG_WEEK;
-import static com.blackbox.plog.PLog.TYPE_ERROR;
-import static com.blackbox.plog.PLog.TYPE_INFO;
-import static com.blackbox.plog.PLog.TYPE_WARNING;
-import static com.blackbox.plog.PLog.logThis;
-import static com.blackbox.plog.PLog.pLogger;
+import static com.blackbox.plog.pLogs.PLog.LOG_LAST_HOUR;
+import static com.blackbox.plog.pLogs.PLog.LOG_LAST_TWO_DAYS;
+import static com.blackbox.plog.pLogs.PLog.LOG_TODAY;
+import static com.blackbox.plog.pLogs.PLog.LOG_WEEK;
+import static com.blackbox.plog.pLogs.PLog.TYPE_ERROR;
+import static com.blackbox.plog.pLogs.PLog.TYPE_INFO;
+import static com.blackbox.plog.pLogs.PLog.TYPE_WARNING;
+import static com.blackbox.plog.pLogs.PLog.logThis;
+import static com.blackbox.plog.pLogs.PLog.pLogger;
 
 /**
  * Created by umair on 04/01/2018.

@@ -1,4 +1,4 @@
-package com.blackbox.plog;
+package com.blackbox.plog.pLogs;
 
 /**
  * Created by umair on 03/01/2018.

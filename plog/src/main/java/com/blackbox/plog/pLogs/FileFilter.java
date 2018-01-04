@@ -1,4 +1,4 @@
-package com.blackbox.plog;
+package com.blackbox.plog.pLogs;
 
 import android.util.Log;
 

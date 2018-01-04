@@ -6,7 +6,7 @@ package com.blackbox.plog.utils;
 
 import android.util.Log;
 
-import com.blackbox.plog.PLog;
+import com.blackbox.plog.pLogs.PLog;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,7 +1,9 @@
-package com.blackbox.plog;
+package com.blackbox.plog.dataLogs;
 
 import android.os.Environment;
 
+import com.blackbox.plog.pLogs.LogExporter;
+import com.blackbox.plog.pLogs.PLog;
 import com.blackbox.plog.utils.DateControl;
 import com.blackbox.plog.utils.Utils;
 
