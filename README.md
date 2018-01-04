@@ -34,7 +34,9 @@ File Name consists of: {Day} {Month} {Year} {Hour}
 
 
 # Usage:
-    ''' //This must be initialized before calling PLog
+
+## For PLogs:
+        //This must be initialized before calling PLog
         PLogBuilder()
                 .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest")
                 .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" + File.separator + "ZippedLogs")
@@ -46,4 +48,9 @@ File Name consists of: {Day} {Month} {Year} {Hour}
                 .logSilently(false)
                 .setTimeStampFormat("DDMMYYYY")
                 .build()
-                ''''
+                
+### To Log to File:
+      PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+                
+                
+                
