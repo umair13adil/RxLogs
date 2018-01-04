@@ -2,36 +2,36 @@
 An android/kotlin RxJava based advanced logging framework. All logs are saved to files in storage patch provided. These logs are helpful when developer wants to analyze user activites within the app. A new log file is created every hour on a user event. These logs can be filtered and sorted easily. Logs can easily be exported as zip file base on filter type. This zip file can be uploaded to server easily. PLogs also provide functinality to log seperate data logs. These logs can be for a specif event with the app. For example they can be used to log location events of users, so that file will only contain location logs.
 
 ### Features:
-*1. Logs events in files created seprately every hour. (24 hours)
-*2. Files can be compressed and exported for these filters:
+1. Logs events in files created seprately every hour. (24 hours)
+2. Files can be compressed and exported for these filters:
     a. Last Hour
     b. Today
     c. Last Week
     d. Last 2 Days
-*3. Clear Logs easily.
-*4. Save logs to custom path.
-*5. Export Logs to custom path as zip file.
-*6. RxJava2 support.
-*7. Custom Log formats.
-*8. CSV support.
-*9. Custom timestamps support.
-*10. Custom data logging support with 'DataLogs'.
+3. Clear Logs easily.
+4. Save logs to custom path.
+5. Export Logs to custom path as zip file.
+6. RxJava2 support.
+7. Custom Log formats.
+8. CSV support.
+9. Custom timestamps support.
+10. Custom data logging support with 'DataLogs'.
   
 
 ###### Apply Custom Formats:
 
 You can apply following log formats:
 
-*1. LogFormatter.FORMAT_CURLY.
-*2. LogFormatter.FORMAT_SQUARE.
-*3. LogFormatter.FORMAT_CSV.
-*4. LogFormatter.FORMAT_CUSTOM.
+1. LogFormatter.FORMAT_CURLY.
+2. LogFormatter.FORMAT_SQUARE.
+3. LogFormatter.FORMAT_CSV.
+4. LogFormatter.FORMAT_CUSTOM.
 
 To apply CSV format, you need to provide deliminator, by default it is comma ','.
 To apply custom formats you need to provide opening & closing character. Like {},[], ' ' etc
 
-*1. {TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
-*2. [TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
+1. *{TAG}   {FUNCTION_NAME}   {YOUR_LOGGED_EVENT}   {07:05:2017 11:22:17 AM}   {Info}
+2. *[TAG]   [FUNCTION_NAME]   [YOUR_LOGGED_EVENT]   [07:05:2017 11:22:17 AM]   [Info]
 
 ###### CSV Support:
 TAG;FUNCTION_NAME;YOUR_LOGGED_EVENT;07:05:2017 11:22:17 AM;Info
