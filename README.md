@@ -99,36 +99,37 @@ You can use following Log Types to identify type:
               
 ### To Export Logs:    
 
-    CompositeDisposable().add(PLog.getLogs(PLog.LOG_TODAY)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<String>() {
-
-                        override fun onNext(filePath: String) {
-                            PLog.logThis(TAG, "exportPLogs", "PLogs Path: " + filePath, PLog.TYPE_ERROR)
-                            Toast.makeText(this@MainActivity, "Exported to: " + filePath, Toast.LENGTH_SHORT).show()
-                        }
-
-                        override fun onError(e: Throwable) {
-                            e.printStackTrace()
-                            PLog.logThis(TAG, "exportPLogs", "Error: " + e.message, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onComplete() {
-
-                        }
-                    }))
+    PLog.getLogs(PLog.LOG_TODAY)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(  // named arguments for lambda Subscribers
+                                onNext = {
+                                    PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", PLog.TYPE_INFO)
+                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = {
+                                    it.printStackTrace()
+                                    PLog.logThis(TAG, "exportPLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                                },
+                                onComplete = { }
+                        )
                 
 ## For Data Logs:
 
-    val myLogs: DataLogger = DataLogBuilder()
-                .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "DataLogTest")
-                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "DataLogTest" + File.separator + "ZippedLogs")
-                .setLogFileName("myLogs.txt")
-                .setExportFileName("myLogsExported")
-                .attachTimeStampToFiles(false)
-                .debuggable(false)
-                .build()
+                myLogs.logs
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(  // named arguments for lambda Subscribers
+                                onNext = {
+                                    PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
+                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = {
+                                    it.printStackTrace()
+                                    PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                                },
+                                onComplete = { }
+                        )
 
 ### To Log to File:
     
@@ -143,24 +144,20 @@ You can use following Log Types to identify type:
     
 ### To Export Logs:  
 
-    CompositeDisposable().add(myLogs.getLogs()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<String>() {
-
-                        override fun onNext(filePath: String) {
-                            PLog.logThis(TAG, "exportDataLogs", "DataLog Path: " + filePath, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onError(e: Throwable) {
-                            e.printStackTrace()
-                            PLog.logThis(TAG, "exportDataLogs", "Error: " + e.message, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onComplete() {
-
-                        }
-                    }))
+                myLogs.logs
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(  // named arguments for lambda Subscribers
+                                onNext = {
+                                    PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
+                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = {
+                                    it.printStackTrace()
+                                    PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                                },
+                                onComplete = { }
+                        )
                 
                 
 ## MIT License
