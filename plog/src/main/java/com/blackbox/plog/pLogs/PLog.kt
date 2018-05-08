@@ -16,7 +16,7 @@ object PLog {
 
     private val TAG = PLog::class.java.simpleName
 
-    var pLogger = PLogger()
+    lateinit var pLogger: PLogger
 
     //Log Filters
     val LOG_TODAY = 1
@@ -71,32 +71,28 @@ object PLog {
      * @param type         the type
      */
     fun logThis(className: String, functionName: String, text: String, type: String) {
-        try {
-            //Make sure what is logged is unique
-            if (!Utils.getInstance().isLoggedOnce(text)) {
 
-                val folderPath = logPath + DateControl.getInstance().today
-                Utils.getInstance().createDirIfNotExists(folderPath)
+        //Make sure what is logged is unique
+        if (!Utils.getInstance().isLoggedOnce(text)) {
 
-                val fileName_raw = DateControl.getInstance().today + DateControl.getInstance().hour
-                val path = folderPath + File.separator + fileName_raw + pLogger.logFileExtension
+            val folderPath = logPath + DateControl.getInstance().today
+            Utils.getInstance().createDirIfNotExists(folderPath)
 
-                if (!File(path).exists())
-                    File(path).createNewFile()
+            val fileName_raw = DateControl.getInstance().today + DateControl.getInstance().hour
+            val path = folderPath + File.separator + fileName_raw + pLogger.logFileExtension
 
-                val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
+            if (!File(path).exists())
+                File(path).createNewFile()
 
-                val logFormatted = LogFormatter.getFormatType(logData, pLogger)
+            val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
 
-                if (PLog.pLogger.isDebuggable)
-                    Log.i(TAG, logFormatted)
+            val logFormatted = LogFormatter.getFormatType(logData, pLogger)
 
-                appendToFile(path, logFormatted)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            if (PLog.pLogger.isDebuggable)
+                Log.i(TAG, logFormatted)
+
+            appendToFile(path, logFormatted)
         }
-
     }
 
     /**

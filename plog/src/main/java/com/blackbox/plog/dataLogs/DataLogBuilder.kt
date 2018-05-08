@@ -3,15 +3,14 @@ package com.blackbox.plog.dataLogs
 /**
  * Created by umair on 04/01/2018.
  */
-
 class DataLogBuilder {
 
-    private var savePath: String? = null
-    private var exportPath: String? = null
-    private var logFileName: String? = null
-    private var exportFileName: String? = null
-    private var attachTimeStamp: Boolean? = null
-    private var debug: Boolean? = null
+    var savePath: String = ""
+    var exportPath: String = ""
+    var logFileName: String = ""
+    var exportFileName: String = ""
+    var attachTimeStamp: Boolean = false
+    var debug: Boolean = false
 
     /**
      * Sets logs save path.
@@ -109,6 +108,6 @@ class DataLogBuilder {
     }
 
     fun build(): DataLogger {
-        return DataLogger(savePath!!, exportPath!!, exportFileName!!, logFileName!!, attachTimeStamp, debug)
+        return DataLogger(savePath, exportPath, exportFileName, logFileName, attachTimeStamp, debug)
     }
 }

@@ -6,19 +6,19 @@ package com.blackbox.plog.pLogs
 
 class PLogBuilder {
 
-    private var savePath: String = ""
-    private var exportPath: String = ""
-    private var logFileExtension: String = ""
-    private var exportFileName: String = ""
-    private var attachTimeStamp: Boolean = true
-    private var attachNoOfFiles: Boolean = true
-    private var debug: Boolean = false
-    private var silentLogs: Boolean = false
-    private var formatType: String = ""
-    private var customFormatOpen: String = ""
-    private var customFormatClose: String = ""
-    private var csvDeliminator: String = ""
-    private var timeStampFormat: String = ""
+    var savePath: String = ""
+    var exportPath: String = ""
+    var logFileExtension: String = ""
+    var exportFileName: String = ""
+    var attachTimeStamp: Boolean = false
+    var attachNoOfFiles: Boolean = false
+    var debug: Boolean = false
+    var silentLogs: Boolean = false
+    var formatType: String = ""
+    var customFormatOpen: String = ""
+    var customFormatClose: String = ""
+    var csvDeliminator: String = ""
+    var timeStampFormat: String = ""
 
     /**
      * Sets logs save path.

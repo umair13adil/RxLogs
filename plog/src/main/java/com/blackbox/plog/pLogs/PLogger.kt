@@ -27,10 +27,10 @@ class PLogger {
     var logFileExtension: String = ".txt"
 
     val isDebuggable: Boolean
-        get() = debug ?: false
+        get() = debug
 
     val isSilentLog: Boolean?
-        get() = silentLogs ?: false
+        get() = silentLogs
 
     constructor() {
 

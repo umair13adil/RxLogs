@@ -20,7 +20,7 @@ object LogFormatter {
         val TIME = data.logTime
         val TYPE = data.logType
 
-        return "{$SCREEN}  {$FUNCTION}  {$DATA}  {$TIME}  {$TYPE}"
+        return "{$SCREEN}  {$FUNCTION}  {$DATA}  {$TIME}  {$TYPE}\n"
     }
 
     private fun formatSquare(data: LogData): String {
@@ -32,7 +32,7 @@ object LogFormatter {
         val TYPE = data.logType
 
         return "[" + SCREEN + "]  [" + FUNCTION + "]  [" + DATA + "]  {" +
-                "[" + TIME + "]  [" + TYPE + "]"
+                "[" + TIME + "]  [" + TYPE + "]\n"
     }
 
     private fun formatCSV(data: LogData, deliminator: String): String {
@@ -43,7 +43,7 @@ object LogFormatter {
         val TIME = data.logTime
         val TYPE = data.logType
 
-        return SCREEN + deliminator + FUNCTION + deliminator + DATA + deliminator + TIME + deliminator + TYPE
+        return SCREEN + deliminator + FUNCTION + deliminator + DATA + deliminator + TIME + deliminator + TYPE + "\n"
     }
 
     private fun formatCustom(data: LogData, dividerOpen: String, dividerClose: String): String {
@@ -55,7 +55,7 @@ object LogFormatter {
         val TYPE = data.logType
 
         return dividerOpen + SCREEN + dividerClose + dividerOpen + FUNCTION + dividerClose + dividerOpen + DATA + dividerClose + dividerOpen +
-                TIME + dividerClose + dividerOpen + TYPE + dividerClose
+                TIME + dividerClose + dividerOpen + TYPE + dividerClose + "\n"
     }
 
     internal fun getFormatType(data: LogData, pLogger: PLogger): String {
