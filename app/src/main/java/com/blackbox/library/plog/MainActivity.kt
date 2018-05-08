@@ -7,7 +7,6 @@ import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.widget.Button
 import android.widget.Toast
 import com.blackbox.plog.dataLogs.DataLogBuilder
 import com.blackbox.plog.dataLogs.DataLogger
@@ -15,14 +14,14 @@ import com.blackbox.plog.pLogs.LogFormatter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.PLogBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableObserver
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
-    val TAG: String = "MainActivity"
+    val TAG: String = MainActivity::class.java.simpleName
     var PERMISSION_CODE = 9234;
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +32,11 @@ class MainActivity : AppCompatActivity() {
         PLogBuilder()
                 .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest")
                 .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" + File.separator + "ZippedLogs")
-                .setExportFileName("MYFILENAME")
-                .attachNoOfFilesToFiles(false)
-                .attachTimeStampToFiles(false)
+                .debuggable(true)
+                .setLogFileExtension(".txt")
                 .setLogFormatType(LogFormatter.FORMAT_CURLY)
-                .debuggable(false)
-                .logSilently(false)
-                .setTimeStampFormat("DDMMYYYY")
+                .attachTimeStampToFiles(true)
+                .setTimeStampFormat("dd MMMM yyyy kk:mm:ss")
                 .build()
 
         //This must be initialized before calling DataLogger
@@ -50,13 +47,8 @@ class MainActivity : AppCompatActivity() {
                 .setLogFileName("myLogs.txt")
                 .setExportFileName("myLogsExported")
                 .attachTimeStampToFiles(false)
-                .debuggable(false)
+                .debuggable(true)
                 .build()
-
-
-        val button_log = findViewById<Button>(R.id.button)
-        val button_export = findViewById<Button>(R.id.export)
-        val button_clear = findViewById<Button>(R.id.delete)
 
 
         //Check read write permissions
@@ -69,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        button_log.setOnClickListener {
+        button.setOnClickListener {
 
             //Will log to PLogs
             PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
@@ -78,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             myLogs.appendToFile("Log: " + Math.random() + "\n");
         }
 
-        button_clear.setOnClickListener {
+        delete.setOnClickListener {
 
             //Will clear All PLogs
             PLog.clearLogs()
@@ -89,48 +81,39 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
 
-        button_export.setOnClickListener {
+        export.setOnClickListener {
 
             //Will export PLogs
-            CompositeDisposable().add(PLog.getLogs(PLog.LOG_TODAY)
+            PLog.getLogs(PLog.LOG_TODAY)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<String>() {
-
-                        override fun onNext(filePath: String) {
-                            PLog.logThis(TAG, "exportPLogs", "PLogs Path: " + filePath, PLog.TYPE_ERROR)
-                            Toast.makeText(this@MainActivity, "Exported to: " + filePath, Toast.LENGTH_SHORT).show()
-                        }
-
-                        override fun onError(e: Throwable) {
-                            e.printStackTrace()
-                            PLog.logThis(TAG, "exportPLogs", "Error: " + e.message, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onComplete() {
-
-                        }
-                    }))
+                    .subscribeBy(  // named arguments for lambda Subscribers
+                            onNext = {
+                                PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", PLog.TYPE_INFO)
+                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = {
+                                it.printStackTrace()
+                                PLog.logThis(TAG, "exportPLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                            },
+                            onComplete = { }
+                    )
 
             //Will Export custom data log
-            CompositeDisposable().add(myLogs.getLogs()
+            myLogs.logs
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<String>() {
-
-                        override fun onNext(filePath: String) {
-                            PLog.logThis(TAG, "exportDataLogs", "DataLog Path: " + filePath, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onError(e: Throwable) {
-                            e.printStackTrace()
-                            PLog.logThis(TAG, "exportDataLogs", "Error: " + e.message, PLog.TYPE_ERROR)
-                        }
-
-                        override fun onComplete() {
-
-                        }
-                    }))
+                    .subscribeBy(  // named arguments for lambda Subscribers
+                            onNext = {
+                                PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
+                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = {
+                                it.printStackTrace()
+                                PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                            },
+                            onComplete = { }
+                    )
         }
     }
 
