@@ -14,7 +14,7 @@ public class DateTimeUtils {
     private static String getFullDateTimeString(long timestamp) {
         Date date = new Date(timestamp);
         String dayNumberSuffix = getDayOfMonthSuffix(date.getDate());
-        SimpleDateFormat f1 = new SimpleDateFormat("d'" + dayNumberSuffix + "' MMMM yyyy hh:mm:ss a", Locale.ENGLISH);
+        SimpleDateFormat f1 = new SimpleDateFormat("d'" + dayNumberSuffix + "' MMMM yyyy ;;:mm:ss", Locale.ENGLISH);
         return f1.format(date);
     }
 
@@ -55,7 +55,7 @@ public class DateTimeUtils {
         Date date = new Date(timestamp);
         String formatted = "" + System.currentTimeMillis();
         try {
-            SimpleDateFormat f1 = new SimpleDateFormat("ddMMyyyy_hhmmss_a", Locale.ENGLISH);
+            SimpleDateFormat f1 = new SimpleDateFormat("ddMMyyyy_kkmmss_a", Locale.ENGLISH);
             formatted = f1.format(date);
         } catch (Exception e) {
             e.printStackTrace();

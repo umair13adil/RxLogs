@@ -46,7 +46,7 @@ public class DateControl {
 
     public String getHour() {
         Date currentTime = new Date(System.currentTimeMillis());
-        SimpleDateFormat sdf = new SimpleDateFormat("HH", Locale.ENGLISH);
+        SimpleDateFormat sdf = new SimpleDateFormat("kk", Locale.ENGLISH);
         return sdf.format(currentTime);
     }
 
