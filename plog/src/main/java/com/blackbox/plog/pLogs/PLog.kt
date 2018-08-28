@@ -5,12 +5,13 @@ package com.blackbox.plog.pLogs
  */
 
 import android.util.Log
-import com.blackbox.plog.utils.DateControl
-import com.blackbox.plog.utils.DateTimeUtils
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.pLogs.exporter.LogExporter
+import com.blackbox.plog.pLogs.formatter.LogFormatter
+import com.blackbox.plog.pLogs.models.LogData
+import com.blackbox.plog.pLogs.models.PLogger
+import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
-import java.nio.charset.Charset
 
 object PLog {
 
@@ -22,7 +23,7 @@ object PLog {
     val LOG_TODAY = 1
     val LOG_LAST_HOUR = 2
     val LOG_WEEK = 3
-    val LOG_LAST_TWO_DAYS = 4
+    val LOG_LAST_24_HOURS = 4
 
     //Log Types
     val TYPE_INFO = "Info"
@@ -33,8 +34,6 @@ object PLog {
     /**
      * Gets output path.
      *
-     *
-     *
      * Sets the export path of Logs.
      *
      * @return the output path
@@ -44,8 +43,6 @@ object PLog {
 
     /**
      * Gets Logs path.
-     *
-     *
      *
      * Sets the save path of Logs.
      *
@@ -61,8 +58,6 @@ object PLog {
     /**
      * Log this.
      *
-     *
-     *
      * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
      *
      * @param className    the class name
@@ -72,33 +67,20 @@ object PLog {
      */
     fun logThis(className: String, functionName: String, text: String, type: String) {
 
-        //Make sure what is logged is unique
-        if (!Utils.getInstance().isLoggedOnce(text)) {
+        //Do nothing if logs are disabled
+        if (!pLogger.enabled)
+            return
 
-            val folderPath = logPath + DateControl.getInstance().today
-            Utils.getInstance().createDirIfNotExists(folderPath)
-
-            val fileName_raw = DateControl.getInstance().today + DateControl.getInstance().hour
-            val path = folderPath + File.separator + fileName_raw + pLogger.logFileExtension
-
-            if (!File(path).exists())
-                File(path).createNewFile()
-
-            val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
-
-            val logFormatted = LogFormatter.getFormatType(logData, pLogger)
-
-            if (PLog.pLogger.isDebuggable)
-                Log.i(TAG, logFormatted)
-
-            appendToFile(path, logFormatted)
+        if (pLogger.encrypt) {
+            checkIfKeyValid(pLogger.encryptionKey)
+            writeEncryptedLogs(className, functionName, text, type)
+        } else {
+            writeSimpleLogs(className, functionName, text, type)
         }
     }
 
     /**
      * Gets logs.
-     *
-     *
      *
      * This will export logs based on filter type to export location with export name provided.
      *
@@ -110,41 +92,47 @@ object PLog {
     }
 
     /**
-     * Clear logs boolean.
+     * Clear all logs from storage directory.
      *
-     *
-     *
-     * Will return true if delete was successful
-     *
-     * @return the boolean
      */
-    fun clearLogs(): Boolean {
-        return Utils.getInstance().deleteDir(File(logPath))
+    fun clearLogs() {
+        Utils.instance.deleteDir(File(PLog.logPath))
     }
 
-    fun writeToFile(path: String, data: String) {
-        try {
-            if (File(path).exists()) {
-                File(path).printWriter().use { out ->
-                    out.println(data)
-                }
-            } else {
-                File(path).createNewFile()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    /*
+     * Write plain String logs.
+     */
+    private fun writeSimpleLogs(className: String, functionName: String, text: String, type: String) {
+        val path = setupFilePaths(PLog.logPath)
+
+        checkFileExists(path)
+
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
+
+        val logFormatted = LogFormatter.getFormatType(logData, pLogger)
+
+        if (PLog.pLogger.isDebuggable)
+            Log.i(TAG, logFormatted)
+
+        appendToFile(path, logFormatted)
     }
 
-    fun appendToFile(path: String, data: String) {
-        try {
-            if (File(path).exists()) {
-                File(path).appendText(data, Charset.defaultCharset())
-            } else {
-                File(path).createNewFile()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    /*
+     * Write AES encrypted String logs.
+     */
+    private fun writeEncryptedLogs(className: String, functionName: String, text: String, type: String) {
+
+        val path = setupFilePaths(PLog.logPath)
+
+        checkFileExists(path)
+
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
+
+        val logFormatted = LogFormatter.getFormatType(logData, pLogger)
+
+        if (PLog.pLogger.isDebuggable)
+            Log.i(TAG, logFormatted)
+
+        writeToFileEncrypted(logFormatted, getKey(pLogger.encryptionKey), path)
     }
 }

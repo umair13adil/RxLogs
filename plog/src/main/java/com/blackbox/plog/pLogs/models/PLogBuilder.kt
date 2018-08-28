@@ -1,4 +1,6 @@
-package com.blackbox.plog.pLogs
+package com.blackbox.plog.pLogs.models
+
+import com.blackbox.plog.pLogs.PLog
 
 /**
  * Created by umair on 03/01/2018.
@@ -6,19 +8,22 @@ package com.blackbox.plog.pLogs
 
 class PLogBuilder {
 
-    var savePath: String = ""
-    var exportPath: String = ""
-    var logFileExtension: String = ""
-    var exportFileName: String = ""
-    var attachTimeStamp: Boolean = false
-    var attachNoOfFiles: Boolean = false
-    var debug: Boolean = false
-    var silentLogs: Boolean = false
-    var formatType: String = ""
-    var customFormatOpen: String = ""
-    var customFormatClose: String = ""
-    var csvDeliminator: String = ""
-    var timeStampFormat: String = ""
+    private var savePath: String = ""
+    private var exportPath: String = ""
+    private var logFileExtension: String = ""
+    private var exportFileName: String = ""
+    private var attachTimeStamp: Boolean = false
+    private var attachNoOfFiles: Boolean = false
+    private var debug: Boolean = false
+    private var silentLogs: Boolean = false
+    private var formatType: String = ""
+    private var customFormatOpen: String = ""
+    private var customFormatClose: String = ""
+    private var csvDeliminator: String = ""
+    private var timeStampFormat: String = ""
+    private var encrypt: Boolean = false
+    private var encryptionKey: String = ""
+    private var enabled: Boolean = true
 
     /**
      * Sets logs save path.
@@ -233,8 +238,41 @@ class PLogBuilder {
         return this
     }
 
+    /**
+     * Enables AES encrypted logging.
+     * By default encryption is disabled.
+     *
+     * @param encrypt to enable/disable encryption
+     */
+    fun enableEncryption(encrypt: Boolean): PLogBuilder {
+        this.encrypt = encrypt
+        return this
+    }
+
+    /**
+     * Sets encryption key for AES encrypted logging.
+     * Length of key should be at-least 32, otherwise exception will be thrown.
+     *
+     * @param encryptionKey Salt
+     */
+    fun setEncryptionKey(encryptionKey: String): PLogBuilder {
+        this.encryptionKey = encryptionKey
+        return this
+    }
+
+    /**
+     * Enables Logging & file writing.
+     * By default always enabled.
+     *
+     * @param enabled to enable/disable logging
+     */
+    fun enabled(enabled: Boolean): PLogBuilder {
+        this.enabled = enabled
+        return this
+    }
+
     fun build(): PLogger {
-        val pLogger = PLogger(savePath, exportPath, exportFileName, attachTimeStamp, attachNoOfFiles, formatType, customFormatOpen, customFormatClose, csvDeliminator, debug, timeStampFormat, logFileExtension, silentLogs)
+        val pLogger = PLogger(savePath, exportPath, exportFileName, attachTimeStamp, attachNoOfFiles, formatType, customFormatOpen, customFormatClose, csvDeliminator, debug, timeStampFormat, logFileExtension, silentLogs, encrypt, encryptionKey, enabled)
         PLog.pLogger = pLogger
         return pLogger
     }

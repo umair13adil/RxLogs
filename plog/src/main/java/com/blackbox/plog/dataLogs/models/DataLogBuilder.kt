@@ -1,4 +1,6 @@
-package com.blackbox.plog.dataLogs
+package com.blackbox.plog.dataLogs.models
+
+import com.blackbox.plog.dataLogs.DataLogger
 
 /**
  * Created by umair on 04/01/2018.

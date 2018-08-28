@@ -1,4 +1,4 @@
-package com.blackbox.plog.pLogs
+package com.blackbox.plog.pLogs.models
 
 /**
  * Created by umair on 03/01/2018.

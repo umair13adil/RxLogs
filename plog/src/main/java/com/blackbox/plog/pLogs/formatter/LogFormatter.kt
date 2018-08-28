@@ -1,4 +1,7 @@
-package com.blackbox.plog.pLogs
+package com.blackbox.plog.pLogs.formatter
+
+import com.blackbox.plog.pLogs.models.LogData
+import com.blackbox.plog.pLogs.models.PLogger
 
 /**
  * Created by umair on 03/01/2018.

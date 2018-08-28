@@ -1,10 +1,11 @@
 package com.blackbox.plog.dataLogs
 
 import android.os.Environment
-import com.blackbox.plog.pLogs.LogExporter
-import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.appendToFile
+import com.blackbox.plog.utils.writeToFile
 import io.reactivex.Observable
 import java.io.File
 
@@ -24,8 +25,6 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     /**
      * Gets output path.
      *
-     *
-     *
      * Sets the export path of Logs.
      *
      * @return the output path
@@ -35,8 +34,6 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
 
     /**
      * Gets Logs path.
-     *
-     *
      *
      * Sets the save path of Logs.
      *
@@ -48,14 +45,12 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     /**
      * Gets logs.
      *
-     *
-     *
      * This will export logs based on filter type to export location with export name provided.
      *
      * @return the logs
      */
     val logs: Observable<String>
-        get() = LogExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug)
+        get() = DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug)
 
     init {
         this.savePath = savePath
@@ -69,8 +64,6 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     /**
      * Overwrite to file.
      *
-     *
-     *
      * This function will overwrite a 'String' data to a file.
      * File will be created if it doesn't exists in path provided.
      * Filename can contain extension as well e.g 'error_log.txt'.
@@ -82,24 +75,23 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      */
     fun overwriteToFile(dataToWrite: String) {
 
-        Utils.getInstance().createDirIfNotExists(logPath)
+        Utils.instance.createDirIfNotExists(logPath)
 
         var fileName_raw = ""
 
         if (attachTimeStamp)
-            fileName_raw = DateControl.getInstance().today + DateControl.getInstance().hour + "_" + logFileName
+            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
         else
             fileName_raw = logFileName
 
         val path_raw = logPath + File.separator + fileName_raw
 
-        PLog.writeToFile(path_raw, dataToWrite)
+
+        writeToFile(path_raw, dataToWrite)
     }
 
     /**
      * Append to file.
-     *
-     *
      *
      * This function will append a 'String' data to a file with new line inserted.
      * File will be created if it doesn't exists in path provided.
@@ -112,32 +104,30 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      */
     fun appendToFile(dataToWrite: String) {
 
-        Utils.getInstance().createDirIfNotExists(logPath)
+        Utils.instance.createDirIfNotExists(logPath)
 
         var fileName_raw = ""
 
         if (attachTimeStamp)
-            fileName_raw = DateControl.getInstance().today + DateControl.getInstance().hour + "_" + logFileName
+            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
         else
             fileName_raw = logFileName
 
         val path_raw = logPath + File.separator + fileName_raw
 
-        PLog.appendToFile(path_raw, dataToWrite)
+        appendToFile(path_raw, dataToWrite)
 
     }
 
     /**
      * Clear logs boolean.
      *
-     *
-     *
      * Will return true if delete was successful
      *
      * @return the boolean
      */
-    fun clearLogs(): Boolean {
-        return Utils.getInstance().deleteDir(File(logPath))
+    fun clearLogs() {
+        Utils.instance.deleteDir(File(logPath))
     }
 
     companion object {
