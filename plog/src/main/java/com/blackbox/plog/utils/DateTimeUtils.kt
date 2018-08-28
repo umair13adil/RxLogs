@@ -1,5 +1,6 @@
 package com.blackbox.plog.utils
 
+import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -51,12 +52,46 @@ object DateTimeUtils {
         val date = Date(timestamp)
         var formatted = "" + System.currentTimeMillis()
         try {
-            val f1 = SimpleDateFormat("ddMMyyyy_kkmmss_a", Locale.ENGLISH)
+            val f1 = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_FULL_JOINED, Locale.ENGLISH)
             formatted = f1.format(date)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         return formatted
+    }
+
+    fun getLastHourTime(): String {
+        val someDate = Calendar.getInstance()
+        someDate.add(Calendar.HOUR_OF_DAY, -1)
+        val date = someDate.time
+        val dateFormat = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_SIMPLE, Locale.ENGLISH)
+        return dateFormat.format(date)
+    }
+
+    private fun getPreviousWeekDate(): Date {
+        val someDate = GregorianCalendar.getInstance()
+        someDate.add(Calendar.DAY_OF_YEAR, -7)
+        return someDate.time
+    }
+
+    fun getDatesBetween(): List<String> {
+        val datesInRange = ArrayList<String>()
+        val calendar = GregorianCalendar()
+        calendar.time = getPreviousWeekDate()
+
+        val endCalendar = GregorianCalendar()
+        endCalendar.time = Date()
+        endCalendar.add(Calendar.DATE, 1)
+
+        while (calendar.before(endCalendar)) {
+            val result = calendar.time
+            val dateFormat = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
+            val date = dateFormat.format(result)
+            datesInRange.add(date)
+            calendar.add(Calendar.DATE, 1)
+        }
+
+        return datesInRange
     }
 }

@@ -1,5 +1,6 @@
 package com.blackbox.plog.utils
 
+import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -15,7 +16,7 @@ class DateControl {
     val today: String
         get() {
             val currentTime = Date(System.currentTimeMillis())
-            val sdf = SimpleDateFormat("ddMMyyyy", Locale.ENGLISH)
+            val sdf = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
             return sdf.format(currentTime)
         }
 

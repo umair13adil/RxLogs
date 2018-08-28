@@ -72,7 +72,6 @@ object PLog {
             return
 
         if (pLogger.encrypt) {
-            checkIfKeyValid(pLogger.encryptionKey)
             writeEncryptedLogs(className, functionName, text, type)
         } else {
             writeSimpleLogs(className, functionName, text, type)
@@ -87,8 +86,19 @@ object PLog {
      * @param type the type
      * @return the logs
      */
-    fun getLogs(type: Int): Observable<String> {
-        return LogExporter.getLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath)
+    fun getZippedLog(type: Int): Observable<String> {
+        return LogExporter.getZippedLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath)
+    }
+
+    /**
+     * Gets logs.
+     *
+     * This will export logs as plain String.
+     *
+     * @return the String data
+     */
+    fun getLoggedData(type: Int): Observable<String> {
+        return LogExporter.getLoggedData(type, logPath, outputPath, pLogger.encrypt, pLogger.secretKey)
     }
 
     /**
@@ -122,6 +132,9 @@ object PLog {
      */
     private fun writeEncryptedLogs(className: String, functionName: String, text: String, type: String) {
 
+        if (pLogger.secretKey == null)
+            return
+
         val path = setupFilePaths(PLog.logPath)
 
         checkFileExists(path)
@@ -133,6 +146,6 @@ object PLog {
         if (PLog.pLogger.isDebuggable)
             Log.i(TAG, logFormatted)
 
-        writeToFileEncrypted(logFormatted, getKey(pLogger.encryptionKey), path)
+        appendToFileEncrypted(logFormatted, pLogger.secretKey!!, path)
     }
 }

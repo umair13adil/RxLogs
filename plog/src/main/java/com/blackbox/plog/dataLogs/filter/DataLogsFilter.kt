@@ -18,9 +18,6 @@ object DataLogsFilter{
 
             size = files.size
 
-            if (debug)
-                Log.i(FileFilter.TAG, "Total Files: $size")
-
             if (files.isNotEmpty()) {
 
                 for (i in files.indices) {

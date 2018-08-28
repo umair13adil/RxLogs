@@ -4,6 +4,7 @@ import android.os.Environment
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 
 import java.io.File
+import javax.crypto.SecretKey
 
 /**
  * Created by umair on 03/01/2018.
@@ -29,6 +30,7 @@ class PLogger {
     internal var encrypt: Boolean = false
     internal var encryptionKey: String = ""
     internal var enabled: Boolean = true
+    internal var secretKey: SecretKey? = null
 
     internal val isDebuggable: Boolean
         get() = debug

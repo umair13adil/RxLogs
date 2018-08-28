@@ -2,18 +2,16 @@ package com.blackbox.plog.dataLogs
 
 import android.os.Environment
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
-import com.blackbox.plog.utils.DateControl
-import com.blackbox.plog.utils.Utils
-import com.blackbox.plog.utils.appendToFile
-import com.blackbox.plog.utils.writeToFile
+import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
+import javax.crypto.SecretKey
 
 /**
  * Created by umair on 03/01/2018.
  */
 
-class DataLogger internal constructor(savePath: String, exportPath: String, exportFileName: String, logFileName: String, attachTimeStamp: Boolean?, debug: Boolean?) {
+class DataLogger internal constructor(savePath: String, exportPath: String, exportFileName: String, logFileName: String, attachTimeStamp: Boolean?, debug: Boolean?, encryptionEnabled: Boolean, encryptionKey: String, loggingEnabled: Boolean) {
 
     private var savePath = Environment.getExternalStorageDirectory().toString() + File.separator + TAG
     private var exportPath = Environment.getExternalStorageDirectory().toString() + File.separator + TAG
@@ -21,6 +19,10 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     private var logFileName = "log"
     private var attachTimeStamp = true
     private var debug = false
+    internal var encrypt: Boolean = false
+    internal var encryptionKey: String = ""
+    internal var enabled: Boolean = true
+    internal var secretKey: SecretKey? = null
 
     /**
      * Gets output path.
@@ -49,8 +51,20 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      *
      * @return the logs
      */
-    val logs: Observable<String>
-        get() = DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug)
+    fun getZippedLogs(): Observable<String> {
+        return DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug)
+    }
+
+    /**
+     * Gets logs.
+     *
+     * This will export logs as plain String.
+     *
+     * @return the String data
+     */
+    fun getLoggedData(): Observable<String> {
+        return DataLogsExporter.getLoggedData(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, encrypt, secretKey)
+    }
 
     init {
         this.savePath = savePath
@@ -59,6 +73,9 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
         this.logFileName = logFileName
         this.attachTimeStamp = attachTimeStamp!!
         this.debug = debug!!
+        this.encrypt = encryptionEnabled
+        this.encryptionKey = encryptionKey
+        this.enabled = loggingEnabled
     }
 
     /**
@@ -74,20 +91,13 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      * @param dataToWrite the data to write can be any string data formatted or unformatted
      */
     fun overwriteToFile(dataToWrite: String) {
+        val path = setupPaths()
 
-        Utils.instance.createDirIfNotExists(logPath)
-
-        var fileName_raw = ""
-
-        if (attachTimeStamp)
-            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
-        else
-            fileName_raw = logFileName
-
-        val path_raw = logPath + File.separator + fileName_raw
-
-
-        writeToFile(path_raw, dataToWrite)
+        if (encrypt) {
+            writeToFileEncrypted(dataToWrite, secretKey!!, path)
+        } else {
+            writeToFile(path, dataToWrite)
+        }
     }
 
     /**
@@ -104,19 +114,13 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      */
     fun appendToFile(dataToWrite: String) {
 
-        Utils.instance.createDirIfNotExists(logPath)
+        val path = setupPaths()
 
-        var fileName_raw = ""
-
-        if (attachTimeStamp)
-            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
-        else
-            fileName_raw = logFileName
-
-        val path_raw = logPath + File.separator + fileName_raw
-
-        appendToFile(path_raw, dataToWrite)
-
+        if (encrypt) {
+            appendToFileEncrypted(dataToWrite, secretKey!!, path)
+        } else {
+            appendToFile(path, dataToWrite)
+        }
     }
 
     /**
@@ -133,5 +137,18 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     companion object {
 
         private val TAG = DataLogger::class.java.simpleName
+    }
+
+    private fun setupPaths(): String {
+        Utils.instance.createDirIfNotExists(logPath)
+
+        var fileName_raw = ""
+
+        if (attachTimeStamp)
+            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
+        else
+            fileName_raw = logFileName
+
+        return logPath + File.separator + fileName_raw
     }
 }

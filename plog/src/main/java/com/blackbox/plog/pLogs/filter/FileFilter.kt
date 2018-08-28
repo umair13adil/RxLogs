@@ -3,6 +3,7 @@ package com.blackbox.plog.pLogs.filter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.utils.DateControl
+import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.Utils
 import java.io.File
 
@@ -24,12 +25,9 @@ internal object FileFilter {
         val directory = File(folderPath)
         val files = directory.listFiles()
 
-        if (files != null && files.size > 0) {
+        if (files != null && files.isNotEmpty()) {
 
             size = files.size
-
-            if (PLog.pLogger.isDebuggable!!)
-                Log.i(FileFilter.TAG, "Total Files: $size")
 
             if (files.isNotEmpty()) {
 
@@ -59,7 +57,7 @@ internal object FileFilter {
                     if (file.isDirectory) {
                         val day = FilterUtils.extractDay(file.name)
 
-                        if (PLog.pLogger.isDebuggable!!)
+                        if (PLog.pLogger.isDebuggable)
                             Log.i(FileFilter.TAG, "Files between dates: $lastDay & $today,Date File Present: $day")
 
                         if (lastDay < today) {
@@ -82,31 +80,20 @@ internal object FileFilter {
      */
     fun getFilesForLastWeek(folderPath: String) {
 
-        val today = Integer.parseInt(DateControl.instance.currentDate)
-        val lastWeek = Integer.parseInt(DateControl.instance.lastWeek)
+        val listOfDates = DateTimeUtils.getDatesBetween()
 
-        val directory = File(folderPath)
-        val files = directory.listFiles()
+        if (PLog.pLogger.isDebuggable)
+            Log.i(FileFilter.TAG, "Files between dates: ${listOfDates.first()} & ${listOfDates.last()}")
 
-        if (files != null) {
-            for (file in files) {
-                if (file != null) {
-                    if (file.isDirectory) {
-                        val day = FilterUtils.extractDay(file.name)
+        for (date in listOfDates) {
 
-                        if (PLog.pLogger.isDebuggable!!)
-                            Log.i(FileFilter.TAG, "Files between dates: $lastWeek & $today,Date File Present: $day")
+            val dateDirectory = File(folderPath + File.separator + date)
 
-                        if (lastWeek < today) {
-                            if (day <= today && day >= lastWeek) {
-                                getFilesForToday(file.path)
-                            }
-                        } else {
-                            if (day <= today) {
-                                getFilesForToday(file.path)
-                            }
-                        }
-                    }
+            if (dateDirectory.isDirectory) {
+                val files = dateDirectory.listFiles()
+
+                for (file in files) {
+                    getFilesForToday(file.path)
                 }
             }
         }

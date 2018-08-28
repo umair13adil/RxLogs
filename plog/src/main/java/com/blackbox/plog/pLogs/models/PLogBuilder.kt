@@ -1,6 +1,8 @@
 package com.blackbox.plog.pLogs.models
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.utils.checkIfKeyValid
+import com.blackbox.plog.utils.generateKey
 
 /**
  * Created by umair on 03/01/2018.
@@ -274,6 +276,18 @@ class PLogBuilder {
     fun build(): PLogger {
         val pLogger = PLogger(savePath, exportPath, exportFileName, attachTimeStamp, attachNoOfFiles, formatType, customFormatOpen, customFormatClose, csvDeliminator, debug, timeStampFormat, logFileExtension, silentLogs, encrypt, encryptionKey, enabled)
         PLog.pLogger = pLogger
+
+        //Initializes Encryption Key
+        setupEncryption(pLogger)
+
         return pLogger
+    }
+
+    private fun setupEncryption(pLogger: PLogger) {
+
+        if (pLogger.encrypt) {
+            val key = checkIfKeyValid(pLogger.encryptionKey)
+            pLogger.secretKey = generateKey(key)
+        }
     }
 }

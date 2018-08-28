@@ -1,6 +1,8 @@
 package com.blackbox.plog.dataLogs.models
 
 import com.blackbox.plog.dataLogs.DataLogger
+import com.blackbox.plog.utils.checkIfKeyValid
+import com.blackbox.plog.utils.generateKey
 
 /**
  * Created by umair on 04/01/2018.
@@ -13,6 +15,9 @@ class DataLogBuilder {
     var exportFileName: String = ""
     var attachTimeStamp: Boolean = false
     var debug: Boolean = false
+    private var encrypt: Boolean = false
+    private var encryptionKey: String = ""
+    private var enabled: Boolean = true
 
     /**
      * Sets logs save path.
@@ -109,7 +114,53 @@ class DataLogBuilder {
         return this
     }
 
+    /**
+     * Enables AES encrypted logging.
+     * By default encryption is disabled.
+     *
+     * @param encrypt to enable/disable encryption
+     */
+    fun enableEncryption(encrypt: Boolean): DataLogBuilder {
+        this.encrypt = encrypt
+        return this
+    }
+
+    /**
+     * Sets encryption key for AES encrypted logging.
+     * Length of key should be at-least 32, otherwise exception will be thrown.
+     *
+     * @param encryptionKey Salt
+     */
+    fun setEncryptionKey(encryptionKey: String): DataLogBuilder {
+        this.encryptionKey = encryptionKey
+        return this
+    }
+
+    /**
+     * Enables Logging & file writing.
+     * By default always enabled.
+     *
+     * @param enabled to enable/disable logging
+     */
+    fun enabled(enabled: Boolean): DataLogBuilder {
+        this.enabled = enabled
+        return this
+    }
+
     fun build(): DataLogger {
-        return DataLogger(savePath, exportPath, exportFileName, logFileName, attachTimeStamp, debug)
+        val logger =  DataLogger(savePath, exportPath, exportFileName, logFileName, attachTimeStamp, debug, encrypt, encryptionKey, enabled)
+
+        //Initializes Encryption Key
+        setupEncryption(logger)
+
+        return logger
+    }
+
+    private fun setupEncryption(dataLogger: DataLogger) {
+
+        if (dataLogger.encrypt) {
+            val key = checkIfKeyValid(dataLogger.encryptionKey)
+            dataLogger.secretKey = generateKey(key)
+        }
     }
 }

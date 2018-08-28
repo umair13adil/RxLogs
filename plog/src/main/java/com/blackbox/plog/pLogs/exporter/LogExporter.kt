@@ -2,12 +2,14 @@ package com.blackbox.plog.pLogs.exporter
 
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.io.File
+import javax.crypto.SecretKey
 
 /**
  * Created by umair on 04/01/2018.
@@ -28,7 +30,7 @@ object LogExporter {
     internal var attachNoOfFiles = false
     internal var attachTimeStamp = false
 
-    fun getLogs(type: Int, attachTimeStamp: Boolean, attachNoOfFiles: Boolean, logPath: String, exportFileName: String, exportPath: String): Observable<String> {
+    fun getZippedLogs(type: Int, attachTimeStamp: Boolean, attachNoOfFiles: Boolean, logPath: String, exportFileName: String, exportPath: String): Observable<String> {
 
         LogExporter.logPath = logPath
         LogExporter.exportFileName = logPath
@@ -58,7 +60,7 @@ object LogExporter {
                     .subscribeBy(
                             onNext = {
                                 if (PLog.pLogger.isDebuggable)
-                                    PLog.logThis(TAG, "getLogs", "Output Zip: $exportPath$zipName", PLog.TYPE_INFO)
+                                    PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath$zipName", PLog.TYPE_INFO)
 
                                 emitter.onNext(exportPath + zipName)
                             },
@@ -68,6 +70,48 @@ object LogExporter {
                             },
                             onComplete = { }
                     )
+        }
+    }
+
+    fun getLoggedData(type: Int, logPath: String, exportPath: String, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
+
+        LogExporter.logPath = logPath
+        LogExporter.exportFileName = logPath
+        LogExporter.exportPath = logPath
+
+        return Observable.create {
+
+            val emitter = it
+
+            FilterUtils.prepareOutputFile(exportPath)
+
+            checkLogType(type)
+
+            val outputDirectory = File(exportPath)
+            val filesToSend = outputDirectory.listFiles()
+
+            if (filesToSend.isEmpty()) {
+                if (!emitter.isDisposed)
+                    emitter.onError(Throwable("No logs found!"))
+            }
+
+            for (f in filesToSend) {
+                emitter.onNext("File: ${f.name} Start..\n")
+                emitter.onNext("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
+                f.forEachLine {
+                    if (isEncrypted) {
+                        emitter.onNext(readFileDecrypted(secretKey!!, f.absolutePath))
+                    } else {
+                        emitter.onNext(it)
+                    }
+                }
+                emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n")
+            }
+
+            //Clear output files after reading
+            FilterUtils.clearOutputFiles(exportPath)
+
+            emitter.onComplete()
         }
     }
 }

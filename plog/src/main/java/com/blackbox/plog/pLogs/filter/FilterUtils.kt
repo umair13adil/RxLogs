@@ -20,13 +20,17 @@ object FilterUtils {
         Utils.instance.createDirIfNotExists(outputPath)
     }
 
+    fun clearOutputFiles(outputPath: String) {
+        Utils.instance.deleteDir(File(outputPath))
+    }
+
     internal fun filterFile(folderPath: String, files: Array<File>, lastHour: Int): Boolean {
         var found = false
 
         for (i in files.indices) {
             val fileHour = extractHour(files[i].name)
 
-            if (PLog.pLogger.isDebuggable!!)
+            if (PLog.pLogger.isDebuggable)
                 Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
             if (fileHour == lastHour) {
