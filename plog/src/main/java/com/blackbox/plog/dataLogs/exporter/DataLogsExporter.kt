@@ -2,6 +2,7 @@ package com.blackbox.plog.dataLogs.exporter
 
 import com.blackbox.plog.dataLogs.filter.DataLogsFilter
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.filter.FilterUtils.clearOutputFiles
 import com.blackbox.plog.utils.DateTimeUtils
@@ -23,7 +24,7 @@ object DataLogsExporter {
     private var exportPath = ""
     private var attachTimeStamp = false
 
-    fun getDataLogs(logFileName: String, attachTimeStamp: Boolean, logPath: String, exportFileName: String, exportPath: String, debug: Boolean): Observable<String> {
+    fun getDataLogs(logFileName: String, attachTimeStamp: Boolean, logPath: String, exportFileName: String, exportPath: String, debug: Boolean, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
 
         this.logPath = logPath
         this.exportPath = exportPath
@@ -46,22 +47,41 @@ object DataLogsExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            zip(filesToSend, exportPath + zipName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-                                if (PLog.pLogger.isDebuggable)
-                                    PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${zipName}", PLog.TYPE_INFO)
+            if (isEncrypted) {
+                decryptSaveFiles(filesToSend, secretKey, exportPath, exportPath + zipName)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(
+                                onNext = {
+                                    if (PLog.pLogger.isDebuggable)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: ${zipName}", PLog.TYPE_INFO)
 
-                                emitter.onNext(exportPath + zipName)
-                            },
-                            onError = {
-                                if (!emitter.isDisposed)
-                                    emitter.onError(it)
-                            },
-                            onComplete = { }
-                    )
+                                    emitter.onNext(it)
+                                },
+                                onError = {
+                                    if (!emitter.isDisposed)
+                                        emitter.onError(it)
+                                },
+                                onComplete = { }
+                        )
+            } else {
+                zip(filesToSend, exportPath + zipName)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(
+                                onNext = {
+                                    if (PLog.pLogger.isDebuggable)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${zipName}", PLog.TYPE_INFO)
+
+                                    emitter.onNext(exportPath + zipName)
+                                },
+                                onError = {
+                                    if (!emitter.isDisposed)
+                                        emitter.onError(it)
+                                },
+                                onComplete = { }
+                        )
+            }
         }
     }
 

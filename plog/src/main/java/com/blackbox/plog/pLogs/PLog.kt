@@ -86,8 +86,15 @@ object PLog {
      * @param type the type
      * @return the logs
      */
-    fun getZippedLog(type: Int): Observable<String> {
-        return LogExporter.getZippedLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath)
+    fun getZippedLog(type: Int, exportDecrypted: Boolean): Observable<String> {
+
+        var isEncrypted = pLogger.encrypt
+
+        //If not encrypted
+        if (exportDecrypted && !pLogger.encrypt)
+            isEncrypted = false
+
+        return LogExporter.getZippedLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath, isEncrypted, pLogger.secretKey)
     }
 
     /**
@@ -97,8 +104,15 @@ object PLog {
      *
      * @return the String data
      */
-    fun getLoggedData(type: Int): Observable<String> {
-        return LogExporter.getLoggedData(type, logPath, outputPath, pLogger.encrypt, pLogger.secretKey)
+    fun getLoggedData(type: Int, exportDecrypted: Boolean): Observable<String> {
+
+        var isEncrypted = pLogger.encrypt
+
+        //If not encrypted
+        if (exportDecrypted && !pLogger.encrypt)
+            isEncrypted = false
+
+        return LogExporter.getLoggedData(type, logPath, outputPath, isEncrypted, pLogger.secretKey)
     }
 
     /**

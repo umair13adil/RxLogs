@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         //This must be initialized before calling PLog
         PLogBuilder()
                 .setLogsSavePath(logsPath)
-                .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
+                .setLogsExportPath(logsPath + File.separator + "PLogsOutput")
                 .debuggable(true)
                 .setLogFileExtension(".txt")
                 .setLogFormatType(LogFormatter.FORMAT_CURLY)
@@ -51,9 +51,9 @@ class MainActivity : AppCompatActivity() {
         //Each DataLogger builder can be used to log different data files
         val myLogs: DataLogger = DataLogBuilder()
                 .setLogsSavePath(logsPath)
-                .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
+                .setLogsExportPath(logsPath + File.separator + "DataLogsOutput")
                 .setLogFileName("myLogs.txt")
-                .setExportFileName("myLogsExported")
+                .setExportFileName("myLogsZipped")
                 .attachTimeStampToFiles(false)
                 .debuggable(true)
                 .enableEncryption(true) //Enable Encryption
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         export.setOnClickListener {
 
             //Will export PLogs
-            PLog.getZippedLog(PLog.LOG_TODAY)
+            PLog.getZippedLog(PLog.LOG_TODAY, false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                     )
 
             //Will Export custom data log
-            myLogs.getZippedLogs()
+            myLogs.getZippedLogs(false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
 
         printLogs.setOnClickListener {
 
-            PLog.getLoggedData(PLog.LOG_TODAY)
+            PLog.getLoggedData(PLog.LOG_TODAY, false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
                             onComplete = { }
                     )
 
-            myLogs.getLoggedData()
+            myLogs.getLoggedData(false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(

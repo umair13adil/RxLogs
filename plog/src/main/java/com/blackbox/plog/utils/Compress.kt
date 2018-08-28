@@ -41,12 +41,8 @@ fun zip(filesToSend: Array<File>, outputPath: String): Observable<Boolean> {
                     }
                 }
             }
+        } catch (e: Exception) {
 
-        } catch (e: IOException) {
-            e.printStackTrace()
-
-            if (!it.isDisposed)
-                it.onError(Throwable(e))
         }
 
         it.onNext(true)

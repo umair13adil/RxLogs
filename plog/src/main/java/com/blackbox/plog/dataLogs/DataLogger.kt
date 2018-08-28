@@ -51,8 +51,15 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      *
      * @return the logs
      */
-    fun getZippedLogs(): Observable<String> {
-        return DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug)
+    fun getZippedLogs(exportDecrypted: Boolean): Observable<String> {
+
+        var isEncrypted = encrypt
+
+        //If not encrypted
+        if (exportDecrypted && !encrypt)
+            isEncrypted = false
+
+        return DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
     }
 
     /**
@@ -62,8 +69,15 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      *
      * @return the String data
      */
-    fun getLoggedData(): Observable<String> {
-        return DataLogsExporter.getLoggedData(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, encrypt, secretKey)
+    fun getLoggedData(exportDecrypted: Boolean): Observable<String> {
+
+        var isEncrypted = encrypt
+
+        //If not encrypted
+        if (exportDecrypted && !encrypt)
+            isEncrypted = false
+
+        return DataLogsExporter.getLoggedData(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
     }
 
     init {

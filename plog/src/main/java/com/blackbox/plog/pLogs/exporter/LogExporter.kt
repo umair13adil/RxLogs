@@ -30,13 +30,14 @@ object LogExporter {
     internal var attachNoOfFiles = false
     internal var attachTimeStamp = false
 
-    fun getZippedLogs(type: Int, attachTimeStamp: Boolean, attachNoOfFiles: Boolean, logPath: String, exportFileName: String, exportPath: String): Observable<String> {
+    fun getZippedLogs(type: Int, attachTimeStamp: Boolean, attachNoOfFiles: Boolean, logPath: String, exportFileName: String, exportPath: String, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
 
-        LogExporter.logPath = logPath
-        LogExporter.exportFileName = logPath
-        LogExporter.exportPath = logPath
-        LogExporter.attachNoOfFiles = attachNoOfFiles
-        LogExporter.attachTimeStamp = attachTimeStamp
+        this.logPath = logPath
+        this.exportFileName = logPath
+        this.exportPath = logPath
+        this.attachNoOfFiles = attachNoOfFiles
+        this.attachTimeStamp = attachTimeStamp
+        this.zipName = "$exportFileName.zip"
 
         return Observable.create {
 
@@ -54,30 +55,49 @@ object LogExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            zip(filesToSend, exportPath + zipName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-                                if (PLog.pLogger.isDebuggable)
-                                    PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath$zipName", PLog.TYPE_INFO)
+            if (isEncrypted) {
+                decryptSaveFiles(filesToSend, secretKey, exportPath, zipName)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(
+                                onNext = {
+                                    if (PLog.pLogger.isDebuggable)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $zipName", PLog.TYPE_INFO)
 
-                                emitter.onNext(exportPath + zipName)
-                            },
-                            onError = {
-                                if (!emitter.isDisposed)
-                                    emitter.onError(it)
-                            },
-                            onComplete = { }
-                    )
+                                    emitter.onNext(it)
+                                },
+                                onError = {
+                                    if (!emitter.isDisposed)
+                                        emitter.onError(it)
+                                },
+                                onComplete = { }
+                        )
+            } else {
+                zip(filesToSend, exportPath + zipName)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeBy(
+                                onNext = {
+                                    if (PLog.pLogger.isDebuggable)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $zipName", PLog.TYPE_INFO)
+
+                                    emitter.onNext(exportPath + zipName)
+                                },
+                                onError = {
+                                    if (!emitter.isDisposed)
+                                        emitter.onError(it)
+                                },
+                                onComplete = { }
+                        )
+            }
         }
     }
 
     fun getLoggedData(type: Int, logPath: String, exportPath: String, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
 
-        LogExporter.logPath = logPath
-        LogExporter.exportFileName = logPath
-        LogExporter.exportPath = logPath
+        this.logPath = logPath
+        this.exportFileName = logPath
+        this.exportPath = logPath
 
         return Observable.create {
 
