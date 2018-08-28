@@ -19,15 +19,29 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 8. CSV support
 9. Custom timestamps support
 10. Custom data logging support with **'DataLogs'** logger.
+11. Encryption support added
 
 ### Usage:
 
 Add module to your project:
 
     dependencies {
-        implementation 'io.reactivex.rxjava2:rxandroid:2.0.1' //For RxJava
+    
+        //Rxjava Dependencies
+        implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+        implementation  'io.reactivex.rxjava2:rxkotlin:2.2.0'
+        
+        //PLogger
         implementation project(':plog')
     }
+
+###### Apply Encryption to Logs:
+To enable AES encryption, set following to builder:
+
+        .enableEncryption(true) //Enable Encryption
+        .setEncryptionKey("YOUR_ENCRYPTION_KEY") //Set Encryption Key
+        
+Key length should be greater than 32.
 
 ###### Apply Custom Formats:
 
@@ -55,9 +69,16 @@ File Name consists of: {Day} {Month} {Year} {Hour} Hours are in 24h format.
 ###### Time Stamp Format:
 
 Each log entry has timestamp associated with it. You can modify it's format. 
-By default it will be like this:
+There are multiple formats available to choose from
 
-    "dd MMMM yyyy hh:mm:ss a"
+        1.  TimeStampFormat.DATE_FORMAT_1 // "ddMMyyyy"
+        2.  TimeStampFormat.DATE_FORMAT_2 // "MM/dd/yyyy"
+        3.  TimeStampFormat.TIME_FORMAT_FULL_JOINED // "ddMMyyyy_kkmmss_a"
+        4.  TimeStampFormat.TIME_FORMAT_FULL_1 // "dd MMMM yyyy kk:mm:ss"
+        5.  TimeStampFormat.TIME_FORMAT_FULL_2 // "MM:dd:yyyy hh:mm:ss a"
+        6.  TimeStampFormat.TIME_FORMAT_24_FULL // "dd/MM/yyyy kk:mm:ss"
+        7.  TimeStampFormat.TIME_FORMAT_READABLE // "dd MMMM yyyy hh:mm:ss a"
+        8.  TimeStampFormat.TIME_FORMAT_SIMPLE // "kk:mm:ss"
 
 ###### Export Filters:
    
@@ -66,7 +87,7 @@ By default it will be like this:
     1. PLog.LOG_TODAY
     2. PLog.LOG_LAST_HOUR
     3. PLog.LOG_WEEK
-    4. PLog.LOG_LAST_TWO_DAYS
+    4. PLog.LOG_LAST_24_HOURS
     
 ###### Log Types:
 
@@ -78,32 +99,35 @@ You can use following Log Types to identify type:
 
 # Usage:
 
-## For PLogs:
+## Setup PLogs:
 
-    PLogBuilder()
-                .setLogsSavePath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest")
-                .setLogsExportPath(Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogTest" +   File.separator + "ZippedLogs")
-                .setExportFileName("MYFILENAME")
-                .attachNoOfFilesToFiles(false)
-                .attachTimeStampToFiles(false)
-                .setLogFormatType(LogFormatter.FORMAT_CURLY)
-                .debuggable(false)
-                .logSilently(false)
-                .setTimeStampFormat("DDMMYYYY")
-                .build()
+         val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
+        
+         PLogBuilder()
+                    .setLogsSavePath(logsPath)
+                    .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
+                    .debuggable(true)
+                    .setLogFileExtension(".txt")
+                    .setLogFormatType(LogFormatter.FORMAT_CURLY)
+                    .attachTimeStampToFiles(true)
+                    .setTimeStampFormat(TimeStampFormat.DATE_FORMAT_1)
+                    .enableEncryption(true) //Enable Encryption
+                    .setEncryptionKey("YOUR_ENCRYPTION_KEY") //Set Encryption Key
+                    .enabled(true)
+                    .build()
                 
-### To Log to File:
+### Log data to File:
     PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
     
-### To Clear Logs:
+### Clear Logs:
     PLog.clearLogs()
               
-### To Export Logs:    
+### Export Logs:    
 
     PLog.getLogs(PLog.LOG_TODAY)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeBy(  // named arguments for lambda Subscribers
+                        .subscribeBy(  
                                 onNext = {
                                     PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", PLog.TYPE_INFO)
                                     Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
@@ -114,13 +138,45 @@ You can use following Log Types to identify type:
                                 },
                                 onComplete = { }
                         )
-                
-## For Data Logs:
+                        
+### Print Logs: 
 
-                myLogs.logs
+        PLog.getLoggedData(PLog.LOG_TODAY)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribeBy(
+                                    onNext = {
+                                        Log.i("PLog", "$it")
+                                    },
+                                    onError = {
+                                        it.printStackTrace()
+                                        PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, PLog.TYPE_ERROR)
+                                    },
+                                    onComplete = { }
+                            )
+         
+## Setup DataLogger
+
+            val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
+            
+            val myLogs: DataLogger = DataLogBuilder()
+                            .setLogsSavePath(logsPath)
+                            .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
+                            .setLogFileName("myLogs.txt")
+                            .setExportFileName("myLogsExported")
+                            .attachTimeStampToFiles(false)
+                            .debuggable(true)
+                            .enableEncryption(true) //Enable Encryption
+                            .setEncryptionKey("YOUR_ENCRYPTION_KEY") //Set Encryption Key
+                            .enabled(true)
+                            .build()
+                
+### Export Logs:
+
+                myLogs.getZippedLogs()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeBy(  // named arguments for lambda Subscribers
+                        .subscribeBy(  
                                 onNext = {
                                     PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
                                     Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
@@ -131,8 +187,25 @@ You can use following Log Types to identify type:
                                 },
                                 onComplete = { }
                         )
+                        
+                                                
+### Print Logs: 
 
-### To Log to File:
+            myLogs.getLoggedData()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeBy(
+                                        onNext = {
+                                            Log.i("DataLog", "$it")
+                                        },
+                                        onError = {
+                                            it.printStackTrace()
+                                            PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, PLog.TYPE_ERROR)
+                                        },
+                                        onComplete = { }
+                                )
+
+### Log to custom file:
     
     //This Will append data to log file
     myLogs.appendToFile("Log: " + Math.random() + "\n");
@@ -140,25 +213,8 @@ You can use following Log Types to identify type:
     //This Will overwrite data to log file
     myLogs.overwriteToFile("Log: " + Math.random() + "\n");
     
-### To Clear Logs:
+### Clear Logs:
     myLogs.clearLogs()
-    
-### To Export Logs:  
-
-                myLogs.logs
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeBy(  // named arguments for lambda Subscribers
-                                onNext = {
-                                    PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
-                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
-                                },
-                                onError = {
-                                    it.printStackTrace()
-                                    PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, PLog.TYPE_ERROR)
-                                },
-                                onComplete = { }
-                        )
                 
                 
 ## MIT License
