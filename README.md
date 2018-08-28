@@ -124,7 +124,7 @@ You can use following Log Types to identify type:
               
 ### Export Logs:    
 
-    PLog.getLogs(PLog.LOG_TODAY)
+    PLog.getZippedLogs(PLog.LOG_TODAY, true) //Set true, if logs exported should be decrypted
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
@@ -160,7 +160,7 @@ You can use following Log Types to identify type:
             val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
             
             val myLogs: DataLogger = DataLogBuilder()
-                            .setLogsSavePath(logsPath)
+                            .setLogsSavePath(logsPath) 
                             .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
                             .setLogFileName("myLogs.txt")
                             .setExportFileName("myLogsExported")
@@ -173,7 +173,7 @@ You can use following Log Types to identify type:
                 
 ### Export Logs:
 
-                myLogs.getZippedLogs()
+                myLogs.getZippedLogs(true) //Set true, if logs exported should be decrypted
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
