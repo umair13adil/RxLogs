@@ -14,6 +14,8 @@ import com.blackbox.plog.dataLogs.models.DataLogBuilder
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
+import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.models.LogRequestType
 import com.blackbox.plog.pLogs.models.PLogBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 .setLogFileExtension(".txt")
                 .setLogFormatType(LogFormatter.FORMAT_CURLY)
                 .attachTimeStampToFiles(true)
+                .attachNoOfFilesToFiles(true)
                 .setTimeStampFormat(TimeStampFormat.DATE_FORMAT_1)
                 .enableEncryption(encryptLogs) //Enable Encryption
                 .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
@@ -53,9 +56,9 @@ class MainActivity : AppCompatActivity() {
         val myLogs: DataLogger = DataLogBuilder()
                 .setLogsSavePath(logsPath)
                 .setLogsExportPath(logsPath + File.separator + "DataLogsOutput")
-                .setLogFileName("myLogs.txt")
-                .setExportFileName("myLogsZipped")
-                .attachTimeStampToFiles(false)
+                .setLogFileName("SevereLogs.txt")
+                .setExportFileName("Errors")
+                .attachTimeStampToFiles(true)
                 .debuggable(true)
                 .enableEncryption(encryptLogs) //Enable Encryption
                 .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
@@ -67,9 +70,9 @@ class MainActivity : AppCompatActivity() {
         log_plog_event.setOnClickListener {
 
             if (editText.text.isEmpty()) {
-                PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+                PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
             } else {
-                PLog.logThis(TAG, "editTextData", editText.text.toString(), PLog.TYPE_INFO)
+                PLog.logThis(TAG, "editTextData", editText.text.toString(), LogLevel.INFO)
             }
         }
 
@@ -104,17 +107,17 @@ class MainActivity : AppCompatActivity() {
         //Will export PLogs
         export_plogs.setOnClickListener {
 
-            PLog.getZippedLog(PLog.LOG_TODAY, encryptLogs)
+            PLog.getZippedLog(LogRequestType.TODAY, encryptLogs)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
                             onNext = {
-                                PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", PLog.TYPE_INFO)
+                                PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
                                 Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
                             },
                             onError = {
                                 it.printStackTrace()
-                                PLog.logThis(TAG, "exportPLogs", "PLog Error: " + it.message, PLog.TYPE_ERROR)
+                                PLog.logThis(TAG, "exportPLogs", "PLog Error: " + it.message, LogLevel.ERROR)
                             },
                             onComplete = { }
                     )
@@ -129,21 +132,22 @@ class MainActivity : AppCompatActivity() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
                             onNext = {
-                                PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
+                                PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
                                 Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
                             },
                             onError = {
                                 it.printStackTrace()
-                                PLog.logThis(TAG, "exportDataLogs", "DataLogger Error: " + it.message, PLog.TYPE_ERROR)
+                                PLog.logThis(TAG, "exportDataLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
                             },
                             onComplete = { }
                     )
         }
 
+
         //Will print logged data in PLogs
         print_plogs.setOnClickListener {
 
-            PLog.getLoggedData(PLog.LOG_TODAY, true)
+            PLog.getLoggedData(LogRequestType.TODAY, true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -152,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                             },
                             onError = {
                                 it.printStackTrace()
-                                PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, PLog.TYPE_ERROR)
+                                PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, LogLevel.ERROR)
                             },
                             onComplete = { }
                     )
@@ -170,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                             },
                             onError = {
                                 it.printStackTrace()
-                                PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, PLog.TYPE_ERROR)
+                                PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
                             },
                             onComplete = { }
                     )
@@ -188,6 +192,11 @@ class MainActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     PERMISSION_CODE)
         }
+
+
+        //Uncomment this line to cause a crash
+        //throw (RuntimeException(Throwable("Error")))
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -197,9 +206,9 @@ class MainActivity : AppCompatActivity() {
 
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", PLog.TYPE_INFO)
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", LogLevel.INFO)
             } else {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", PLog.TYPE_WARNING)
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", LogLevel.WARNING)
             }
 
         }

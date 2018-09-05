@@ -1,7 +1,7 @@
 package com.blackbox.plog.pLogs.exporter
 
-import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FileFilter
+import com.blackbox.plog.pLogs.models.LogRequestType
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.DateTimeUtils
 import java.io.File
@@ -12,19 +12,19 @@ import java.io.File
 internal fun getFilesForRequestedType(type: Int): Pair<String, List<File>> {
     when (type) {
 
-        PLog.LOG_TODAY -> {
+        LogRequestType.TODAY.type -> {
             return getLogsForToday()
         }
 
-        PLog.LOG_LAST_HOUR -> {
+        LogRequestType.LAST_HOUR.type -> {
             return getLogsForLastHour()
         }
 
-        PLog.LOG_WEEK -> {
+        LogRequestType.WEEKS.type -> {
             return getLogsForWeek()
         }
 
-        PLog.LOG_LAST_24_HOURS -> {
+        LogRequestType.LAST_24_HOURS.type -> {
             return getLogsForLast24Hours()
         }
     }
@@ -40,10 +40,10 @@ private fun getLogsForToday(): Pair<String, List<File>> {
     val files = FileFilter.getFilesForToday(LogExporter.path)
 
     if (LogExporter.attachTimeStamp)
-        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_Today"
+        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + LogRequestType.TODAY.type
 
     if (LogExporter.attachNoOfFiles)
-        LogExporter.noOfFiles = "_[${LogExporter.files}]"
+        LogExporter.noOfFiles = "_[${LogExporter.files.second.size}]"
 
     val zipName = "${LogExporter.timeStamp}${LogExporter.noOfFiles}.zip"
 
@@ -58,10 +58,10 @@ private fun getLogsForLastHour(): Pair<String, List<File>> {
     val files = FileFilter.getFilesForLastHour(LogExporter.path)
 
     if (LogExporter.attachTimeStamp)
-        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_LastHour"
+        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + LogRequestType.LAST_HOUR.type
 
     if (LogExporter.attachNoOfFiles)
-        LogExporter.noOfFiles = "_[" + 1 + "]"
+        LogExporter.noOfFiles = "_[${LogExporter.files.second.size}]"
 
     val zipName = "${LogExporter.timeStamp}${LogExporter.noOfFiles}.zip"
 
@@ -75,10 +75,10 @@ private fun getLogsForWeek(): Pair<String, List<File>> {
     val files = FileFilter.getFilesForLastWeek(LogExporter.logPath)
 
     if (LogExporter.attachTimeStamp)
-        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_Week"
+        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + LogRequestType.WEEKS.type
 
     if (LogExporter.attachNoOfFiles)
-        LogExporter.noOfFiles = "_[" + 1 + "]"
+        LogExporter.noOfFiles = "_[${LogExporter.files.second.size}]"
 
     val zipName = "${LogExporter.timeStamp}${LogExporter.noOfFiles}.zip"
 
@@ -92,10 +92,10 @@ private fun getLogsForLast24Hours(): Pair<String, List<File>> {
     val files = FileFilter.getFilesForLast24Hours(LogExporter.logPath)
 
     if (LogExporter.attachTimeStamp)
-        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_Last24Hours"
+        LogExporter.timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + LogRequestType.LAST_24_HOURS.type
 
     if (LogExporter.attachNoOfFiles)
-        LogExporter.noOfFiles = "_[" + 1 + "]"
+        LogExporter.noOfFiles = "_[${LogExporter.files.second.size}]"
 
     val zipName = "${LogExporter.timeStamp}${LogExporter.noOfFiles}.zip"
 

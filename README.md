@@ -21,6 +21,7 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 9. Custom timestamps support
 10. Custom data logging support with **'DataLogs'** logger.
 11. Encryption support added
+12. Auto Log system crashes
 
 ### Usage:
 
@@ -83,20 +84,21 @@ There are multiple formats available to choose from
 
 ###### Export Filters:
    
-   Logs can be exported with following filters:
+   Logs can be exported with following request filters:
    
-    1. PLog.LOG_TODAY
-    2. PLog.LOG_LAST_HOUR
-    3. PLog.LOG_WEEK
-    4. PLog.LOG_LAST_24_HOURS
+    1.  LogRequestType.TODAY
+    2.  LogRequestType.LAST_HOUR,
+    3.  LogRequestType.WEEKS,
+    4.  LogRequestType.LAST_24_HOURS
     
 ###### Log Types:
 
 You can use following Log Types to identify type:
 
-    1. PLog.TYPE_INFO
-    2. PLog.TYPE_WARNING
-    3. PLog.TYPE_ERROR
+    1. LogLevel.INFO
+    2. LogLevel.WARNING
+    3. LogLevel.ERROR
+    4. LogLevel.SEVERE
 
 # Usage:
 
@@ -118,31 +120,36 @@ You can use following Log Types to identify type:
                     .build()
                 
 ### Log data to File:
-    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
+    
+### Log Exceptions to File:
+Both Exceptions & Throwable can be passed to logger.
+
+    PLog.logExc(TAG, "uncaughtException", e, LogLevel.ERROR)
     
 ### Clear Logs:
     PLog.clearLogs()
               
 ### Export Logs:    
 
-    PLog.getZippedLogs(PLog.LOG_TODAY, true) //Set true, if logs exported should be decrypted
+    PLog.getZippedLogs(LogRequestType.TODAY, true) //Set true, if logs exported should be decrypted
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
                                 onNext = {
-                                    PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", PLog.TYPE_INFO)
+                                    PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
                                     Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
                                 },
                                 onError = {
                                     it.printStackTrace()
-                                    PLog.logThis(TAG, "exportPLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                                    PLog.logThis(TAG, "exportPLogs", "Error: " + it.message, LogLevel.ERROR)
                                 },
                                 onComplete = { }
                         )
                         
 ### Print Logs: 
 
-        PLog.getLoggedData(PLog.LOG_TODAY)
+        PLog.getLoggedData(LogRequestType.TODAY)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeBy(
@@ -151,7 +158,7 @@ You can use following Log Types to identify type:
                                     },
                                     onError = {
                                         it.printStackTrace()
-                                        PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, PLog.TYPE_ERROR)
+                                        PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, LogLevel.ERROR)
                                     },
                                     onComplete = { }
                             )
@@ -179,12 +186,12 @@ You can use following Log Types to identify type:
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
                                 onNext = {
-                                    PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", PLog.TYPE_INFO)
+                                    PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
                                     Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
                                 },
                                 onError = {
                                     it.printStackTrace()
-                                    PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, PLog.TYPE_ERROR)
+                                    PLog.logThis(TAG, "exportDataLogs", "Error: " + it.message, LogLevel.ERROR)
                                 },
                                 onComplete = { }
                         )
@@ -201,7 +208,7 @@ You can use following Log Types to identify type:
                                         },
                                         onError = {
                                             it.printStackTrace()
-                                            PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, PLog.TYPE_ERROR)
+                                            PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
                                         },
                                         onComplete = { }
                                 )
@@ -217,6 +224,33 @@ You can use following Log Types to identify type:
 ### Clear Logs:
     myLogs.clearLogs()
                 
+                
+## Auto Log System Crashes
+
+Add this to onCreate of Application class to auto catch system crashes. This also works with Crashlytics.
+Source Medium Article: [Hide your crashes gracefully (and still report them)](https://proandroiddev.com/hide-your-crashes-gracefully-and-still-report-them-9b1c85b25875)
+
+        class MainApplication : Application() {
+        
+            override fun onCreate() {
+                super.onCreate()
+        
+                setupCrashHandler()
+            }
+        
+            private fun setupCrashHandler() {
+                val systemHandler = Thread.getDefaultUncaughtExceptionHandler()
+                
+                Thread.setDefaultUncaughtExceptionHandler { t, e -> /* do something here */ }
+                
+                Fabric.with(this, Crashlytics())
+        
+                val fabricExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+                
+                Thread.setDefaultUncaughtExceptionHandler(AppExceptionHandler(systemHandler, fabricExceptionHandler, this))
+            }
+        
+        }
                 
 ## MIT License
 

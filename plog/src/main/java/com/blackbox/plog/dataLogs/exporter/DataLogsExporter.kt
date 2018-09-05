@@ -4,6 +4,7 @@ import com.blackbox.plog.dataLogs.filter.DataLogsFilter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
@@ -23,6 +24,10 @@ object DataLogsExporter {
     private var exportPath = ""
     private var attachTimeStamp = false
 
+
+    /*
+     * Will filter & export log files to zip package.
+     */
     fun getDataLogs(logFileName: String, attachTimeStamp: Boolean, logPath: String, exportFileName: String, exportPath: String, debug: Boolean, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
 
         this.logPath = logPath
@@ -36,7 +41,7 @@ object DataLogsExporter {
 
             FilterUtils.prepareOutputFile(exportPath)
 
-            val files = composeDataExportFileName(logFileName, debug)
+            val files = composeDataExportFileName(logFileName, debug, exportFileName)
 
             //First entry is Zip Name
             this.exportFileName = files.first
@@ -50,13 +55,13 @@ object DataLogsExporter {
             }
 
             if (isEncrypted) {
-                decryptSaveFiles(filesToSend, secretKey, exportPath, exportFileName)
+                decryptSaveFiles(filesToSend, secretKey, exportPath, this.exportFileName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
-                                    if (PLog.pLogger.isDebuggable)
-                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: ${exportFileName}", PLog.TYPE_INFO)
+                                    if (PLog.getPLogger()?.isDebuggable!!)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: ${exportFileName}", LogLevel.INFO)
 
                                     emitter.onNext(it)
                                 },
@@ -67,13 +72,13 @@ object DataLogsExporter {
                                 onComplete = { }
                         )
             } else {
-                zip(filesToSend, exportPath + exportFileName)
+                zip(filesToSend, exportPath + this.exportFileName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
-                                    if (PLog.pLogger.isDebuggable)
-                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${exportFileName}", PLog.TYPE_INFO)
+                                    if (PLog.getPLogger()?.isDebuggable!!)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${exportFileName}", LogLevel.INFO)
 
                                     emitter.onNext(exportPath + exportFileName)
                                 },
@@ -87,6 +92,9 @@ object DataLogsExporter {
         }
     }
 
+    /*
+    * Will return logged data in log files.
+    */
     fun getLoggedData(logFileName: String, attachTimeStamp: Boolean, logPath: String, exportFileName: String, exportPath: String, debug: Boolean, isEncrypted: Boolean, secretKey: SecretKey?): Observable<String> {
 
         this.logPath = logPath
@@ -98,7 +106,7 @@ object DataLogsExporter {
 
             val emitter = it
 
-            val files = composeDataExportFileName(logFileName, debug)
+            val files = composeDataExportFileName(logFileName, debug, exportFileName)
 
             if (files.second.isEmpty()) {
                 if (!emitter.isDisposed)
@@ -124,16 +132,18 @@ object DataLogsExporter {
         }
     }
 
-    private fun composeDataExportFileName(logFileName: String, debug: Boolean): Pair<String, List<File>> {
+    /*
+     * Will compose file name of zip file to be exported.
+     */
+    private fun composeDataExportFileName(logFileName: String, debug: Boolean, exportFileName: String): Pair<String, List<File>> {
         var timeStamp = ""
-        val noOfFiles = ""
 
         val files = DataLogsFilter.getFilesForLogName(logPath, exportPath, logFileName, debug)
 
         if (attachTimeStamp)
             timeStamp = "_" + DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis())
 
-        val zipName = "$exportFileName$timeStamp$noOfFiles.zip"
+        val zipName = "$exportFileName$timeStamp.zip"
 
         return Pair(zipName, files)
     }

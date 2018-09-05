@@ -64,12 +64,7 @@ class DataLogBuilder {
      * @return the export file name
      */
     fun setExportFileName(fileName: String): DataLogBuilder {
-
-        if (!fileName.contains(".zip"))
-            this.exportFileName = "$fileName.zip"
-        else
-            this.exportFileName = fileName
-
+        this.exportFileName = fileName
         return this
     }
 

@@ -8,6 +8,8 @@ import android.util.Log
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
+import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.models.LogRequestType
 import com.blackbox.plog.pLogs.models.PLogger
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
@@ -17,19 +19,8 @@ object PLog {
 
     private val TAG = PLog::class.java.simpleName
 
-    lateinit var pLogger: PLogger
-
-    //Log Filters
-    val LOG_TODAY = 1
-    val LOG_LAST_HOUR = 2
-    val LOG_WEEK = 3
-    val LOG_LAST_24_HOURS = 4
-
-    //Log Types
-    val TYPE_INFO = "Info"
-    val TYPE_ERROR = "Error"
-    val TYPE_WARNING = "Warning"
-
+    @JvmStatic
+    private var pLogger: PLogger = PLogger()
 
     /**
      * Gets output path.
@@ -38,7 +29,7 @@ object PLog {
      *
      * @return the output path
      */
-    val outputPath: String
+    internal val outputPath: String
         get() = pLogger.exportPath + File.separator
 
     /**
@@ -55,6 +46,10 @@ object PLog {
         pLogger = pLog
     }
 
+    internal fun getPLogger(): PLogger? {
+        return pLogger
+    }
+
     /**
      * Log this.
      *
@@ -65,16 +60,62 @@ object PLog {
      * @param text         the text
      * @param type         the type
      */
-    fun logThis(className: String, functionName: String, text: String, type: String) {
+    fun logThis(className: String, functionName: String, text: String, type: LogLevel) {
 
         //Do nothing if logs are disabled
         if (!pLogger.enabled)
             return
 
         if (pLogger.encrypt) {
-            writeEncryptedLogs(className, functionName, text, type)
+            writeEncryptedLogs(className, functionName, text, type.level)
         } else {
-            writeSimpleLogs(className, functionName, text, type)
+            writeSimpleLogs(className, functionName, text, type.level)
+        }
+    }
+
+    /**
+     * Log Exception.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
+     * @param functionName the function name
+     * @param e             Exception
+     * @param type         the type
+     */
+    fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel) {
+
+        //Do nothing if logs are disabled
+        if (!pLogger.enabled)
+            return
+
+        if (pLogger.encrypt) {
+            writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+        } else {
+            writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+        }
+    }
+
+    /**
+     * Log Exception.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
+     * @param functionName the function name
+     * @param e             Exception
+     * @param type         the type
+     */
+    fun logExc(className: String, functionName: String, e: Exception, type: LogLevel) {
+
+        //Do nothing if logs are disabled
+        if (!pLogger.enabled)
+            return
+
+        if (pLogger.encrypt) {
+            writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+        } else {
+            writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
         }
     }
 
@@ -86,7 +127,7 @@ object PLog {
      * @param type the type
      * @return the logs
      */
-    fun getZippedLog(type: Int, exportDecrypted: Boolean): Observable<String> {
+    fun getZippedLog(type: LogRequestType, exportDecrypted: Boolean): Observable<String> {
 
         val isEncrypted: Boolean
 
@@ -96,7 +137,7 @@ object PLog {
         else
             isEncrypted = exportDecrypted
 
-        return LogExporter.getZippedLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath, isEncrypted, pLogger.secretKey)
+        return LogExporter.getZippedLogs(type.type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath, isEncrypted, pLogger.secretKey)
     }
 
     /**
@@ -106,7 +147,7 @@ object PLog {
      *
      * @return the String data
      */
-    fun getLoggedData(type: Int, printDecrypted: Boolean): Observable<String> {
+    fun getLoggedData(type: LogRequestType, printDecrypted: Boolean): Observable<String> {
 
         val isEncrypted: Boolean
 
@@ -116,7 +157,7 @@ object PLog {
         else
             isEncrypted = printDecrypted
 
-        return LogExporter.getLoggedData(type, logPath, outputPath, isEncrypted, pLogger.secretKey)
+        return LogExporter.getLoggedData(type.type, logPath, outputPath, isEncrypted, pLogger.secretKey)
     }
 
     /**

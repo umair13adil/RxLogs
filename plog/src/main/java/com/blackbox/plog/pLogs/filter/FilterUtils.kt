@@ -30,7 +30,7 @@ object FilterUtils {
         for (i in files.indices) {
             val fileHour = extractHour(files[i].name)
 
-            if (PLog.pLogger.isDebuggable)
+            if (PLog.getPLogger()?.isDebuggable!!)
                 Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
             if (fileHour == lastHour) {

@@ -276,7 +276,7 @@ class PLogBuilder {
 
     fun build(): PLogger {
         val pLogger = PLogger(savePath, exportPath, exportFileName, attachTimeStamp, attachNoOfFiles, formatType, customFormatOpen, customFormatClose, csvDeliminator, debug, timeStampFormat, logFileExtension, silentLogs, encrypt, encryptionKey, enabled)
-        PLog.pLogger = pLogger
+        PLog.setPLogger(pLogger)
 
         //Initializes Encryption Key
         setupEncryption(pLogger)

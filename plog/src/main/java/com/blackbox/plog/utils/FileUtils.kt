@@ -39,5 +39,5 @@ fun setupFilePaths(path: String): String {
     Utils.instance.createDirIfNotExists(folderPath)
 
     val fileName_raw = DateControl.instance.today + DateControl.instance.hour
-    return folderPath + File.separator + fileName_raw + PLog.pLogger.logFileExtension
+    return folderPath + File.separator + fileName_raw + PLog.getPLogger()?.logFileExtension!!
 }

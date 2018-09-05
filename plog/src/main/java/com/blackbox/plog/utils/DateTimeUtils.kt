@@ -37,7 +37,7 @@ object DateTimeUtils {
         if (n < 1 || n > 31) {
             throw IllegalArgumentException("Illegal day of month")
         }
-        if (n >= 11 && n <= 13) {
+        if (n in 11..13) {
             return "th"
         }
         when (n % 10) {

@@ -159,14 +159,6 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
 
     private fun setupPaths(): String {
         Utils.instance.createDirIfNotExists(logPath)
-
-        var fileName_raw = ""
-
-        if (attachTimeStamp)
-            fileName_raw = DateControl.instance.today + DateControl.instance.hour + "_" + logFileName
-        else
-            fileName_raw = logFileName
-
-        return logPath + File.separator + fileName_raw
+        return logPath + File.separator + logFileName
     }
 }
