@@ -6,6 +6,7 @@
 All logs are saved to files in storage path provided. These logs are helpful when developer wants to analyze user activities within the app. A new log file is created every hour on a user event. These logs can be filtered and sorted easily. Logs can easily be exported as zip file base on filter type. This zip file can be uploaded to server easily. PLogs also provide functionality to log separate data logs. These logs can be for a specific event with the app. For example they can be used to log location events of users, so that file will only contain location logs.
 
 ![Alt text](pictures/feature.png?raw=true "Icon")
+![Image1](pictures/picture1.png)
 
 ### Features:
 
