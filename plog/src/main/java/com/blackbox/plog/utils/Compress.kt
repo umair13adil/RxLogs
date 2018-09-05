@@ -11,7 +11,7 @@ import java.io.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-fun zip(filesToSend: Array<File>, outputPath: String): Observable<Boolean> {
+fun zip(filesToSend: List<File>, outputPath: String): Observable<Boolean> {
 
     return Observable.create {
 
@@ -42,7 +42,7 @@ fun zip(filesToSend: Array<File>, outputPath: String): Observable<Boolean> {
                 }
             }
         } catch (e: Exception) {
-
+            e.printStackTrace()
         }
 
         it.onNext(true)

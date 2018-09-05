@@ -12,7 +12,7 @@ import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.crypto.SecretKey
 
-fun decryptSaveFiles(filesToSend: Array<File>, secretKey: SecretKey?, exportPath: String, exportFileName: String): Observable<String> {
+fun decryptSaveFiles(filesToSend: List<File>, secretKey: SecretKey?, exportPath: String, exportFileName: String): Observable<String> {
 
     return Observable.create {
         val emitter = it
@@ -29,17 +29,18 @@ fun decryptSaveFiles(filesToSend: Array<File>, secretKey: SecretKey?, exportPath
         }
 
         val outputDirectory = File(tempPath)
-        val decryptedFiles = outputDirectory.listFiles()
+        val decryptedFiles = outputDirectory.listFiles().toList()
 
         if (decryptedFiles.isNotEmpty()) {
 
-            zip(decryptedFiles, exportFileName)
+            zip(decryptedFiles, exportPath + exportFileName)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .delay(5000, TimeUnit.MILLISECONDS)
                     .subscribeBy(
                             onNext = {
                                 emitter.onNext(exportFileName)
+                                File(tempPath).deleteRecursively() //delete temp file after zip is completed
                             },
                             onError = {
                                 if (!emitter.isDisposed)

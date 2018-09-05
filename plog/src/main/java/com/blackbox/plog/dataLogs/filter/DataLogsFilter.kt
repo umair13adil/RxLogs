@@ -1,15 +1,13 @@
 package com.blackbox.plog.dataLogs.filter
 
-import android.util.Log
-import com.blackbox.plog.pLogs.filter.FileFilter
-import com.blackbox.plog.utils.Utils
 import java.io.File
 
-object DataLogsFilter{
+object DataLogsFilter {
 
-    fun getFilesForLogName(logsPath: String, outputPath: String, logFileName: String, debug: Boolean): Int {
+    fun getFilesForLogName(logsPath: String, outputPath: String, logFileName: String, debug: Boolean): List<File> {
 
         var size = 0
+        val listOfFiles = arrayListOf<File>()
 
         val directory = File(logsPath)
         val files = directory.listFiles()
@@ -22,11 +20,11 @@ object DataLogsFilter{
 
                 for (i in files.indices) {
                     if (files[i].name.contains(logFileName))
-                        Utils.instance.copyFile(logsPath, files[i].name, outputPath)
+                        listOfFiles.add(files[i])
                 }
             }
         }
 
-        return size
+        return listOfFiles
     }
 }

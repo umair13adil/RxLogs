@@ -12,7 +12,7 @@ import javax.crypto.SecretKey
 
 class PLogger {
 
-    private val TAG = PLogger::class.java.simpleName
+    private val TAG = "PLogger"
 
     internal var savePath: String = Environment.getExternalStorageDirectory().toString() + File.separator + TAG
     internal var exportPath: String = Environment.getExternalStorageDirectory().toString() + File.separator + TAG

@@ -4,7 +4,6 @@ import com.blackbox.plog.dataLogs.filter.DataLogsFilter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
-import com.blackbox.plog.pLogs.filter.FilterUtils.clearOutputFiles
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
@@ -37,10 +36,13 @@ object DataLogsExporter {
 
             FilterUtils.prepareOutputFile(exportPath)
 
-            val zipName = composeDataExportFileName(logFileName, debug)
+            val files = composeDataExportFileName(logFileName, debug)
 
-            val outputDirectory = File(exportPath)
-            val filesToSend = outputDirectory.listFiles()
+            //First entry is Zip Name
+            this.exportFileName = files.first
+
+            //Get list of all copied files from output directory
+            val filesToSend = files.second
 
             if (filesToSend.isEmpty()) {
                 if (!emitter.isDisposed)
@@ -48,13 +50,13 @@ object DataLogsExporter {
             }
 
             if (isEncrypted) {
-                decryptSaveFiles(filesToSend, secretKey, exportPath, exportPath + zipName)
+                decryptSaveFiles(filesToSend, secretKey, exportPath, exportFileName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
                                     if (PLog.pLogger.isDebuggable)
-                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: ${zipName}", PLog.TYPE_INFO)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: ${exportFileName}", PLog.TYPE_INFO)
 
                                     emitter.onNext(it)
                                 },
@@ -65,15 +67,15 @@ object DataLogsExporter {
                                 onComplete = { }
                         )
             } else {
-                zip(filesToSend, exportPath + zipName)
+                zip(filesToSend, exportPath + exportFileName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
                                     if (PLog.pLogger.isDebuggable)
-                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${zipName}", PLog.TYPE_INFO)
+                                        PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${exportFileName}", PLog.TYPE_INFO)
 
-                                    emitter.onNext(exportPath + zipName)
+                                    emitter.onNext(exportPath + exportFileName)
                                 },
                                 onError = {
                                     if (!emitter.isDisposed)
@@ -96,46 +98,43 @@ object DataLogsExporter {
 
             val emitter = it
 
-            FilterUtils.prepareOutputFile(exportPath)
+            val files = composeDataExportFileName(logFileName, debug)
 
-            composeDataExportFileName(logFileName, debug)
-
-            val outputDirectory = File(exportPath)
-            val filesToSend = outputDirectory.listFiles()
-
-            if (filesToSend.isEmpty()) {
+            if (files.second.isEmpty()) {
                 if (!emitter.isDisposed)
                     emitter.onError(Throwable("No data log files found to read!"))
             }
 
-            for (f in filesToSend) {
-                emitter.onNext("...................................................\n")
-                f.forEachLine {
-                    if (isEncrypted) {
-                        emitter.onNext(readFileDecrypted(secretKey!!, f.absolutePath))
-                    } else {
+            for (f in files.second) {
+                emitter.onNext("Start...................................................\n")
+                emitter.onNext("File: ${f.name} Start..\n")
+
+                if (isEncrypted) {
+                    emitter.onNext(readFileDecrypted(secretKey!!, f.absolutePath))
+                } else {
+                    f.forEachLine {
                         emitter.onNext(it)
                     }
                 }
-                emitter.onNext("...................................................\n")
-            }
 
-            //Clear output files after reading
-            clearOutputFiles(exportPath)
+                emitter.onNext("...................................................End\n")
+            }
 
             emitter.onComplete()
         }
     }
 
-    private fun composeDataExportFileName(logFileName: String, debug: Boolean): String {
+    private fun composeDataExportFileName(logFileName: String, debug: Boolean): Pair<String, List<File>> {
         var timeStamp = ""
         val noOfFiles = ""
 
-        DataLogsFilter.getFilesForLogName(logPath, exportPath, logFileName, debug)
+        val files = DataLogsFilter.getFilesForLogName(logPath, exportPath, logFileName, debug)
 
         if (attachTimeStamp)
             timeStamp = "_" + DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis())
 
-        return "$exportFileName$timeStamp$noOfFiles.zip"
+        val zipName = "$exportFileName$timeStamp$noOfFiles.zip"
+
+        return Pair(zipName, files)
     }
 }

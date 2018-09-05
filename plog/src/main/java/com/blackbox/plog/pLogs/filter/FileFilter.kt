@@ -4,7 +4,6 @@ import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.DateTimeUtils
-import com.blackbox.plog.utils.Utils
 import java.io.File
 
 /**
@@ -17,39 +16,25 @@ internal object FileFilter {
     /*
      * Filter files by 'Today'.
      */
-    fun getFilesForToday(folderPath: String): Int {
-
-        var size = 0
-
-        val outputPath = PLog.outputPath
+    fun getFilesForToday(folderPath: String): List<File> {
         val directory = File(folderPath)
-        val files = directory.listFiles()
-
-        if (files != null && files.isNotEmpty()) {
-
-            size = files.size
-
-            if (files.isNotEmpty()) {
-
-                for (i in files.indices) {
-                    Utils.instance.copyFile(folderPath, files[i].name, outputPath)
-                }
-            }
-        }
-
-        return size
+        val list = directory.listFiles()
+        return list.asList()
     }
+
 
     /*
      * Filter files by '24Hours'.
      */
-    fun getFilesForLast24Hours(folderPath: String) {
+    fun getFilesForLast24Hours(folderPath: String): List<File> {
 
         val today = Integer.parseInt(DateControl.instance.currentDate)
         val lastDay = Integer.parseInt(DateControl.instance.lastDay)
 
         val directory = File(folderPath)
         val files = directory.listFiles()
+
+        val lisOfFiles = arrayListOf<File>()
 
         if (files != null) {
             for (file in files) {
@@ -62,24 +47,27 @@ internal object FileFilter {
 
                         if (lastDay < today) {
                             if (day <= today && day >= lastDay) {
-                                getFilesForToday(file.path)
+                                lisOfFiles.addAll(getFilesForToday(file.path))
                             }
                         } else {
                             if (day <= today) {
-                                getFilesForToday(file.path)
+                                lisOfFiles.addAll(getFilesForToday(file.path))
                             }
                         }
                     }
                 }
             }
         }
+
+        return lisOfFiles
     }
 
     /*
      * Filter files by 'Week'.
      */
-    fun getFilesForLastWeek(folderPath: String) {
+    fun getFilesForLastWeek(folderPath: String): List<File> {
 
+        val lisOfFiles = arrayListOf<File>()
         val listOfDates = DateTimeUtils.getDatesBetween()
 
         if (PLog.pLogger.isDebuggable)
@@ -93,32 +81,41 @@ internal object FileFilter {
                 val files = dateDirectory.listFiles()
 
                 for (file in files) {
-                    getFilesForToday(file.path)
+                    lisOfFiles.addAll(getFilesForToday(file.path))
                 }
             }
         }
+
+        return lisOfFiles
     }
 
     /*
      * Filter files by 'Hour'.
      */
-    fun getFilesForLastHour(folderPath: String) {
+    fun getFilesForLastHour(folderPath: String): List<File> {
 
+        val lisOfFiles = arrayListOf<File>()
         val directory = File(folderPath)
         val files = directory.listFiles()
 
-        var lastHour = Integer.parseInt(DateControl.instance.hour) - 1
+        val lastHour = Integer.parseInt(DateControl.instance.hour) - 1
 
         if (files.isNotEmpty()) {
 
-            val found = FilterUtils.filterFile(folderPath, files, lastHour)
+            for (i in files.indices) {
+                val fileHour = FilterUtils.extractHour(files[i].name)
 
-            if (!found) {
-                lastHour = Integer.parseInt(DateControl.instance.hour)
-                FilterUtils.filterFile(folderPath, files, lastHour)
+                if (PLog.pLogger.isDebuggable)
+                    Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
+
+                if (fileHour == lastHour) {
+                    lisOfFiles.add(files[i])
+                }
             }
 
         }
+
+        return lisOfFiles
     }
 
 }

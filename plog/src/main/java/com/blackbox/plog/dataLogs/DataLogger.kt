@@ -58,6 +58,8 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
         //If not encrypted
         if (exportDecrypted && !encrypt)
             isEncrypted = false
+        else
+            isEncrypted = exportDecrypted
 
         return DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
     }
@@ -69,13 +71,15 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      *
      * @return the String data
      */
-    fun getLoggedData(exportDecrypted: Boolean): Observable<String> {
+    fun getLoggedData(printDecrypted: Boolean): Observable<String> {
 
-        var isEncrypted = encrypt
+        val isEncrypted: Boolean
 
         //If not encrypted
-        if (exportDecrypted && !encrypt)
+        if (printDecrypted && !encrypt)
             isEncrypted = false
+        else
+            isEncrypted = printDecrypted
 
         return DataLogsExporter.getLoggedData(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
     }
@@ -145,7 +149,7 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      * @return the boolean
      */
     fun clearLogs() {
-        Utils.instance.deleteDir(File(logPath))
+        File(logPath).deleteRecursively()
     }
 
     companion object {

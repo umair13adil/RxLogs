@@ -88,11 +88,13 @@ object PLog {
      */
     fun getZippedLog(type: Int, exportDecrypted: Boolean): Observable<String> {
 
-        var isEncrypted = pLogger.encrypt
+        val isEncrypted: Boolean
 
         //If not encrypted
         if (exportDecrypted && !pLogger.encrypt)
             isEncrypted = false
+        else
+            isEncrypted = exportDecrypted
 
         return LogExporter.getZippedLogs(type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath, isEncrypted, pLogger.secretKey)
     }
@@ -104,13 +106,15 @@ object PLog {
      *
      * @return the String data
      */
-    fun getLoggedData(type: Int, exportDecrypted: Boolean): Observable<String> {
+    fun getLoggedData(type: Int, printDecrypted: Boolean): Observable<String> {
 
-        var isEncrypted = pLogger.encrypt
+        val isEncrypted: Boolean
 
         //If not encrypted
-        if (exportDecrypted && !pLogger.encrypt)
+        if (printDecrypted && !pLogger.encrypt)
             isEncrypted = false
+        else
+            isEncrypted = printDecrypted
 
         return LogExporter.getLoggedData(type, logPath, outputPath, isEncrypted, pLogger.secretKey)
     }
@@ -120,7 +124,7 @@ object PLog {
      *
      */
     fun clearLogs() {
-        Utils.instance.deleteDir(File(PLog.logPath))
+        File(PLog.logPath).deleteRecursively()
     }
 
     /*

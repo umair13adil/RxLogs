@@ -24,8 +24,9 @@ import java.io.File
 class MainActivity : AppCompatActivity() {
 
     val TAG: String = MainActivity::class.java.simpleName
-    var PERMISSION_CODE = 9234;
+    var PERMISSION_CODE = 9234
     var ENCRYPTION_KEY = "23233526436245232364264262343243"
+    var encryptLogs = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                 .setLogFormatType(LogFormatter.FORMAT_CURLY)
                 .attachTimeStampToFiles(true)
                 .setTimeStampFormat(TimeStampFormat.DATE_FORMAT_1)
-                .enableEncryption(true) //Enable Encryption
+                .enableEncryption(encryptLogs) //Enable Encryption
                 .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
                 .enabled(true)
                 .build()
@@ -56,31 +57,39 @@ class MainActivity : AppCompatActivity() {
                 .setExportFileName("myLogsZipped")
                 .attachTimeStampToFiles(false)
                 .debuggable(true)
-                .enableEncryption(true) //Enable Encryption
+                .enableEncryption(encryptLogs) //Enable Encryption
                 .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
                 .enabled(true)
                 .build()
 
 
-        //Check read write permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        //Will log to PLogs
+        log_plog_event.setOnClickListener {
 
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    PERMISSION_CODE);
+            if (editText.text.isEmpty()) {
+                PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+            } else {
+                PLog.logThis(TAG, "editTextData", editText.text.toString(), PLog.TYPE_INFO)
+            }
         }
 
+        //Will Log to custom data logs, in Log File name & path provided in Builder
+        log_data_log_event.setOnClickListener {
 
-        button.setOnClickListener {
+            var dataToLog = ""
 
-            //Will log to PLogs
-            PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), PLog.TYPE_INFO)
+            if (editText.text.isEmpty()) {
+                dataToLog = "Log: " + Math.random() + "\n"
+                myLogs.appendToFile(dataToLog)
+            } else {
+                dataToLog = editText.text.toString() + "\n"
+                myLogs.appendToFile(dataToLog)
+            }
 
-            //Will Log to custom data logs, in Log File name & path provided in Builder
-            myLogs.appendToFile("Log: " + Math.random() + "\n");
+            Log.i(TAG, "Data Logged: $dataToLog")
         }
 
+        //Will delete all Logs
         delete.setOnClickListener {
 
             //Will clear All PLogs
@@ -92,10 +101,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
 
-        export.setOnClickListener {
+        //Will export PLogs
+        export_plogs.setOnClickListener {
 
-            //Will export PLogs
-            PLog.getZippedLog(PLog.LOG_TODAY, false)
+            PLog.getZippedLog(PLog.LOG_TODAY, encryptLogs)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -109,9 +118,13 @@ class MainActivity : AppCompatActivity() {
                             },
                             onComplete = { }
                     )
+        }
 
-            //Will Export custom data log
-            myLogs.getZippedLogs(false)
+
+        //Will Export custom data log
+        export_data_logs.setOnClickListener {
+
+            myLogs.getZippedLogs(encryptLogs)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -127,9 +140,10 @@ class MainActivity : AppCompatActivity() {
                     )
         }
 
-        printLogs.setOnClickListener {
+        //Will print logged data in PLogs
+        print_plogs.setOnClickListener {
 
-            PLog.getLoggedData(PLog.LOG_TODAY, false)
+            PLog.getLoggedData(PLog.LOG_TODAY, true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -142,8 +156,12 @@ class MainActivity : AppCompatActivity() {
                             },
                             onComplete = { }
                     )
+        }
 
-            myLogs.getLoggedData(false)
+        //Will print logged data in DataLogs
+        print_data_logs.setOnClickListener {
+
+            myLogs.getLoggedData(true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -156,6 +174,19 @@ class MainActivity : AppCompatActivity() {
                             },
                             onComplete = { }
                     )
+        }
+
+        switch1.setOnCheckedChangeListener { compoundButton, b ->
+            encryptLogs = b
+        }
+
+        //Check read write permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERMISSION_CODE)
         }
     }
 

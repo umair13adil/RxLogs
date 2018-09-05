@@ -8,18 +8,28 @@ import java.security.spec.InvalidKeySpecException
 import javax.crypto.*
 import javax.crypto.spec.SecretKeySpec
 
+//Algorithm type used for encryption & decryption
+private const val ALGORITHM = "AES/ECB/PKCS5Padding"
 
+/*
+ * This will validate key length.
+ */
 fun checkIfKeyValid(encKey: String): String {
 
     if (encKey.isEmpty())
         throw(Throwable("Invalid key provided. Can not encrypt with empty key."))
 
-    if (encKey.length < 32)
-        throw(Throwable("Invalid key size. Size should be 32 at-least."))
+    var key = encKey
+    if (key.length < 32) {
+        key = encKey.padStart(32, '0') //If length of key is less than 32 then key will be padded with '0's
+    }
 
-    return encKey.substring(0, 32)
+    return key
 }
 
+/*
+ * This will generate secret key for encryption.
+ */
 @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
 fun generateKey(encKey: String): SecretKey {
     val salt = checkIfKeyValid(encKey)
@@ -27,13 +37,16 @@ fun generateKey(encKey: String): SecretKey {
     return SecretKeySpec(key, "AES")
 }
 
+/*
+ * This will read encrypted file & output decrypted 'String' data.
+ */
 @SuppressLint("GetInstance")
 fun readFileDecrypted(key: SecretKey, filePath: String): String {
     var data = ""
 
     try {
 
-        val aes2 = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val aes2 = Cipher.getInstance(ALGORITHM)
         aes2.init(Cipher.DECRYPT_MODE, key)
 
         val fis = FileInputStream(filePath)
@@ -58,10 +71,13 @@ fun readFileDecrypted(key: SecretKey, filePath: String): String {
     return data
 }
 
+/*
+ * This will append 'String' data to file after encrypting it.
+ */
 @SuppressLint("GetInstance")
 fun appendToFileEncrypted(data: String, key: SecretKey, filePath: String) {
     try {
-        val aes = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val aes = Cipher.getInstance(ALGORITHM)
         aes.init(Cipher.ENCRYPT_MODE, key)
         val fs = FileOutputStream(File(filePath), true)
         val out = CipherOutputStream(fs, aes)
@@ -83,10 +99,13 @@ fun appendToFileEncrypted(data: String, key: SecretKey, filePath: String) {
     }
 }
 
+/*
+ * This will replace 'String' data to file after encrypting it.
+ */
 @SuppressLint("GetInstance")
 fun writeToFileEncrypted(data: String, key: SecretKey, filePath: String) {
     try {
-        val aes = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        val aes = Cipher.getInstance(ALGORITHM)
         aes.init(Cipher.ENCRYPT_MODE, key)
         val fs = FileOutputStream(filePath)
         val out = CipherOutputStream(fs, aes)
@@ -108,6 +127,9 @@ fun writeToFileEncrypted(data: String, key: SecretKey, filePath: String) {
     }
 }
 
+/*
+ * This will convert string to byte array.
+ */
 fun String.toBytes(): ByteArray {
     return this.toByteArray(Charsets.UTF_8)
 }

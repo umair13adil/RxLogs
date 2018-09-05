@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.models
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.utils.checkIfKeyValid
 import com.blackbox.plog.utils.generateKey
 
@@ -279,6 +280,8 @@ class PLogBuilder {
 
         //Initializes Encryption Key
         setupEncryption(pLogger)
+
+        FilterUtils.clearOutputFiles(pLogger.exportPath)
 
         return pLogger
     }

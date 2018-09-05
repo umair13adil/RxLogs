@@ -1,6 +1,7 @@
 package com.blackbox.plog.dataLogs.models
 
 import com.blackbox.plog.dataLogs.DataLogger
+import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.utils.checkIfKeyValid
 import com.blackbox.plog.utils.generateKey
 
@@ -63,7 +64,12 @@ class DataLogBuilder {
      * @return the export file name
      */
     fun setExportFileName(fileName: String): DataLogBuilder {
-        this.exportFileName = fileName
+
+        if (!fileName.contains(".zip"))
+            this.exportFileName = "$fileName.zip"
+        else
+            this.exportFileName = fileName
+
         return this
     }
 
@@ -148,10 +154,12 @@ class DataLogBuilder {
     }
 
     fun build(): DataLogger {
-        val logger =  DataLogger(savePath, exportPath, exportFileName, logFileName, attachTimeStamp, debug, encrypt, encryptionKey, enabled)
+        val logger = DataLogger(savePath, exportPath, exportFileName, logFileName, attachTimeStamp, debug, encrypt, encryptionKey, enabled)
 
         //Initializes Encryption Key
         setupEncryption(logger)
+
+        FilterUtils.clearOutputFiles(exportPath)
 
         return logger
     }

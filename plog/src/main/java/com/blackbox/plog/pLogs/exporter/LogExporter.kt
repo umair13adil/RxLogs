@@ -8,7 +8,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import java.io.File
 import javax.crypto.SecretKey
 
 /**
@@ -37,7 +36,7 @@ object LogExporter {
         this.exportPath = logPath
         this.attachNoOfFiles = attachNoOfFiles
         this.attachTimeStamp = attachTimeStamp
-        this.zipName = "$exportFileName.zip"
+        this.zipName = exportFileName
 
         return Observable.create {
 
@@ -45,10 +44,13 @@ object LogExporter {
 
             FilterUtils.prepareOutputFile(exportPath)
 
-            checkLogType(type)
+            val files = getFilesForRequestedType(type)
 
-            val outputDirectory = File(exportPath)
-            val filesToSend = outputDirectory.listFiles()
+            //First entry is Zip Name
+            this.zipName = files.first
+
+            //Get list of all copied files from output directory
+            val filesToSend = files.second
 
             if (filesToSend.isEmpty()) {
                 if (!emitter.isDisposed)
@@ -73,6 +75,7 @@ object LogExporter {
                                 onComplete = { }
                         )
             } else {
+
                 zip(filesToSend, exportPath + zipName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -103,33 +106,27 @@ object LogExporter {
 
             val emitter = it
 
-            FilterUtils.prepareOutputFile(exportPath)
+            val files = getFilesForRequestedType(type)
 
-            checkLogType(type)
-
-            val outputDirectory = File(exportPath)
-            val filesToSend = outputDirectory.listFiles()
-
-            if (filesToSend.isEmpty()) {
+            if (files.second.isEmpty()) {
                 if (!emitter.isDisposed)
                     emitter.onError(Throwable("No logs found!"))
             }
 
-            for (f in filesToSend) {
+            for (f in files.second) {
+                emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
                 emitter.onNext("File: ${f.name} Start..\n")
-                emitter.onNext("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                f.forEachLine {
-                    if (isEncrypted) {
-                        emitter.onNext(readFileDecrypted(secretKey!!, f.absolutePath))
-                    } else {
+
+                if (isEncrypted) {
+                    emitter.onNext(readFileDecrypted(secretKey!!, f.absolutePath))
+                } else {
+                    f.forEachLine {
                         emitter.onNext(it)
                     }
                 }
-                emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n")
-            }
 
-            //Clear output files after reading
-            FilterUtils.clearOutputFiles(exportPath)
+                emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
+            }
 
             emitter.onComplete()
         }
