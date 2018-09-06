@@ -1,6 +1,7 @@
 package com.blackbox.plog.utils
 
 import android.annotation.SuppressLint
+import com.blackbox.plog.pLogs.PLog
 import java.io.*
 import java.security.InvalidKeyException
 import java.security.NoSuchAlgorithmException
@@ -41,13 +42,13 @@ fun generateKey(encKey: String): SecretKey {
  * This will read encrypted file & output decrypted 'String' data.
  */
 @SuppressLint("GetInstance")
-fun readFileDecrypted(key: SecretKey, filePath: String): String {
+fun readFileDecrypted(filePath: String): String {
     var data = ""
 
     try {
 
         val aes2 = Cipher.getInstance(ALGORITHM)
-        aes2.init(Cipher.DECRYPT_MODE, key)
+        aes2.init(Cipher.DECRYPT_MODE, PLog.getPLogger()?.secretKey!!)
 
         val fis = FileInputStream(filePath)
         val cipherInputStream = CipherInputStream(fis, aes2)

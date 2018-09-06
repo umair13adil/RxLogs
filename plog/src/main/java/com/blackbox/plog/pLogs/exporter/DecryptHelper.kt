@@ -10,9 +10,8 @@ import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
-import javax.crypto.SecretKey
 
-fun decryptSaveFiles(filesToSend: List<File>, secretKey: SecretKey?, exportPath: String, exportFileName: String): Observable<String> {
+fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName: String): Observable<String> {
 
     return Observable.create {
         val emitter = it
@@ -24,7 +23,7 @@ fun decryptSaveFiles(filesToSend: List<File>, secretKey: SecretKey?, exportPath:
             decryptedPath.mkdirs()
 
         for (f in filesToSend) {
-            val decrypted = readFileDecrypted(secretKey!!, f.absolutePath)
+            val decrypted = readFileDecrypted(f.absolutePath)
             createNewFile(f.name, decrypted, tempPath)
         }
 
@@ -36,7 +35,7 @@ fun decryptSaveFiles(filesToSend: List<File>, secretKey: SecretKey?, exportPath:
             zip(decryptedFiles, exportPath + exportFileName)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .delay(5000, TimeUnit.MILLISECONDS)
+                    .delay(5000, TimeUnit.MILLISECONDS) //Add delay to make sure files are decrypted
                     .subscribeBy(
                             onNext = {
                                 emitter.onNext(exportFileName)

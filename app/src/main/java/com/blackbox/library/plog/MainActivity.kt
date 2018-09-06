@@ -10,13 +10,14 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import com.blackbox.plog.dataLogs.DataLogger
-import com.blackbox.plog.dataLogs.models.DataLogBuilder
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.formatter.LogFormatter
+import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
+import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogRequestType
-import com.blackbox.plog.pLogs.models.PLogBuilder
+import com.blackbox.plog.pLogs.models.PLogger
+import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -28,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     val TAG: String = MainActivity::class.java.simpleName
     var PERMISSION_CODE = 9234
     var ENCRYPTION_KEY = "23233526436245232364264262343243"
-    var encryptLogs = false
+    var encryptLogs = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,34 +38,37 @@ class MainActivity : AppCompatActivity() {
         val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
 
         //This must be initialized before calling PLog
-        PLogBuilder()
-                .setLogsSavePath(logsPath)
-                .setLogsExportPath(logsPath + File.separator + "PLogsOutput")
-                .debuggable(true)
-                .setLogFileExtension(".txt")
-                .setLogFormatType(LogFormatter.FORMAT_CURLY)
-                .attachTimeStampToFiles(true)
-                .attachNoOfFilesToFiles(true)
-                .setTimeStampFormat(TimeStampFormat.DATE_FORMAT_1)
-                .enableEncryption(encryptLogs) //Enable Encryption
-                .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
-                .enabled(true)
-                .build()
+        val pLogger = PLogger(
+                savePath = logsPath,
+                exportPath = logsPath + File.separator + "PLogsOutput",
+                zipFileName = "MyLogs",
+                isDebuggable = true,
+                logFileExtension = LogExtension.TXT,
+                formatType = FormatType.FORMAT_CURLY,
+                attachTimeStamp = true,
+                attachNoOfFiles = true,
+                timeStampFormat = TimeStampFormat.DATE_FORMAT_1,
+                encrypt = encryptLogs,
+                encryptionKey = ENCRYPTION_KEY,
+                enabled = true,
+                directoryStructure = DirectoryStructure.FOR_EVENT,
+                nameForEventDirectory = "My Name",
+                zipFilesOnly = false
+        ).also {
+            it.getLogEventsListener()
+                    .doOnNext {
+                        PLog.logThis(TAG, "getLogEventsListener", "Event: $it", LogLevel.INFO)
+                    }
+                    .subscribe()
+        }
+
+        pLogger.setEventNameForDirectory("My Name 2")
 
         //This must be initialized before calling DataLogger
         //Each DataLogger builder can be used to log different data files
-        val myLogs: DataLogger = DataLogBuilder()
-                .setLogsSavePath(logsPath)
-                .setLogsExportPath(logsPath + File.separator + "DataLogsOutput")
-                .setLogFileName("SevereLogs.txt")
-                .setExportFileName("Errors")
-                .attachTimeStampToFiles(true)
-                .debuggable(true)
-                .enableEncryption(encryptLogs) //Enable Encryption
-                .setEncryptionKey(ENCRYPTION_KEY) //Set Encryption Key
-                .enabled(true)
-                .build()
-
+        val myLogs = DataLogger(
+                logFileName = "SevereLogs"
+        )
 
         //Will log to PLogs
         log_plog_event.setOnClickListener {

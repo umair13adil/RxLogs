@@ -1,48 +1,24 @@
 package com.blackbox.plog.dataLogs
 
-import android.os.Environment
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
+import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
-import javax.crypto.SecretKey
 
 /**
- * Created by umair on 03/01/2018.
+ * Created by umair on 04/01/2018.
  */
+class DataLogger(
+        var savePath: String = PLog.getPLogger()?.savePath!!,
+        var exportPath: String = PLog.getPLogger()?.exportPath!!,
+        var logFileName: String = "log",
+        var zipFileName: String = PLog.getPLogger()?.zipFileName!!
+) {
 
-class DataLogger internal constructor(savePath: String, exportPath: String, exportFileName: String, logFileName: String, attachTimeStamp: Boolean?, debug: Boolean?, encryptionEnabled: Boolean, encryptionKey: String, loggingEnabled: Boolean) {
-
-    private var savePath = Environment.getExternalStorageDirectory().toString() + File.separator + TAG
-    private var exportPath = Environment.getExternalStorageDirectory().toString() + File.separator + TAG
-    private var exportFileName = "Output"
-    private var logFileName = "log"
-    private var attachTimeStamp = true
-    private var debug = false
-    internal var encrypt: Boolean = false
-    internal var encryptionKey: String = ""
-    internal var enabled: Boolean = true
-    internal var secretKey: SecretKey? = null
-
-    /**
-     * Gets output path.
-     *
-     * Sets the export path of Logs.
-     *
-     * @return the output path
-     */
-    private val outputPath: String
-        get() = exportPath + File.separator
-
-    /**
-     * Gets Logs path.
-     *
-     * Sets the save path of Logs.
-     *
-     * @return the save path
-     */
-    private val logPath: String
-        get() = savePath + File.separator
+    companion object {
+        private val TAG = "DataLogger"
+    }
 
     /**
      * Gets logs.
@@ -53,15 +29,15 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
      */
     fun getZippedLogs(exportDecrypted: Boolean): Observable<String> {
 
-        var isEncrypted = encrypt
+        val isEncrypted: Boolean
 
         //If not encrypted
-        if (exportDecrypted && !encrypt)
+        if (exportDecrypted && !PLog.getPLogger()?.encrypt!!)
             isEncrypted = false
         else
             isEncrypted = exportDecrypted
 
-        return DataLogsExporter.getDataLogs(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
+        return DataLogsExporter.getDataLogs(logFileName, logPath, zipFileName, outputPath)
     }
 
     /**
@@ -76,24 +52,12 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
         val isEncrypted: Boolean
 
         //If not encrypted
-        if (printDecrypted && !encrypt)
+        if (printDecrypted && !PLog.getPLogger()?.encrypt!!)
             isEncrypted = false
         else
             isEncrypted = printDecrypted
 
-        return DataLogsExporter.getLoggedData(logFileName, attachTimeStamp, logPath, exportFileName, outputPath, debug, isEncrypted, secretKey)
-    }
-
-    init {
-        this.savePath = savePath
-        this.exportPath = exportPath
-        this.exportFileName = exportFileName
-        this.logFileName = logFileName
-        this.attachTimeStamp = attachTimeStamp!!
-        this.debug = debug!!
-        this.encrypt = encryptionEnabled
-        this.encryptionKey = encryptionKey
-        this.enabled = loggingEnabled
+        return DataLogsExporter.getLoggedData(logFileName, logPath, zipFileName, outputPath)
     }
 
     /**
@@ -111,8 +75,8 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
     fun overwriteToFile(dataToWrite: String) {
         val path = setupPaths()
 
-        if (encrypt) {
-            writeToFileEncrypted(dataToWrite, secretKey!!, path)
+        if (PLog.getPLogger()?.encrypt!!) {
+            writeToFileEncrypted(dataToWrite, PLog.getPLogger()?.secretKey!!, path)
         } else {
             writeToFile(path, dataToWrite)
         }
@@ -134,8 +98,8 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
 
         val path = setupPaths()
 
-        if (encrypt) {
-            appendToFileEncrypted(dataToWrite, secretKey!!, path)
+        if (PLog.getPLogger()?.encrypt!!) {
+            appendToFileEncrypted(dataToWrite, PLog.getPLogger()?.secretKey!!, path)
         } else {
             appendToFile(path, dataToWrite)
         }
@@ -152,13 +116,28 @@ class DataLogger internal constructor(savePath: String, exportPath: String, expo
         File(logPath).deleteRecursively()
     }
 
-    companion object {
-
-        private val TAG = DataLogger::class.java.simpleName
-    }
-
     private fun setupPaths(): String {
         Utils.instance.createDirIfNotExists(logPath)
-        return logPath + File.separator + logFileName
+        return logPath + File.separator + logFileName + PLog.getPLogger()?.logFileExtension?.ext!!
     }
+
+    /**
+     * Gets output path.
+     *
+     * Sets the export path of Logs.
+     *
+     * @return the output path
+     */
+    private val outputPath: String
+        get() = exportPath + File.separator
+
+    /**
+     * Gets Logs path.
+     *
+     * Sets the save path of Logs.
+     *
+     * @return the save path
+     */
+    private val logPath: String
+        get() = savePath + File.separator
 }

@@ -16,7 +16,7 @@ class DateControl {
     val today: String
         get() {
             val currentTime = Date(System.currentTimeMillis())
-            val sdf = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
+            val sdf = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1.value, Locale.ENGLISH)
             return sdf.format(currentTime)
         }
 

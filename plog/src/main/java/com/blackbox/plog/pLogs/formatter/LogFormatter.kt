@@ -9,12 +9,6 @@ import com.blackbox.plog.pLogs.models.PLogger
 
 object LogFormatter {
 
-    //Format Types
-    val FORMAT_CURLY = "1"
-    val FORMAT_SQUARE = "2"
-    val FORMAT_CSV = "3"
-    val FORMAT_CUSTOM = "4"
-
     private fun formatCurly(data: LogData): String {
 
         val SCREEN = data.className
@@ -66,13 +60,13 @@ object LogFormatter {
         var t = ""
 
         when (pLogger.formatType) {
-            FORMAT_CURLY -> t = formatCurly(data)
+            FormatType.FORMAT_CURLY -> t = formatCurly(data)
 
-            FORMAT_SQUARE -> t = formatSquare(data)
+            FormatType.FORMAT_SQUARE -> t = formatSquare(data)
 
-            FORMAT_CSV -> t = formatCSV(data, pLogger.csvDeliminator)
+            FormatType.FORMAT_CSV -> t = formatCSV(data, pLogger.csvDeliminator)
 
-            FORMAT_CUSTOM -> t = formatCustom(data, pLogger.customFormatOpen, pLogger.customFormatClose)
+            FormatType.FORMAT_CUSTOM -> t = formatCustom(data, pLogger.customFormatOpen, pLogger.customFormatClose)
         }
 
         return t

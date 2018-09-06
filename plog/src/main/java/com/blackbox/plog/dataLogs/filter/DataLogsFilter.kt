@@ -4,7 +4,7 @@ import java.io.File
 
 object DataLogsFilter {
 
-    fun getFilesForLogName(logsPath: String, outputPath: String, logFileName: String, debug: Boolean): List<File> {
+    fun getFilesForLogName(logsPath: String, outputPath: String, logFileName: String): List<File> {
 
         var size = 0
         val listOfFiles = arrayListOf<File>()

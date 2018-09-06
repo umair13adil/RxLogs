@@ -5,6 +5,7 @@ package com.blackbox.plog.pLogs
  */
 
 import android.util.Log
+import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
@@ -17,10 +18,17 @@ import java.io.File
 
 object PLog {
 
+    init {
+        setLogBus(RxBus())
+    }
+
     private val TAG = PLog::class.java.simpleName
 
     @JvmStatic
     private var pLogger: PLogger = PLogger()
+
+    @JvmStatic
+    private lateinit var bus: RxBus
 
     /**
      * Gets output path.
@@ -39,7 +47,7 @@ object PLog {
      *
      * @return the save path
      */
-    private val logPath: String
+    internal val logPath: String
         get() = pLogger.savePath + File.separator
 
     internal fun setPLogger(pLog: PLogger) {
@@ -48,6 +56,14 @@ object PLog {
 
     internal fun getPLogger(): PLogger? {
         return pLogger
+    }
+
+    internal fun getLogBus(): RxBus {
+        return bus
+    }
+
+    internal fun setLogBus(listener: RxBus) {
+        bus = listener
     }
 
     /**
@@ -83,7 +99,7 @@ object PLog {
      * @param e             Exception
      * @param type         the type
      */
-    fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel) {
+    fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel = LogLevel.ERROR) {
 
         //Do nothing if logs are disabled
         if (!pLogger.enabled)
@@ -106,7 +122,7 @@ object PLog {
      * @param e             Exception
      * @param type         the type
      */
-    fun logExc(className: String, functionName: String, e: Exception, type: LogLevel) {
+    fun logExc(className: String, functionName: String, e: Exception, type: LogLevel = LogLevel.ERROR) {
 
         //Do nothing if logs are disabled
         if (!pLogger.enabled)
@@ -137,7 +153,7 @@ object PLog {
         else
             isEncrypted = exportDecrypted
 
-        return LogExporter.getZippedLogs(type.type, pLogger.attachTimeStamp, pLogger.attachNoOfFiles, logPath, pLogger.exportFileName, outputPath, isEncrypted, pLogger.secretKey)
+        return LogExporter.getZippedLogs(type.type, isEncrypted)
     }
 
     /**
@@ -157,7 +173,7 @@ object PLog {
         else
             isEncrypted = printDecrypted
 
-        return LogExporter.getLoggedData(type.type, logPath, outputPath, isEncrypted, pLogger.secretKey)
+        return LogExporter.getLoggedData(type.type, isEncrypted)
     }
 
     /**
@@ -176,7 +192,7 @@ object PLog {
 
         checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat.value), type)
 
         val logFormatted = LogFormatter.getFormatType(logData, pLogger)
 
@@ -198,7 +214,7 @@ object PLog {
 
         checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat), type)
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat.value), type)
 
         val logFormatted = LogFormatter.getFormatType(logData, pLogger)
 
@@ -206,5 +222,18 @@ object PLog {
             Log.i(TAG, logFormatted)
 
         appendToFileEncrypted(logFormatted, pLogger.secretKey!!, path)
+    }
+
+
+    fun getLogEvents(): Observable<LogEvents> {
+
+        return Observable.create {
+            val emitter = it
+            getLogBus().toObservable().subscribe {
+                if (it is LogEvents) {
+                    emitter.onNext(it)
+                }
+            }
+        }
     }
 }

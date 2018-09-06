@@ -16,12 +16,12 @@ object FilterUtils {
     }
 
     fun prepareOutputFile(outputPath: String) {
-        Utils.instance.deleteDir(File(outputPath))
+        File(outputPath).deleteRecursively()
         Utils.instance.createDirIfNotExists(outputPath)
     }
 
     fun clearOutputFiles(outputPath: String) {
-        Utils.instance.deleteDir(File(outputPath))
+        File(outputPath).deleteRecursively()
     }
 
     internal fun filterFile(folderPath: String, files: Array<File>, lastHour: Int): Boolean {
@@ -35,7 +35,7 @@ object FilterUtils {
 
             if (fileHour == lastHour) {
                 found = true
-                Utils.instance.copyFile(folderPath, files[i].name, PLog.outputPath)
+
             }
         }
 

@@ -59,7 +59,7 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
 
     override fun uncaughtException(t: Thread?, e: Throwable) {
 
-        PLog.logExc(TAG, "uncaughtException", e, LogLevel.ERROR)
+        PLog.logExc(TAG, "uncaughtException", e)
 
         lastStartedActivity?.let { activity ->
             val isRestarted = activity.intent

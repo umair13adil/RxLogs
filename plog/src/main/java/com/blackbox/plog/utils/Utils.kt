@@ -1,8 +1,8 @@
 package com.blackbox.plog.utils
 
-import android.os.Environment
-import android.util.Log
-import java.io.*
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 
 /**
  * Created by Umair Adil on 18/11/2016.
@@ -16,50 +16,6 @@ class Utils {
         if (!file.exists()) {
             file.mkdirs()
         }
-    }
-
-    fun checkFileExists(path: String): Boolean {
-        val file = File(Environment.getExternalStorageDirectory(), path)
-        return file.exists()
-    }
-
-    fun copyFile(inputPath: String, inputFile: String, outputPath: String) {
-
-        var inputStream: InputStream? = null
-        var out: OutputStream? = null
-        try {
-
-            //create output directory if it doesn't exist
-            val dir = File(outputPath)
-            if (!dir.exists()) {
-                dir.mkdirs()
-            }
-
-            inputStream = FileInputStream(inputPath + File.separator + inputFile)
-            out = FileOutputStream(outputPath + inputFile)
-
-            out.write(inputStream.readBytes())
-
-            // write the output file (You have now copied the file)
-            out.flush()
-            out.close()
-
-            File(inputPath + inputFile).delete()
-
-        } catch (fnfe1: FileNotFoundException) {
-            Log.e(TAG, fnfe1.message)
-        } catch (e: Exception) {
-            Log.e(TAG, e.message)
-        }
-
-    }
-
-
-    fun deleteDir(fileOrDirectory: File) {
-        if (fileOrDirectory.isDirectory)
-            for (child in fileOrDirectory.listFiles())
-                deleteDir(child)
-        fileOrDirectory.delete()
     }
 
     companion object {

@@ -125,8 +125,12 @@ You can use following Log Types to identify type:
 ### Log Exceptions to File:
 Both Exceptions & Throwable can be passed to logger.
 
-    PLog.logExc(TAG, "uncaughtException", e, LogLevel.ERROR)
+    PLog.logExc(TAG, "uncaughtException", e)
     
+Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
+
+    PLog.logExc(TAG, "uncaughtException", e, LogLevel.SEVERE)
+
 ### Clear Logs:
     PLog.clearLogs()
               

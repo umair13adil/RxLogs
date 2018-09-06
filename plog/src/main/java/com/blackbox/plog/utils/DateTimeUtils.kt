@@ -52,7 +52,7 @@ object DateTimeUtils {
         val date = Date(timestamp)
         var formatted = "" + System.currentTimeMillis()
         try {
-            val f1 = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_FULL_JOINED, Locale.ENGLISH)
+            val f1 = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_FULL_JOINED.value, Locale.ENGLISH)
             formatted = f1.format(date)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -65,7 +65,7 @@ object DateTimeUtils {
         val someDate = Calendar.getInstance()
         someDate.add(Calendar.HOUR_OF_DAY, -1)
         val date = someDate.time
-        val dateFormat = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_SIMPLE, Locale.ENGLISH)
+        val dateFormat = SimpleDateFormat(TimeStampFormat.TIME_FORMAT_SIMPLE.value, Locale.ENGLISH)
         return dateFormat.format(date)
     }
 
@@ -86,7 +86,7 @@ object DateTimeUtils {
 
         while (calendar.before(endCalendar)) {
             val result = calendar.time
-            val dateFormat = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
+            val dateFormat = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1.value, Locale.ENGLISH)
             val date = dateFormat.format(result)
             datesInRange.add(date)
             calendar.add(Calendar.DATE, 1)

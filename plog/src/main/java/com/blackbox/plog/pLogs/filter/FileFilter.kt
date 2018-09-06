@@ -2,9 +2,13 @@ package com.blackbox.plog.pLogs.filter
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.DateTimeUtils
 import java.io.File
+import java.util.zip.ZipFile
+
 
 /**
  * Created by umair on 03/01/2018.
@@ -12,21 +16,31 @@ import java.io.File
 internal object FileFilter {
 
     internal val TAG = FileFilter::class.java.simpleName
+    val outputPath = PLog.getPLogger()?.exportPath!!
 
     /*
      * Filter files by 'Today'.
      */
-    fun getFilesForToday(folderPath: String): List<File> {
-        val directory = File(folderPath)
-        val list = directory.listFiles()
-        return list.asList()
+    fun getFilesForToday(folderPath: String): Pair<List<File>, String> {
+
+        return if (PLog.getPLogger()?.zipFilesOnly!!) {
+
+            val directory = File(folderPath + DateControl.instance.today)
+            val list = directory.listFiles()
+
+            Pair(list.asList(), "")
+
+        } else {
+            File(folderPath).copyRecursively(File(outputPath), true)
+            Pair(arrayListOf(), outputPath)
+        }
     }
 
 
     /*
      * Filter files by '24Hours'.
      */
-    fun getFilesForLast24Hours(folderPath: String): List<File> {
+    fun getFilesForLast24Hours(folderPath: String): Pair<List<File>, String> {
 
         val today = Integer.parseInt(DateControl.instance.currentDate)
         val lastDay = Integer.parseInt(DateControl.instance.lastDay)
@@ -46,12 +60,12 @@ internal object FileFilter {
                             Log.i(FileFilter.TAG, "Files between dates: $lastDay & $today,Date File Present: $day")
 
                         if (lastDay < today) {
-                            if (day <= today && day >= lastDay) {
-                                lisOfFiles.addAll(getFilesForToday(file.path))
+                            if (day in lastDay..today) {
+                                lisOfFiles.addAll(getFilesForToday(file.path).first)
                             }
                         } else {
                             if (day <= today) {
-                                lisOfFiles.addAll(getFilesForToday(file.path))
+                                lisOfFiles.addAll(getFilesForToday(file.path).first)
                             }
                         }
                     }
@@ -59,13 +73,13 @@ internal object FileFilter {
             }
         }
 
-        return lisOfFiles
+        return Pair(lisOfFiles, outputPath)
     }
 
     /*
      * Filter files by 'Week'.
      */
-    fun getFilesForLastWeek(folderPath: String): List<File> {
+    fun getFilesForLastWeek(folderPath: String): Pair<List<File>, String> {
 
         val lisOfFiles = arrayListOf<File>()
         val listOfDates = DateTimeUtils.getDatesBetween()
@@ -81,18 +95,18 @@ internal object FileFilter {
                 val files = dateDirectory.listFiles()
 
                 for (file in files) {
-                    lisOfFiles.addAll(getFilesForToday(file.path))
+                    lisOfFiles.addAll(getFilesForToday(file.path).first)
                 }
             }
         }
 
-        return lisOfFiles
+        return Pair(lisOfFiles, outputPath)
     }
 
     /*
      * Filter files by 'Hour'.
      */
-    fun getFilesForLastHour(folderPath: String): List<File> {
+    fun getFilesForLastHour(folderPath: String): Pair<List<File>, String> {
 
         val lisOfFiles = arrayListOf<File>()
         val directory = File(folderPath)
@@ -115,7 +129,42 @@ internal object FileFilter {
 
         }
 
-        return lisOfFiles
+        return Pair(lisOfFiles, outputPath)
     }
 
+    /*
+     * Returns path of Logs based on selected Directory Structure.
+     */
+    fun getPathBasedOnDirectoryStructure(): String {
+        when (PLog.getPLogger()?.directoryStructure) {
+
+            DirectoryStructure.FOR_DATE -> {
+                return PLog.logPath + DateControl.instance.today
+            }
+
+            DirectoryStructure.FOR_EVENT -> {
+                return PLog.logPath + PLog.getPLogger()?.nameForEventDirectory!!
+            }
+
+            DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
+                return PLog.logPath + DateControl.instance.today
+            }
+        }
+
+        return ""
+    }
+
+    fun readZip(path: String) {
+        val zipFile = ZipFile(path)
+
+        val entries = zipFile.entries()
+
+        while (entries.hasMoreElements()) {
+            val entry = entries.nextElement()
+            val stream = zipFile.getInputStream(entry)
+            stream.bufferedReader().use {
+                PLog.logThis(TAG, "readZip", it.readText(), LogLevel.INFO)
+            }
+        }
+    }
 }
