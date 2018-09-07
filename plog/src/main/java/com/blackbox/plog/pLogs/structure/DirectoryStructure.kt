@@ -1,7 +1,7 @@
 package com.blackbox.plog.pLogs.structure
 
-enum class DirectoryStructure(val value:Int){
-    FOR_DATE(1),
-    FOR_EVENT(2),
-    SINGLE_FILE_FOR_DAY(3),
+enum class DirectoryStructure(val value: String) {
+    FOR_DATE("FOR_DATE"),
+    FOR_EVENT("FOR_EVENT"),
+    SINGLE_FILE_FOR_DAY("SINGLE_FILE_FOR_DAY"),
 }

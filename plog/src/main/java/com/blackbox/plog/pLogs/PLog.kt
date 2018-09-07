@@ -5,6 +5,10 @@ package com.blackbox.plog.pLogs
  */
 
 import android.util.Log
+import com.blackbox.plog.pLogs.config.ConfigReader
+import com.blackbox.plog.pLogs.config.ConfigWriter
+import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.config.XML_PATH
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
@@ -29,6 +33,8 @@ object PLog {
 
     @JvmStatic
     private lateinit var bus: RxBus
+
+    private var logsConfig: LogsConfig? = null
 
     /**
      * Gets output path.
@@ -65,8 +71,26 @@ object PLog {
         return bus
     }
 
-    internal fun setLogBus(listener: RxBus) {
+    private fun setLogBus(listener: RxBus) {
         bus = listener
+    }
+
+    fun setLogsConfig(config: LogsConfig) {
+        logsConfig = config
+        ConfigWriter.saveToXML(config)
+    }
+
+    fun getLogsConfig(): LogsConfig? {
+        return if (File(XML_PATH).exists() && logsConfig == null) {
+            logsConfig = ConfigReader.readXML()
+            logsConfig
+        } else if (!File(XML_PATH).exists() && logsConfig == null) {
+            ConfigWriter.saveToXML(LogsConfig())
+            logsConfig = ConfigReader.readXML()
+            logsConfig
+        } else {
+            logsConfig
+        }
     }
 
     /**

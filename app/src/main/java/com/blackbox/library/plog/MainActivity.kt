@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.Toast
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
@@ -18,6 +19,7 @@ import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.PLogger
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
+import com.blackbox.plog.utils.DateControl
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -53,7 +55,8 @@ class MainActivity : AppCompatActivity() {
                 enabled = true,
                 directoryStructure = DirectoryStructure.FOR_EVENT,
                 nameForEventDirectory = "My Name",
-                zipFilesOnly = false
+                zipFilesOnly = false,
+                autoClearExports = true
         ).also {
             it.getLogEventsListener()
                     .doOnNext {
@@ -63,6 +66,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         pLogger.setEventNameForDirectory("My Name 2")
+
+        val logsConfig = LogsConfig(
+                logTypesEnabled = arrayListOf("Errors", "Severe"),
+                formatType = FormatType.FORMAT_CUSTOM,
+                logsRetentionPeriodInDays = 17,
+                zipsRetentionPeriodInDays = 5,
+                autoExportLogTypes = arrayListOf("Deliveries", "Locations"),
+                autoExportErrors = true,
+                logsDeleteDate = DateControl.instance.currentDate
+        )
+        PLog.getLogsConfig()?.updateLogsDeleteDate("20129034")
+        //PLog.setLogsConfig(logsConfig)
+
+        PLog.getLogsConfig()?.also {
+            it.logTypesEnabled.forEach {
+                PLog.logThis(TAG, "enabled", it, LogLevel.INFO)
+            }
+
+            PLog.logThis(TAG, "value", it.logsRetentionPeriodInDays.toString(), LogLevel.INFO)
+            PLog.logThis(TAG, "value", it.zipsRetentionPeriodInDays.toString(), LogLevel.INFO)
+            PLog.logThis(TAG, "value", it.autoExportErrors.toString(), LogLevel.INFO)
+
+            it.autoExportLogTypes.forEach {
+                PLog.logThis(TAG, "enabled", it, LogLevel.INFO)
+            }
+
+            PLog.logThis(TAG, "Delete Date:", it.logsDeleteDate, LogLevel.INFO)
+        }
 
         //This must be initialized before calling DataLogger
         //Each DataLogger builder can be used to log different data files
