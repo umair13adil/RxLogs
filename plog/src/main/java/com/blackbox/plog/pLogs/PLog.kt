@@ -6,11 +6,11 @@ package com.blackbox.plog.pLogs
 
 import android.util.Log
 import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.models.LogRequestType
 import com.blackbox.plog.pLogs.models.PLogger
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
@@ -39,6 +39,9 @@ object PLog {
      */
     internal val outputPath: String
         get() = pLogger.exportPath + File.separator
+
+    internal val exportTempPath: String
+        get() = outputPath + "Temp" + File.separator
 
     /**
      * Gets Logs path.
@@ -143,17 +146,8 @@ object PLog {
      * @param type the type
      * @return the logs
      */
-    fun getZippedLog(type: LogRequestType, exportDecrypted: Boolean): Observable<String> {
-
-        val isEncrypted: Boolean
-
-        //If not encrypted
-        if (exportDecrypted && !pLogger.encrypt)
-            isEncrypted = false
-        else
-            isEncrypted = exportDecrypted
-
-        return LogExporter.getZippedLogs(type.type, isEncrypted)
+    fun getZippedLog(type: ExportType, exportDecrypted: Boolean): Observable<String> {
+        return LogExporter.getZippedLogs(type.type, exportDecrypted)
     }
 
     /**
@@ -163,17 +157,8 @@ object PLog {
      *
      * @return the String data
      */
-    fun getLoggedData(type: LogRequestType, printDecrypted: Boolean): Observable<String> {
-
-        val isEncrypted: Boolean
-
-        //If not encrypted
-        if (printDecrypted && !pLogger.encrypt)
-            isEncrypted = false
-        else
-            isEncrypted = printDecrypted
-
-        return LogExporter.getLoggedData(type.type, isEncrypted)
+    fun getLoggedData(type: ExportType, printDecrypted: Boolean): Observable<String> {
+        return LogExporter.getLoggedData(type.type, printDecrypted)
     }
 
     /**
@@ -188,7 +173,7 @@ object PLog {
      * Write plain String logs.
      */
     private fun writeSimpleLogs(className: String, functionName: String, text: String, type: String) {
-        val path = setupFilePaths(PLog.logPath)
+        val path = setupFilePaths()
 
         checkFileExists(path)
 
@@ -210,7 +195,7 @@ object PLog {
         if (pLogger.secretKey == null)
             return
 
-        val path = setupFilePaths(PLog.logPath)
+        val path = setupFilePaths()
 
         checkFileExists(path)
 

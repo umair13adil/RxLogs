@@ -28,16 +28,7 @@ class DataLogger(
      * @return the logs
      */
     fun getZippedLogs(exportDecrypted: Boolean): Observable<String> {
-
-        val isEncrypted: Boolean
-
-        //If not encrypted
-        if (exportDecrypted && !PLog.getPLogger()?.encrypt!!)
-            isEncrypted = false
-        else
-            isEncrypted = exportDecrypted
-
-        return DataLogsExporter.getDataLogs(logFileName, logPath, zipFileName, outputPath)
+        return DataLogsExporter.getDataLogs(logFileName, logPath, zipFileName, outputPath, exportDecrypted)
     }
 
     /**
@@ -48,16 +39,7 @@ class DataLogger(
      * @return the String data
      */
     fun getLoggedData(printDecrypted: Boolean): Observable<String> {
-
-        val isEncrypted: Boolean
-
-        //If not encrypted
-        if (printDecrypted && !PLog.getPLogger()?.encrypt!!)
-            isEncrypted = false
-        else
-            isEncrypted = printDecrypted
-
-        return DataLogsExporter.getLoggedData(logFileName, logPath, zipFileName, outputPath)
+        return DataLogsExporter.getLoggedData(logFileName, logPath, zipFileName, outputPath, printDecrypted)
     }
 
     /**
@@ -73,6 +55,9 @@ class DataLogger(
      * @param dataToWrite the data to write can be any string data formatted or unformatted
      */
     fun overwriteToFile(dataToWrite: String) {
+
+        dataLoggerCalledBeforePLoggerException()
+
         val path = setupPaths()
 
         if (PLog.getPLogger()?.encrypt!!) {
@@ -95,6 +80,8 @@ class DataLogger(
      * @param dataToWrite the data to write can be any string data formatted or unformatted
      */
     fun appendToFile(dataToWrite: String) {
+
+        dataLoggerCalledBeforePLoggerException()
 
         val path = setupPaths()
 

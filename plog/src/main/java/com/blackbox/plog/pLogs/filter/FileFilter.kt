@@ -2,12 +2,9 @@ package com.blackbox.plog.pLogs.filter
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.DateTimeUtils
 import java.io.File
-import java.util.zip.ZipFile
 
 
 /**
@@ -16,24 +13,19 @@ import java.util.zip.ZipFile
 internal object FileFilter {
 
     internal val TAG = FileFilter::class.java.simpleName
-    val outputPath = PLog.getPLogger()?.exportPath!!
+    val tempOutputPath = PLog.exportTempPath
 
     /*
      * Filter files by 'Today'.
      */
     fun getFilesForToday(folderPath: String): Pair<List<File>, String> {
 
-        return if (PLog.getPLogger()?.zipFilesOnly!!) {
+        val path = folderPath + DateControl.instance.today
+        val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
-            val directory = File(folderPath + DateControl.instance.today)
-            val list = directory.listFiles()
+        File(folderPath).copyRecursively(File(tempOutputPath), true)
 
-            Pair(list.asList(), "")
-
-        } else {
-            File(folderPath).copyRecursively(File(outputPath), true)
-            Pair(arrayListOf(), outputPath)
-        }
+        return Pair(lisOfFiles, tempOutputPath)
     }
 
 
@@ -73,7 +65,7 @@ internal object FileFilter {
             }
         }
 
-        return Pair(lisOfFiles, outputPath)
+        return Pair(lisOfFiles, tempOutputPath)
     }
 
     /*
@@ -100,7 +92,7 @@ internal object FileFilter {
             }
         }
 
-        return Pair(lisOfFiles, outputPath)
+        return Pair(lisOfFiles, tempOutputPath)
     }
 
     /*
@@ -129,42 +121,23 @@ internal object FileFilter {
 
         }
 
-        return Pair(lisOfFiles, outputPath)
+        return Pair(lisOfFiles, tempOutputPath)
     }
 
     /*
-     * Returns path of Logs based on selected Directory Structure.
+     * Filter files by 'All'.
      */
-    fun getPathBasedOnDirectoryStructure(): String {
-        when (PLog.getPLogger()?.directoryStructure) {
+    fun getFilesForAll(folderPath: String): Pair<List<File>, String> {
 
-            DirectoryStructure.FOR_DATE -> {
-                return PLog.logPath + DateControl.instance.today
-            }
+        val lisOfFiles = FilterUtils.listFiles(folderPath, arrayListOf())
 
-            DirectoryStructure.FOR_EVENT -> {
-                return PLog.logPath + PLog.getPLogger()?.nameForEventDirectory!!
-            }
+        //Copy Files to temp folder
+        File(folderPath).copyRecursively(File(tempOutputPath), true)
 
-            DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
-                return PLog.logPath + DateControl.instance.today
-            }
-        }
-
-        return ""
-    }
-
-    fun readZip(path: String) {
-        val zipFile = ZipFile(path)
-
-        val entries = zipFile.entries()
-
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
-            val stream = zipFile.getInputStream(entry)
-            stream.bufferedReader().use {
-                PLog.logThis(TAG, "readZip", it.readText(), LogLevel.INFO)
-            }
+        return if (PLog.getPLogger()?.zipFilesOnly!!) {
+            Pair(lisOfFiles, tempOutputPath)
+        } else {
+            Pair(lisOfFiles, tempOutputPath)
         }
     }
 }

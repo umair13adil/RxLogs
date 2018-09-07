@@ -24,7 +24,7 @@ object DataLogsExporter {
     /*
      * Will filter & export log files to zip package.
      */
-    fun getDataLogs(logFileName: String, logPath: String, exportFileName: String, exportPath: String): Observable<String> {
+    fun getDataLogs(logFileName: String, logPath: String, exportFileName: String, exportPath: String, exportDecrypted: Boolean): Observable<String> {
 
         return Observable.create {
 
@@ -45,7 +45,7 @@ object DataLogsExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (PLog.getPLogger()?.encrypt!!) {
+            if (exportDecrypted) {
                 decryptSaveFiles(filesToSend, exportPath, this.exportFileName)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -90,7 +90,7 @@ object DataLogsExporter {
     /*
     * Will return logged data in log files.
     */
-    fun getLoggedData(logFileName: String, logPath: String, exportFileName: String, exportPath: String): Observable<String> {
+    fun getLoggedData(logFileName: String, logPath: String, exportFileName: String, exportPath: String, printDecrypted: Boolean): Observable<String> {
 
         this.exportFileName = exportFileName
 
@@ -109,7 +109,7 @@ object DataLogsExporter {
                 emitter.onNext("Start...................................................\n")
                 emitter.onNext("File: ${f.name} Start..\n")
 
-                if (PLog.getPLogger()?.encrypt!!) {
+                if (printDecrypted) {
                     emitter.onNext(readFileDecrypted(f.absolutePath))
                 } else {
                     f.forEachLine {

@@ -38,34 +38,38 @@ fun checkFileExists(path: String) {
 /*
  * This will setup directory structure according to provided 'Directory Structure' Value.
  */
-fun setupFilePaths(path: String): String {
+fun setupFilePaths(): String {
+
+    //Create Root folder
+    val rootFolderName = "Logs"
+    val rootFolderPath = PLog.logPath + rootFolderName + File.separator
+    Utils.instance.createDirIfNotExists(rootFolderPath)
 
     when (PLog.getPLogger()?.directoryStructure) {
 
         DirectoryStructure.FOR_DATE -> {
-            val folderPath = path + DateControl.instance.today
+            val folderPath = rootFolderPath + DateControl.instance.today
             Utils.instance.createDirIfNotExists(folderPath)
 
-            val fileName_raw = DateControl.instance.today + DateControl.instance.hour
-            return folderPath + File.separator + fileName_raw + PLog.getPLogger()?.logFileExtension?.ext!!
+            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
+            return folderPath + File.separator + hourlyFileName + PLog.getPLogger()?.logFileExtension?.ext!!
         }
 
         DirectoryStructure.FOR_EVENT -> {
 
-            val folderPathParent = path + PLog.getPLogger()?.nameForEventDirectory
-            Utils.instance.createDirIfNotExists(folderPathParent)
+            val parentPath = rootFolderPath + DateControl.instance.today
+            Utils.instance.createDirIfNotExists(parentPath)
 
-            val folderPath = folderPathParent + File.separator + DateControl.instance.today
+            val folderPath = parentPath + File.separator + PLog.getPLogger()?.nameForEventDirectory!!
             Utils.instance.createDirIfNotExists(folderPath)
 
-            val fileName_raw = DateControl.instance.today + DateControl.instance.hour
-            return folderPath + File.separator + fileName_raw + PLog.getPLogger()?.logFileExtension?.ext!!
+            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
+            return folderPath + File.separator + hourlyFileName + PLog.getPLogger()?.logFileExtension?.ext!!
         }
 
         DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
-            Utils.instance.createDirIfNotExists(path)
-            val fileName_raw = DateControl.instance.today
-            return path + File.separator + fileName_raw + PLog.getPLogger()?.logFileExtension?.ext!!
+            val todayPath = DateControl.instance.today
+            return rootFolderPath + File.separator + todayPath + PLog.getPLogger()?.logFileExtension?.ext!!
         }
     }
 

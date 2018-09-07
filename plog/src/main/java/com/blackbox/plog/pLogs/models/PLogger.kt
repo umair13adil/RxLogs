@@ -35,7 +35,8 @@ class PLogger(
         var enabled: Boolean = true, //Logs are enabled
         var directoryStructure: DirectoryStructure = DirectoryStructure.FOR_DATE, //Default Directory Structure
         var nameForEventDirectory: String = "", //Name of directory in case of 'DirectoryStructure.FOR_EVENT'
-        var zipFilesOnly: Boolean = true //Only log files will be zipped, no folders
+        var zipFilesOnly: Boolean = true, //Only log files will be zipped, no folders
+        var autoClearExports: Boolean = true //If set true, then exported files will be cleared on each export
 ) {
 
     companion object {

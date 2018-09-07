@@ -2,7 +2,6 @@ package com.blackbox.plog.pLogs.exporter
 
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.LogEvents
-import com.blackbox.plog.pLogs.filter.FileFilter.readZip
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.utils.readFileDecrypted
@@ -23,7 +22,6 @@ object LogExporter {
 
     private val TAG = LogExporter::class.java.simpleName
 
-    private var path = PLog.logPath
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
     private var zipName = PLog.getPLogger()?.zipFileName!!
@@ -31,7 +29,7 @@ object LogExporter {
     /*
      * Will filter & export log files to zip package.
      */
-    fun getZippedLogs(type: Int, encrypted: Boolean): Observable<String> {
+    fun getZippedLogs(type: String, exportDecrypted: Boolean): Observable<String> {
 
         return Observable.create {
 
@@ -41,14 +39,14 @@ object LogExporter {
 
             this.files = getFilesForRequestedType(type)
 
-            compressPackage(emitter, encrypted)
+            compressPackage(emitter, exportDecrypted)
         }
     }
 
     /*
      * Will return logged data in log files.
      */
-    fun getLoggedData(type: Int, isEncrypted: Boolean): Observable<String> {
+    fun getLoggedData(type: String, printDecrypted: Boolean): Observable<String> {
 
 
         return Observable.create {
@@ -66,7 +64,7 @@ object LogExporter {
                 emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
                 emitter.onNext("File: ${f.name} Start..\n")
 
-                if (isEncrypted) {
+                if (printDecrypted) {
                     emitter.onNext(readFileDecrypted(f.absolutePath))
                 } else {
                     f.forEachLine {
@@ -81,7 +79,7 @@ object LogExporter {
         }
     }
 
-    private fun compressPackage(emitter: ObservableEmitter<String>, isEncrypted: Boolean) {
+    private fun compressPackage(emitter: ObservableEmitter<String>, exportDecrypted: Boolean) {
         //First entry is Zip Name
         this.zipName = files.first
 
@@ -94,7 +92,7 @@ object LogExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (isEncrypted) {
+            if (exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend)
             } else {
                 zipFilesOnly(emitter, filesToSend)
@@ -102,7 +100,7 @@ object LogExporter {
 
         } else {
 
-            if (isEncrypted) {
+            if (exportDecrypted) {
                 decryptFirstThenZip(emitter, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)
@@ -147,31 +145,39 @@ object LogExporter {
                                 emitter.onError(it)
                         },
                         onComplete = {
-                            PLog.getLogBus().send(LogEvents.PLOGS_EXPORTED)
+                            doOnZipComplete()
                         }
                 )
     }
 
     private fun zipFilesAndFolder(emitter: ObservableEmitter<String>, directory: String) {
         zipAll(directory, exportPath + zipName)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                        onNext = {
+                            if (PLog.getPLogger()?.isDebuggable!!)
+                                PLog.logThis(TAG, "zipFilesAndFolder", "Output Zip: $zipName", LogLevel.INFO)
 
-        readZip(exportPath + zipName)
-        /* .subscribeOn(Schedulers.io())
-         .observeOn(AndroidSchedulers.mainThread())
-         .subscribeBy(
-                 onNext = {
-                     if (PLog.getPLogger()?.isDebuggable!!)
-                         PLog.logThis(TAG, "zipFilesAndFolder", "Output Zip: $zipFileName", LogLevel.INFO)
+                            emitter.onNext(exportPath + zipName)
+                        },
+                        onError = {
+                            if (!emitter.isDisposed)
+                                emitter.onError(it)
+                        },
+                        onComplete = {
+                            doOnZipComplete()
+                        }
+                )
+    }
 
-                     emitter.onNext(exportPath + zipFileName)
-                 },
-                 onError = {
-                     if (!emitter.isDisposed)
-                         emitter.onError(it)
-                 },
-                 onComplete = {
-                     PLog.getLogBus().send(LogEvents.PLOGS_EXPORTED)
-                 }
-         )*/
+    private fun doOnZipComplete() {
+        PLog.getLogBus().send(LogEvents.PLOGS_EXPORTED)
+
+        //Print zip entries
+        FilterUtils.readZipEntries(exportPath + zipName)
+
+        //Clear all copied files
+        FilterUtils.deleteFilesExceptZip()
     }
 }
