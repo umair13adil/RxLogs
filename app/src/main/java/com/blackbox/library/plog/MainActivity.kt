@@ -11,11 +11,11 @@ import android.util.Log
 import android.widget.Toast
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.models.LogRequestType
 import com.blackbox.plog.pLogs.models.PLogger
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     val TAG: String = MainActivity::class.java.simpleName
     var PERMISSION_CODE = 9234
     var ENCRYPTION_KEY = "23233526436245232364264262343243"
-    var encryptLogs = true
+    var encryptLogs = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         //Will export PLogs
         export_plogs.setOnClickListener {
 
-            PLog.getZippedLog(LogRequestType.TODAY, encryptLogs)
+            PLog.getZippedLog(ExportType.ALL, false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
         //Will Export custom data log
         export_data_logs.setOnClickListener {
 
-            myLogs.getZippedLogs(encryptLogs)
+            myLogs.getZippedLogs(false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in PLogs
         print_plogs.setOnClickListener {
 
-            PLog.getLoggedData(LogRequestType.TODAY, true)
+            PLog.getLoggedData(ExportType.TODAY, true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
