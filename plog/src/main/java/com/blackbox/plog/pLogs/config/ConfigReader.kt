@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.config
 
 import com.blackbox.plog.pLogs.formatter.FormatType
+import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
@@ -29,6 +30,7 @@ object ConfigReader {
                 var currentValue = ""
                 var currentElement = false
                 var logTypesTag = false
+                var logLevelsTag = false
                 var autoExportlogTypesTag = false
 
                 // This method is invoked when start parse xml element node use sax parser.
@@ -40,16 +42,94 @@ object ConfigReader {
 
                     when (localName) {
 
+                        ROOT_TAG -> {
+                            logsConfig.isDebuggable = readAttribute(attributes, IS_DEBUGGABLE_ATTR).toBoolean()
+                            logsConfig.enabled = readAttribute(attributes, ENABLED_ATTR).toBoolean()
+                        }
+
+                        LOG_LEVELS_ENABLED_TAG -> {
+                            logLevelsTag = true
+                        }
+
                         LOG_TYPES_ENABLED_TAG -> {
                             logTypesTag = true
                         }
 
                         FORMAT_TYPE_TAG -> {
-                            logTypesTag = false
+                            logsConfig.formatType = FormatType.valueOf(readAttribute(attributes, VALUE_ATTR))
+                            logsConfig.attachTimeStamp = readAttribute(attributes, ATTACH_TIME_STAMPS_ATTR).toBoolean()
+                            logsConfig.attachNoOfFiles = readAttribute(attributes, ATTACH_NO_OF_FILES_ATTR).toBoolean()
+                            logsConfig.customFormatOpen = readAttribute(attributes, FORMAT_CUSTOM_OPEN_ATTR)
+                            logsConfig.customFormatClose = readAttribute(attributes, FORMAT_CUSTOM_CLOSE_ATTR)
+                        }
+
+                        LOGS_RETENTION_TAG -> {
+                            logsConfig.logsRetentionPeriodInDays = readAttribute(attributes, VALUE_ATTR).toInt()
+                        }
+
+                        ZIP_RETENTION_TAG -> {
+                            logsConfig.zipsRetentionPeriodInDays = readAttribute(attributes, VALUE_ATTR).toInt()
+                        }
+
+                        AUTO_CLEAR_TAG -> {
+                            logsConfig.autoClearLogsOnExport = readAttribute(attributes, VALUE_ATTR).toBoolean()
+                        }
+
+                        EXPORT_TAG -> {
+                            logsConfig.exportFileNamePreFix = readAttribute(attributes, NAME_PREFIX_ATTR)
+                            logsConfig.exportFileNamePostFix = readAttribute(attributes, NAME_POSTFIX_ATTR)
+                            logsConfig.zipFileName = readAttribute(attributes, ZIP_FILE_NAME_ATTR)
+                        }
+
+                        AUTO_EXPORT_ERRORS_TAG -> {
+                            logsConfig.autoExportErrors = readAttribute(attributes, VALUE_ATTR).toBoolean()
+                        }
+
+                        ENCRYPTION_ENABLED_TAG -> {
+                            logsConfig.encryptionEnabled = readAttribute(attributes, VALUE_ATTR).toBoolean()
+                            logsConfig.encryptionKey = readAttribute(attributes, VALUE_ATTR)
+                        }
+
+                        LOG_FILE_SIZE_TAG -> {
+                            logsConfig.singleLogFileSize = readAttribute(attributes, VALUE_ATTR).toInt()
+                        }
+
+                        LOG_FILES_MAX_TAG -> {
+                            logsConfig.logFilesLimit = readAttribute(attributes, VALUE_ATTR).toInt()
+                        }
+
+                        DIRECTORY_TAG -> {
+                            logsConfig.directoryStructure = DirectoryStructure.valueOf(readAttribute(attributes, VALUE_ATTR))
+                            logsConfig.nameForEventDirectory = readAttribute(attributes, NAME_FOR_EVENT_DIR_ATTR)
+                        }
+
+                        LOG_SYSTEM_CRASHES_TAG -> {
+                            logsConfig.logSystemCrashes = readAttribute(attributes, VALUE_ATTR).toBoolean()
                         }
 
                         AUTO_EXPORT_TYPES_TAG -> {
                             autoExportlogTypesTag = true
+                            logsConfig.autoExportLogTypesPeriod = readAttribute(attributes, VALUE_ATTR).toInt()
+                        }
+
+                        LOGS_DELETE_DATE_TAG -> {
+                            logsConfig.logsDeleteDate = readAttribute(attributes, VALUE_ATTR)
+                        }
+
+                        ZIP_DELETE_DATE_TAG -> {
+                            logsConfig.zipDeleteDate = readAttribute(attributes, VALUE_ATTR)
+                        }
+
+                        LOGS_SAVE_PATH_TAG -> {
+                            logsConfig.savePath = readAttribute(attributes, VALUE_ATTR)
+                        }
+
+                        LOGS_EXPORT_PATH_TAG -> {
+                            logsConfig.exportPath = readAttribute(attributes, VALUE_ATTR)
+                        }
+
+                        CSV_TAG -> {
+                            logsConfig.csvDeliminator = readAttribute(attributes, VALUE_ATTR)
                         }
                     }
                 }
@@ -61,77 +141,16 @@ object ConfigReader {
 
                     when (localName) {
 
-                        TYPE_TAG -> {
+                        VALUE_ATTR -> {
+
+                            if (logLevelsTag)
+                                logsConfig.logLevelsEnabled.add(LogLevel.valueOf(currentValue))
 
                             if (logTypesTag)
                                 logsConfig.logTypesEnabled.add(currentValue)
 
                             if (autoExportlogTypesTag)
                                 logsConfig.autoExportLogTypes.add(currentValue)
-                        }
-
-                        FORMAT_TYPE_TAG -> {
-                            logsConfig.formatType = FormatType.valueOf(currentValue)
-                        }
-
-                        LOGS_RETENTION_TAG -> {
-                            logsConfig.logsRetentionPeriodInDays = currentValue.toInt()
-                        }
-
-                        ZIP_RETENTION_TAG -> {
-                            logsConfig.zipsRetentionPeriodInDays = currentValue.toInt()
-                        }
-
-                        AUTO_CLEAR_TAG -> {
-                            logsConfig.autoClearLogsOnExport = currentValue.toBoolean()
-                        }
-
-                        NAME_PREFIX_TAG -> {
-                            logsConfig.exportFileNamePreFix = currentValue
-                        }
-
-                        NAME_POSTFIX_TAG -> {
-                            logsConfig.exportFileNamePostFix = currentValue
-                        }
-
-                        AUTO_EXPORT_ERRORS_TAG -> {
-                            logsConfig.autoExportErrors = currentValue.toBoolean()
-                        }
-
-                        ENCRYPTION_ENABLED_TAG -> {
-                            logsConfig.encryptionEnabled = currentValue.toBoolean()
-                        }
-
-                        ENCRYPTION_KEY_TAG -> {
-                            logsConfig.encryptionKey = currentValue
-                        }
-
-                        LOG_FILE_SIZE_TAG -> {
-                            logsConfig.singleLogFileSize = currentValue.toInt()
-                        }
-
-                        LOG_FILES_MAX_TAG -> {
-                            logsConfig.logFilesLimit = currentValue.toInt()
-                        }
-
-                        DIRECTORY_TAG -> {
-                            logsConfig.directoryStructure = DirectoryStructure.valueOf(currentValue)
-                        }
-
-                        LOG_SYSTEM_CRASHES_TAG -> {
-                            logsConfig.logSystemCrashes = currentValue.toBoolean()
-                        }
-
-                        AUTO_EXPORT_PERIOD_TAG -> {
-                            logsConfig.autoExportLogTypesPeriod = currentValue.toInt()
-                        }
-
-                        LOGS_DELETE_DATE_TAG -> {
-                            logsConfig.logsDeleteDate = currentValue
-                        }
-
-                        ZIP_DELETE_DATE_TAG -> {
-                            logsConfig.zipDeleteDate = currentValue
                         }
 
                     }
@@ -155,4 +174,8 @@ object ConfigReader {
 
         return logsConfig
     }
+}
+
+fun readAttribute(attributes: Attributes, name: String): String {
+    return attributes.getValue(name)
 }

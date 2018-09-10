@@ -38,21 +38,26 @@ fun checkFileExists(path: String) {
 /*
  * This will setup directory structure according to provided 'Directory Structure' Value.
  */
-fun setupFilePaths(): String {
+fun setupFilePaths(fileName: String = ""): String {
 
     //Create Root folder
     val rootFolderName = "Logs"
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
     Utils.instance.createDirIfNotExists(rootFolderPath)
 
-    when (PLog.getPLogger()?.directoryStructure) {
+    when (PLog.logsConfig?.directoryStructure!!) {
 
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today
             Utils.instance.createDirIfNotExists(folderPath)
 
-            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
-            return folderPath + File.separator + hourlyFileName + PLog.getPLogger()?.logFileExtension?.ext!!
+            return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
+                val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
+                folderPath + File.separator + hourlyFileName + PLog.logsConfig?.logFileExtension?.ext
+            } else {
+                //Otherwise it's DataLogger file.
+                folderPath + File.separator + fileName + PLog.logsConfig?.logFileExtension?.ext
+            }
         }
 
         DirectoryStructure.FOR_EVENT -> {
@@ -60,18 +65,26 @@ fun setupFilePaths(): String {
             val parentPath = rootFolderPath + DateControl.instance.today
             Utils.instance.createDirIfNotExists(parentPath)
 
-            val folderPath = parentPath + File.separator + PLog.getPLogger()?.nameForEventDirectory!!
+            val folderPath = parentPath + File.separator + PLog.logsConfig?.nameForEventDirectory
             Utils.instance.createDirIfNotExists(folderPath)
 
-            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
-            return folderPath + File.separator + hourlyFileName + PLog.getPLogger()?.logFileExtension?.ext!!
+            return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
+                val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
+                folderPath + File.separator + hourlyFileName + PLog.logsConfig?.logFileExtension?.ext
+            } else {
+                //Otherwise it's DataLogger file.
+                folderPath + File.separator + fileName + PLog.logsConfig?.logFileExtension?.ext
+            }
         }
 
         DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
             val todayPath = DateControl.instance.today
-            return rootFolderPath + File.separator + todayPath + PLog.getPLogger()?.logFileExtension?.ext!!
+            return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
+                rootFolderPath + File.separator + todayPath + PLog.logsConfig?.logFileExtension?.ext
+            } else {
+                //Otherwise it's DataLogger file.
+                rootFolderPath + File.separator + fileName + PLog.logsConfig?.logFileExtension?.ext
+            }
         }
     }
-
-    return ""
 }

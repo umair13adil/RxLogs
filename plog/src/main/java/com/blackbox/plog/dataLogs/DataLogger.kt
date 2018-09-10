@@ -2,6 +2,8 @@ package com.blackbox.plog.dataLogs
 
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.exporter.ExportType
+import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
@@ -10,10 +12,10 @@ import java.io.File
  * Created by umair on 04/01/2018.
  */
 class DataLogger(
-        var savePath: String = PLog.getPLogger()?.savePath!!,
-        var exportPath: String = PLog.getPLogger()?.exportPath!!,
+        var exportPath: String = FilterUtils.getPathForType(ExportType.TODAY),
         var logFileName: String = "log",
-        var zipFileName: String = PLog.getPLogger()?.zipFileName!!
+        var savePath: String = setupFilePaths(logFileName),
+        var zipFileName: String = PLog.logsConfig?.zipFileName!!
 ) {
 
     companion object {
@@ -58,12 +60,10 @@ class DataLogger(
 
         dataLoggerCalledBeforePLoggerException()
 
-        val path = setupPaths()
-
-        if (PLog.getPLogger()?.encrypt!!) {
-            writeToFileEncrypted(dataToWrite, PLog.getPLogger()?.secretKey!!, path)
+        if (PLog.logsConfig?.encryptionEnabled!!) {
+            writeToFileEncrypted(dataToWrite, PLog.logsConfig?.secretKey!!, logPath)
         } else {
-            writeToFile(path, dataToWrite)
+            writeToFile(logPath, dataToWrite)
         }
     }
 
@@ -83,12 +83,10 @@ class DataLogger(
 
         dataLoggerCalledBeforePLoggerException()
 
-        val path = setupPaths()
-
-        if (PLog.getPLogger()?.encrypt!!) {
-            appendToFileEncrypted(dataToWrite, PLog.getPLogger()?.secretKey!!, path)
+        if (PLog.logsConfig?.encryptionEnabled!!) {
+            appendToFileEncrypted(dataToWrite, PLog.logsConfig?.secretKey!!, logPath)
         } else {
-            appendToFile(path, dataToWrite)
+            appendToFile(logPath, dataToWrite)
         }
     }
 
@@ -101,11 +99,6 @@ class DataLogger(
      */
     fun clearLogs() {
         File(logPath).deleteRecursively()
-    }
-
-    private fun setupPaths(): String {
-        Utils.instance.createDirIfNotExists(logPath)
-        return logPath + File.separator + logFileName + PLog.getPLogger()?.logFileExtension?.ext!!
     }
 
     /**

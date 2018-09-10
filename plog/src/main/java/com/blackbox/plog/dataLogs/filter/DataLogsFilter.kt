@@ -12,7 +12,7 @@ object DataLogsFilter {
         val directory = File(logsPath)
         val files = directory.listFiles()
 
-        if (files != null && files.size > 0) {
+        if (files != null && files.isNotEmpty()) {
 
             size = files.size
 

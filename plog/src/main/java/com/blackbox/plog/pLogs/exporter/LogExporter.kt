@@ -24,7 +24,7 @@ object LogExporter {
 
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
-    private var zipName = PLog.getPLogger()?.zipFileName!!
+    private var zipName = PLog.logsConfig?.zipFileName
 
     /*
      * Will filter & export log files to zip package.
@@ -83,7 +83,7 @@ object LogExporter {
         //First entry is Zip Name
         this.zipName = files.first
 
-        if (PLog.getPLogger()?.zipFilesOnly!!) {
+        if (PLog.logsConfig?.zipFilesOnly!!) {
 
             val filesToSend = files.second //List of filtered files
 
@@ -109,12 +109,12 @@ object LogExporter {
     }
 
     private fun decryptFirstThenZip(emitter: ObservableEmitter<String>, filesToSend: List<File> = arrayListOf<File>(), exportedPath: String = "") {
-        decryptSaveFiles(filesToSend, exportPath, zipName)
+        decryptSaveFiles(filesToSend, exportPath, zipName!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getPLogger()?.isDebuggable!!)
+                            if (PLog.logsConfig?.isDebuggable!!)
                                 PLog.logThis(TAG, "decryptFirstThenZip", "Output Zip: $zipName", LogLevel.INFO)
 
                             emitter.onNext(it)
@@ -135,7 +135,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getPLogger()?.isDebuggable!!)
+                            if (PLog.logsConfig?.isDebuggable!!)
                                 PLog.logThis(TAG, "zipFilesOnly", "Output Zip: $zipName", LogLevel.INFO)
 
                             emitter.onNext(exportPath + zipName)
@@ -156,7 +156,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getPLogger()?.isDebuggable!!)
+                            if (PLog.logsConfig?.isDebuggable!!)
                                 PLog.logThis(TAG, "zipFilesAndFolder", "Output Zip: $zipName", LogLevel.INFO)
 
                             emitter.onNext(exportPath + zipName)

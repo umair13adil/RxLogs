@@ -51,7 +51,7 @@ object DataLogsExporter {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
-                                    if (PLog.getPLogger()?.isDebuggable!!)
+                                    if (PLog.logsConfig?.isDebuggable!!)
                                         PLog.logThis(TAG, "getZippedLog", "Output Zip: ${exportFileName}", LogLevel.INFO)
 
                                     emitter.onNext(it)
@@ -70,7 +70,7 @@ object DataLogsExporter {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(
                                 onNext = {
-                                    if (PLog.getPLogger()?.isDebuggable!!)
+                                    if (PLog.logsConfig?.isDebuggable!!)
                                         PLog.logThis(TAG, "getZippedLog", "Output Zip: $exportPath${exportFileName}", LogLevel.INFO)
 
                                     emitter.onNext(exportPath + exportFileName)
@@ -132,7 +132,7 @@ object DataLogsExporter {
 
         val files = DataLogsFilter.getFilesForLogName(logPath, exportPath, logFileName)
 
-        if (PLog.getPLogger()?.attachTimeStamp!!)
+        if (PLog.logsConfig?.attachTimeStamp!!)
             timeStamp = "_" + DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis())
 
         val zipName = "$exportFileName$timeStamp.zip"

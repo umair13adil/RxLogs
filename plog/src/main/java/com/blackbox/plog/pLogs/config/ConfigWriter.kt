@@ -26,6 +26,8 @@ object ConfigWriter {
 
             // create the root element
             val rootEle = dom.createElement(ROOT_TAG)
+            rootEle.setAttribute(IS_DEBUGGABLE_ATTR, logsConfig.isDebuggable.toString())
+            rootEle.setAttribute(ENABLED_ATTR, logsConfig.enabled.toString())
 
             dataToWrite(dom, logsConfig, rootEle)
 

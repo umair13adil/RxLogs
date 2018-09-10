@@ -1,7 +1,7 @@
 package com.blackbox.plog.pLogs.formatter
 
+import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.models.LogData
-import com.blackbox.plog.pLogs.models.PLogger
 
 /**
  * Created by umair on 03/01/2018.
@@ -55,18 +55,19 @@ object LogFormatter {
                 TIME + dividerClose + dividerOpen + TYPE + dividerClose + "\n"
     }
 
-    internal fun getFormatType(data: LogData, pLogger: PLogger): String {
+    internal fun getFormatType(data: LogData): String {
 
         var t = ""
+        val providedFormat = PLog.logsConfig?.formatType!!
 
-        when (pLogger.formatType) {
-            FormatType.FORMAT_CURLY -> t = formatCurly(data)
+        t = when (providedFormat) {
+            FormatType.FORMAT_CURLY -> formatCurly(data)
 
-            FormatType.FORMAT_SQUARE -> t = formatSquare(data)
+            FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-            FormatType.FORMAT_CSV -> t = formatCSV(data, pLogger.csvDeliminator)
+            FormatType.FORMAT_CSV -> formatCSV(data, PLog.logsConfig?.csvDeliminator!!)
 
-            FormatType.FORMAT_CUSTOM -> t = formatCustom(data, pLogger.customFormatOpen, pLogger.customFormatClose)
+            FormatType.FORMAT_CUSTOM -> formatCustom(data, PLog.logsConfig?.customFormatOpen!!, PLog.logsConfig?.customFormatClose!!)
         }
 
         return t

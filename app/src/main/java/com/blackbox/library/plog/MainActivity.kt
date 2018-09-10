@@ -3,28 +3,18 @@ package com.blackbox.library.plog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
-import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.exporter.ExportType
-import com.blackbox.plog.pLogs.formatter.FormatType
-import com.blackbox.plog.pLogs.formatter.TimeStampFormat
-import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.models.PLogger
-import com.blackbox.plog.pLogs.structure.DirectoryStructure
-import com.blackbox.plog.utils.DateControl
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,69 +27,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
-
-        //This must be initialized before calling PLog
-        val pLogger = PLogger(
-                savePath = logsPath,
-                exportPath = logsPath + File.separator + "PLogsOutput",
-                zipFileName = "MyLogs",
-                isDebuggable = true,
-                logFileExtension = LogExtension.TXT,
-                formatType = FormatType.FORMAT_CURLY,
-                attachTimeStamp = true,
-                attachNoOfFiles = true,
-                timeStampFormat = TimeStampFormat.DATE_FORMAT_1,
-                encrypt = encryptLogs,
-                encryptionKey = ENCRYPTION_KEY,
-                enabled = true,
-                directoryStructure = DirectoryStructure.FOR_EVENT,
-                nameForEventDirectory = "My Name",
-                zipFilesOnly = false,
-                autoClearExports = true
-        ).also {
-            it.getLogEventsListener()
-                    .doOnNext {
-                        PLog.logThis(TAG, "getLogEventsListener", "Event: $it", LogLevel.INFO)
-                    }
-                    .subscribe()
-        }
-
-        pLogger.setEventNameForDirectory("My Name 2")
-
-        val logsConfig = LogsConfig(
-                logTypesEnabled = arrayListOf("Errors", "Severe"),
-                formatType = FormatType.FORMAT_CUSTOM,
-                logsRetentionPeriodInDays = 17,
-                zipsRetentionPeriodInDays = 5,
-                autoExportLogTypes = arrayListOf("Deliveries", "Locations"),
-                autoExportErrors = true,
-                logsDeleteDate = DateControl.instance.currentDate
-        )
-        PLog.getLogsConfig()?.updateLogsDeleteDate("20129034")
-        //PLog.setLogsConfig(logsConfig)
-
-        PLog.getLogsConfig()?.also {
-            it.logTypesEnabled.forEach {
-                PLog.logThis(TAG, "enabled", it, LogLevel.INFO)
-            }
-
-            PLog.logThis(TAG, "value", it.logsRetentionPeriodInDays.toString(), LogLevel.INFO)
-            PLog.logThis(TAG, "value", it.zipsRetentionPeriodInDays.toString(), LogLevel.INFO)
-            PLog.logThis(TAG, "value", it.autoExportErrors.toString(), LogLevel.INFO)
-
-            it.autoExportLogTypes.forEach {
-                PLog.logThis(TAG, "enabled", it, LogLevel.INFO)
-            }
-
-            PLog.logThis(TAG, "Delete Date:", it.logsDeleteDate, LogLevel.INFO)
-        }
-
         //This must be initialized before calling DataLogger
         //Each DataLogger builder can be used to log different data files
-        val myLogs = DataLogger(
+        /*val myLogs = DataLogger(
                 logFileName = "SevereLogs"
-        )
+        )*/
+
+        //This will get 'DataLogger' object for predefined type in ConfigFile.
+        val locationsLog = PLog.getLoggerFor("Locations")
+        val notificationsLog = PLog.getLoggerFor("Notifications")
 
         //Will log to PLogs
         log_plog_event.setOnClickListener {
@@ -118,10 +54,14 @@ class MainActivity : AppCompatActivity() {
 
             if (editText.text.isEmpty()) {
                 dataToLog = "Log: " + Math.random() + "\n"
-                myLogs.appendToFile(dataToLog)
+
+                locationsLog?.appendToFile(dataToLog)
+                notificationsLog?.appendToFile(dataToLog)
             } else {
                 dataToLog = editText.text.toString() + "\n"
-                myLogs.appendToFile(dataToLog)
+
+                locationsLog?.appendToFile(dataToLog)
+                notificationsLog?.appendToFile(dataToLog)
             }
 
             Log.i(TAG, "Data Logged: $dataToLog")
@@ -134,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             PLog.clearLogs()
 
             //Will clear All data logs for tha data location provided in builder
-            myLogs.clearLogs()
+            locationsLog?.clearLogs()
 
             Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
@@ -162,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         //Will Export custom data log
         export_data_logs.setOnClickListener {
 
-            myLogs.getZippedLogs(false)
+            locationsLog?.getZippedLogs(false)!!
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -200,7 +140,7 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in DataLogs
         print_data_logs.setOnClickListener {
 
-            myLogs.getLoggedData(true)
+            locationsLog?.getLoggedData(true)!!
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -231,7 +171,6 @@ class MainActivity : AppCompatActivity() {
 
         //Uncomment this line to cause a crash
         //throw (RuntimeException(Throwable("Error")))
-
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

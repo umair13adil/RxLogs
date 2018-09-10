@@ -5,17 +5,15 @@ package com.blackbox.plog.pLogs
  */
 
 import android.util.Log
-import com.blackbox.plog.pLogs.config.ConfigReader
-import com.blackbox.plog.pLogs.config.ConfigWriter
-import com.blackbox.plog.pLogs.config.LogsConfig
-import com.blackbox.plog.pLogs.config.XML_PATH
+import com.blackbox.plog.dataLogs.DataLogger
+import com.blackbox.plog.pLogs.config.*
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.models.PLogger
+import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
@@ -23,18 +21,20 @@ import java.io.File
 object PLog {
 
     init {
+
+        //Setup RxBus for notifications.
         setLogBus(RxBus())
+
+        Log.i("PLog", "PLogger Initialized!")
     }
 
     private val TAG = PLog::class.java.simpleName
 
     @JvmStatic
-    private var pLogger: PLogger = PLogger()
-
-    @JvmStatic
     private lateinit var bus: RxBus
 
-    private var logsConfig: LogsConfig? = null
+    internal var logsConfig: LogsConfig? = null
+    internal var logTypes = hashMapOf<String, DataLogger>()
 
     /**
      * Gets output path.
@@ -44,7 +44,7 @@ object PLog {
      * @return the output path
      */
     internal val outputPath: String
-        get() = pLogger.exportPath + File.separator
+        get() = logsConfig?.exportPath + File.separator
 
     internal val exportTempPath: String
         get() = outputPath + "Temp" + File.separator
@@ -57,15 +57,7 @@ object PLog {
      * @return the save path
      */
     internal val logPath: String
-        get() = pLogger.savePath + File.separator
-
-    internal fun setPLogger(pLog: PLogger) {
-        pLogger = pLog
-    }
-
-    internal fun getPLogger(): PLogger? {
-        return pLogger
-    }
+        get() = logsConfig?.savePath + File.separator
 
     internal fun getLogBus(): RxBus {
         return bus
@@ -75,22 +67,49 @@ object PLog {
         bus = listener
     }
 
-    fun setLogsConfig(config: LogsConfig) {
+    /*
+     * This will set logs configuration.
+     *
+     * @param 'saveToFile' if true, file will be written to storage
+     */
+    fun setLogsConfig(config: LogsConfig, saveToFile: Boolean = false) {
         logsConfig = config
-        ConfigWriter.saveToXML(config)
+
+        if (saveToFile) //Only save if parameter value 'true'
+            ConfigWriter.saveToXML(config)
+
+        //Perform operations on Initializing.
+        doOnInit()
     }
 
-    fun getLogsConfig(): LogsConfig? {
-        return if (File(XML_PATH).exists() && logsConfig == null) {
+    /*
+     * Get LogsConfig XML file.
+     */
+    fun getLogsConfigFromXML(): LogsConfig? {
+
+        if (localConfigurationExists())
             logsConfig = ConfigReader.readXML()
-            logsConfig
-        } else if (!File(XML_PATH).exists() && logsConfig == null) {
-            ConfigWriter.saveToXML(LogsConfig())
-            logsConfig = ConfigReader.readXML()
-            logsConfig
-        } else {
-            logsConfig
+
+        return null
+    }
+
+    /*
+     * Will send 'true' if local configuration XML exists.
+     */
+    fun localConfigurationExists(): Boolean {
+        return File(XML_PATH).exists()
+    }
+
+    /*
+     * Check if logs configuration file is set.
+     */
+    fun isLogsConfigSet(): Boolean {
+
+        logsConfig?.let {
+            return true
         }
+
+        throw IllegalArgumentException(Throwable("No logs configuration provided!"))
     }
 
     /**
@@ -106,10 +125,14 @@ object PLog {
     fun logThis(className: String, functionName: String, text: String, type: LogLevel) {
 
         //Do nothing if logs are disabled
-        if (!pLogger.enabled)
+        if (!logsConfig?.enabled!!)
             return
 
-        if (pLogger.encrypt) {
+        //Do nothing if log level type is disabled
+        if (!isLogLevelEnabled(type))
+            return
+
+        if (logsConfig?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, text, type.level)
         } else {
             writeSimpleLogs(className, functionName, text, type.level)
@@ -129,10 +152,14 @@ object PLog {
     fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel = LogLevel.ERROR) {
 
         //Do nothing if logs are disabled
-        if (!pLogger.enabled)
+        if (!logsConfig?.enabled!!)
             return
 
-        if (pLogger.encrypt) {
+        //Do nothing if log level type is disabled
+        if (!isLogLevelEnabled(type))
+            return
+
+        if (logsConfig?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
         } else {
             writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
@@ -152,10 +179,14 @@ object PLog {
     fun logExc(className: String, functionName: String, e: Exception, type: LogLevel = LogLevel.ERROR) {
 
         //Do nothing if logs are disabled
-        if (!pLogger.enabled)
+        if (!logsConfig?.enabled!!)
             return
 
-        if (pLogger.encrypt) {
+        //Do nothing if log level type is disabled
+        if (!isLogLevelEnabled(type))
+            return
+
+        if (logsConfig?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
         } else {
             writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
@@ -201,11 +232,11 @@ object PLog {
 
         checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat.value), type)
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(logsConfig?.timeStampFormat?.value!!), type)
 
-        val logFormatted = LogFormatter.getFormatType(logData, pLogger)
+        val logFormatted = LogFormatter.getFormatType(logData)
 
-        if (PLog.pLogger.isDebuggable)
+        if (PLog.logsConfig?.isDebuggable!!)
             Log.i(TAG, logFormatted)
 
         appendToFile(path, logFormatted)
@@ -216,24 +247,27 @@ object PLog {
      */
     private fun writeEncryptedLogs(className: String, functionName: String, text: String, type: String) {
 
-        if (pLogger.secretKey == null)
+        if (logsConfig?.secretKey == null)
             return
 
         val path = setupFilePaths()
 
         checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(pLogger.timeStampFormat.value), type)
+        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(logsConfig?.timeStampFormat?.value), type)
 
-        val logFormatted = LogFormatter.getFormatType(logData, pLogger)
+        val logFormatted = LogFormatter.getFormatType(logData)
 
-        if (PLog.pLogger.isDebuggable)
+        if (PLog.logsConfig?.isDebuggable!!)
             Log.i(TAG, logFormatted)
 
-        appendToFileEncrypted(logFormatted, pLogger.secretKey!!, path)
+        appendToFileEncrypted(logFormatted, logsConfig?.secretKey!!, path)
     }
 
 
+    /*
+     * This will return observable to subscribe to logger events.
+     */
     fun getLogEvents(): Observable<LogEvents> {
 
         return Observable.create {
@@ -243,6 +277,21 @@ object PLog {
                     emitter.onNext(it)
                 }
             }
+        }
+    }
+
+    /*
+     * This will return 'DataLogger' for log type defined in Config File.
+     */
+    fun getLoggerFor(type: String): DataLogger? {
+
+        if (PLog.isLogsConfigSet()) {
+            if (logTypes.containsKey(type))
+                return logTypes.get(type)
+
+            throw IllegalArgumentException(Throwable("No log type defined for provided type '$type'"))
+        } else {
+            return null
         }
     }
 }

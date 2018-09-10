@@ -12,11 +12,21 @@ import javax.xml.transform.stream.StreamResult
 internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element) {
     var e: Element? = null
 
+    //Log Levels
+    val logLevelsEnabledElement = dom.createElement(LOG_LEVELS_ENABLED_TAG)
+    for (value in logsConfig.logLevelsEnabled) {
+
+        e = dom.createElement(VALUE_ATTR)
+        e!!.appendChild(dom.createTextNode(value.level))
+        logLevelsEnabledElement.appendChild(e)
+    }
+    rootEle.appendChild(logLevelsEnabledElement)
+
     //Log Types
     val logTypesEnabledElement = dom.createElement(LOG_TYPES_ENABLED_TAG)
     for (value in logsConfig.logTypesEnabled) {
 
-        e = dom.createElement(TYPE_TAG)
+        e = dom.createElement(VALUE_ATTR)
         e!!.appendChild(dom.createTextNode(value))
         logTypesEnabledElement.appendChild(e)
     }
@@ -24,124 +34,105 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
 
     //Format Type
     val formatTypeElement = dom.createElement(FORMAT_TYPE_TAG)
-    e = dom.createElement(TYPE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.formatType.value))
-    formatTypeElement.appendChild(e)
+    formatTypeElement.setAttribute(VALUE_ATTR, logsConfig.formatType.value)
+    formatTypeElement.setAttribute(ATTACH_TIME_STAMPS_ATTR, logsConfig.attachTimeStamp.toString())
+    formatTypeElement.setAttribute(ATTACH_NO_OF_FILES_ATTR, logsConfig.attachNoOfFiles.toString())
+    formatTypeElement.setAttribute(TIME_STAMP_FORMAT_ATTR, logsConfig.timeStampFormat.value)
+    formatTypeElement.setAttribute(LOG_FILE_EXT_ATTR, logsConfig.logFileExtension.ext)
+    formatTypeElement.setAttribute(FORMAT_CUSTOM_OPEN_ATTR, logsConfig.customFormatOpen)
+    formatTypeElement.setAttribute(FORMAT_CUSTOM_CLOSE_ATTR, logsConfig.customFormatClose)
     rootEle.appendChild(formatTypeElement)
 
     //Logs Retention Days
     val logsRetainElement = dom.createElement(LOGS_RETENTION_TAG)
-    e = dom.createElement(DAYS_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.logsRetentionPeriodInDays.toString()))
-    logsRetainElement.appendChild(e)
+    logsRetainElement.setAttribute(VALUE_ATTR, logsConfig.logsRetentionPeriodInDays.toString())
     rootEle.appendChild(logsRetainElement)
 
     //Zip Retention Days
     val zipRetainElement = dom.createElement(ZIP_RETENTION_TAG)
-    e = dom.createElement(DAYS_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.zipsRetentionPeriodInDays.toString()))
-    zipRetainElement.appendChild(e)
+    zipRetainElement.setAttribute(VALUE_ATTR, logsConfig.zipsRetentionPeriodInDays.toString())
     rootEle.appendChild(zipRetainElement)
 
     //Auto Clear Logs
     val autoClearElement = dom.createElement(AUTO_CLEAR_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.autoClearLogsOnExport.toString()))
-    autoClearElement.appendChild(e)
+    autoClearElement.setAttribute(VALUE_ATTR, logsConfig.autoClearLogsOnExport.toString())
     rootEle.appendChild(autoClearElement)
 
     //File Export Name
-    val exportNameElement = dom.createElement(EXPORT_NAME_TAG)
-    //Prefix
-    e = dom.createElement(NAME_PREFIX_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.exportFileNamePreFix))
-    exportNameElement.appendChild(e)
-    //PostFix
-    e = dom.createElement(NAME_POSTFIX_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.exportFileNamePostFix))
-    exportNameElement.appendChild(e)
+    val exportNameElement = dom.createElement(EXPORT_TAG)
+    exportNameElement.setAttribute(ZIP_FILE_NAME_ATTR, logsConfig.zipFileName)
+    exportNameElement.setAttribute(NAME_PREFIX_ATTR, logsConfig.exportFileNamePreFix)
+    exportNameElement.setAttribute(NAME_POSTFIX_ATTR, logsConfig.exportFileNamePostFix)
+    exportNameElement.setAttribute(ZIP_FILES_ATTR, logsConfig.zipFilesOnly.toString())
     rootEle.appendChild(exportNameElement)
 
     //Auto Export Error Logs
     val autoExportErrorElement = dom.createElement(AUTO_EXPORT_ERRORS_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.autoExportErrors.toString()))
-    autoExportErrorElement.appendChild(e)
+    autoExportErrorElement.setAttribute(VALUE_ATTR, logsConfig.autoExportErrors.toString())
     rootEle.appendChild(autoExportErrorElement)
 
     //Encryption Enabled
     val encEnabledElement = dom.createElement(ENCRYPTION_ENABLED_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.encryptionEnabled.toString()))
-    encEnabledElement.appendChild(e)
+    encEnabledElement.setAttribute(VALUE_ATTR, logsConfig.encryptionEnabled.toString())
+    encEnabledElement.setAttribute(ENCRYPTION_KEY_ATTR, logsConfig.encryptionKey)
     rootEle.appendChild(encEnabledElement)
-
-    //Encryption Key
-    val encKeyElement = dom.createElement(ENCRYPTION_KEY_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.encryptionKey))
-    encKeyElement.appendChild(e)
-    rootEle.appendChild(encKeyElement)
 
     //Log file size MAX
     val logFileSizeElement = dom.createElement(LOG_FILE_SIZE_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.singleLogFileSize.toString()))
-    logFileSizeElement.appendChild(e)
+    logFileSizeElement.setAttribute(VALUE_ATTR, logsConfig.singleLogFileSize.toString())
     rootEle.appendChild(logFileSizeElement)
 
     //Log files MAX
     val logFilesMaxElement = dom.createElement(LOG_FILES_MAX_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.logFilesLimit.toString()))
-    logFilesMaxElement.appendChild(e)
+    logFilesMaxElement.setAttribute(VALUE_ATTR, logsConfig.logFilesLimit.toString())
     rootEle.appendChild(logFilesMaxElement)
 
     //Directory Structure
     val directoryElement = dom.createElement(DIRECTORY_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.directoryStructure.toString()))
-    directoryElement.appendChild(e)
+    directoryElement.setAttribute(VALUE_ATTR, logsConfig.directoryStructure.toString())
+    directoryElement.setAttribute(NAME_FOR_EVENT_DIR_ATTR, logsConfig.nameForEventDirectory)
     rootEle.appendChild(directoryElement)
 
     //Log System Crashes
     val crashesElement = dom.createElement(LOG_SYSTEM_CRASHES_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.logSystemCrashes.toString()))
-    crashesElement.appendChild(e)
+    crashesElement.setAttribute(VALUE_ATTR, logsConfig.logSystemCrashes.toString())
     rootEle.appendChild(crashesElement)
 
     //Auto Export Types
     val autoExportTypesElement = dom.createElement(AUTO_EXPORT_TYPES_TAG)
+    autoExportTypesElement.setAttribute(AUTO_EXPORT_PERIOD_ATTR, logsConfig.autoExportLogTypesPeriod.toString())
     for (value in logsConfig.autoExportLogTypes) {
 
-        e = dom.createElement(TYPE_TAG)
+        e = dom.createElement(VALUE_ATTR)
         e!!.appendChild(dom.createTextNode(value))
         autoExportTypesElement.appendChild(e)
     }
     rootEle.appendChild(autoExportTypesElement)
 
-    //Auto Export Period
-    val autoExportPeriodElement = dom.createElement(AUTO_EXPORT_PERIOD_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.autoExportLogTypesPeriod.toString()))
-    autoExportPeriodElement.appendChild(e)
-    rootEle.appendChild(autoExportPeriodElement)
-
-
     //Logs Delete date
     val logsDeleteDateElement = dom.createElement(LOGS_DELETE_DATE_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.logsDeleteDate))
-    logsDeleteDateElement.appendChild(e)
+    logsDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.logsDeleteDate)
     rootEle.appendChild(logsDeleteDateElement)
 
     //Zip Delete date
     val zipDeleteDateElement = dom.createElement(ZIP_DELETE_DATE_TAG)
-    e = dom.createElement(VALUE_TAG)
-    e!!.appendChild(dom.createTextNode(logsConfig.zipDeleteDate))
-    zipDeleteDateElement.appendChild(e)
+    zipDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.zipDeleteDate)
     rootEle.appendChild(zipDeleteDateElement)
+
+    //Save Path for Log Files
+    val logsSavePathElement = dom.createElement(LOGS_SAVE_PATH_TAG)
+    logsSavePathElement.setAttribute(VALUE_ATTR, logsConfig.savePath)
+    rootEle.appendChild(logsSavePathElement)
+
+    //Save Path for Log Files
+    val exportPathElement = dom.createElement(LOGS_EXPORT_PATH_TAG)
+    exportPathElement.setAttribute(VALUE_ATTR, logsConfig.exportPath)
+    rootEle.appendChild(exportPathElement)
+
+    //File Export Name
+    val csvElement = dom.createElement(CSV_TAG)
+    csvElement.setAttribute(CSV_DELIMINATOR_ATTR, logsConfig.csvDeliminator)
+    rootEle.appendChild(csvElement)
 }
 
 internal fun updateValue(value: String, tag: String) {
