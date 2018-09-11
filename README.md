@@ -22,6 +22,12 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 10. Custom data logging support with **'DataLogs'** logger.
 11. Encryption support added
 12. Auto Log system crashes
+13. Multiple directory structures
+14. Print logs as String
+15. Export all or single types of logs
+16. XML configuration support
+17. Logging events
+18. Advanced Automation
 
 ### Add to project:
 
