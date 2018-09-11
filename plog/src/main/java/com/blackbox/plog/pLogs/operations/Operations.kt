@@ -2,6 +2,7 @@ package com.blackbox.plog.pLogs.operations
 
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 
 internal fun doOnInit() {
@@ -16,7 +17,7 @@ internal fun doOnInit() {
             PLog.logsConfig = it
 
             //Send Event to notify that XML is loaded
-            PLog.getLogBus().send(LogEvents.LOGS_CONFIG_FOUND)
+            PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
         }
 
         //Create LogTypes for types Enabled

@@ -4,10 +4,12 @@ import android.app.Application
 import android.os.Environment
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.AppExceptionHandler
 import com.google.gson.Gson
@@ -38,7 +40,7 @@ class MainApplication : Application() {
 
         val logsConfig = LogsConfig(
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
-                logTypesEnabled = arrayListOf("Locations", "APIs", "Notifications"),
+                logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, "Deliveries"),
                 formatType = FormatType.FORMAT_CURLY,
                 logsRetentionPeriodInDays = 7,
                 zipsRetentionPeriodInDays = 7,
@@ -51,36 +53,49 @@ class MainApplication : Application() {
                 encryptionKey = "",
                 singleLogFileSize = 2048 * 2,
                 logFilesLimit = 30,
-                directoryStructure = DirectoryStructure.FOR_DATE,
+                directoryStructure = DirectoryStructure.FOR_EVENT,
+                nameForEventDirectory = "Job 101",
                 logSystemCrashes = true,
-                autoExportLogTypes = arrayListOf("Notifications", "Locations"),
+                autoExportLogTypes = arrayListOf(LogType.Location.type, LogType.Navigation.type),
                 autoExportLogTypesPeriod = 3,
                 logsDeleteDate = "",
                 zipDeleteDate = "",
-                savePath = logsPath,
-                exportPath = logsPath + File.separator + "PLogsOutput",
-                zipFileName = "MyLogs",
                 isDebuggable = true,
                 logFileExtension = LogExtension.TXT,
                 attachTimeStamp = false,
                 attachNoOfFiles = true,
                 timeStampFormat = TimeStampFormat.DATE_FORMAT_1,
-                nameForEventDirectory = "My Name",
-                zipFilesOnly = false
+                zipFilesOnly = false,
+                savePath = logsPath,
+                zipFileName = "MyLogs",
+                exportPath = logsPath + File.separator + "PLogsOutput"
         ).also {
             it.getLogEventsListener()
                     .doOnNext {
-                        PLog.logThis("PLogger", "getLogEventsListener", "Event: $it", LogLevel.INFO)
 
-                        PLog.getLogsConfigFromXML()?.also {
-                            PLog.logThis("PLog", "XML", Gson().toJson(it).toString(), LogLevel.INFO)
+                        when (it.event) {
+                            EventTypes.NEW_ERROR_REPORTED -> {
+                                PLog.logThis("PLogger", "event", it.data, LogLevel.INFO)
+                            }
+                            EventTypes.PLOGS_EXPORTED -> {
+                            }
+                            EventTypes.DATA_LOGS_EXPORTED -> {
+                            }
+                            EventTypes.LOGS_CONFIG_FOUND -> {
+                                PLog.getLogsConfigFromXML()?.also {
+                                    PLog.logThis("PLogger", "event", Gson().toJson(it).toString(), LogLevel.INFO)
+                                }
+                            }
+                            EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
+                                PLog.logThis("PLogger", "event", "New directory created: " + it.data, LogLevel.INFO)
+                            }
                         }
                     }
                     .subscribe()
         }
 
-        logsConfig.setEventNameForDirectory("My Name 2")
-        PLog.setLogsConfig(logsConfig, saveToFile = true)
+        //PLog.setLogsConfig(logsConfig, saveToFile = true)
+        PLog.forceWriteLogsConfig(logsConfig)
     }
 
 }

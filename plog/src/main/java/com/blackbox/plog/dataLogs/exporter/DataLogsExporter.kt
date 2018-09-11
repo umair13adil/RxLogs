@@ -2,6 +2,7 @@ package com.blackbox.plog.dataLogs.exporter
 
 import com.blackbox.plog.dataLogs.filter.DataLogsFilter
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
@@ -61,7 +62,7 @@ object DataLogsExporter {
                                         emitter.onError(it)
                                 },
                                 onComplete = {
-                                    PLog.getLogBus().send(LogEvents.DATA_LOGS_EXPORTED)
+                                    PLog.getLogBus().send(LogEvents(EventTypes.DATA_LOGS_EXPORTED))
                                 }
                         )
             } else {
@@ -80,7 +81,7 @@ object DataLogsExporter {
                                         emitter.onError(it)
                                 },
                                 onComplete = {
-                                    PLog.getLogBus().send(LogEvents.DATA_LOGS_EXPORTED)
+                                    PLog.getLogBus().send(LogEvents(EventTypes.DATA_LOGS_EXPORTED))
                                 }
                         )
             }

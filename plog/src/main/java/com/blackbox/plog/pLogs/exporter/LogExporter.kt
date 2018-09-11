@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.exporter
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -124,7 +125,7 @@ object LogExporter {
                                 emitter.onError(it)
                         },
                         onComplete = {
-                            PLog.getLogBus().send(LogEvents.PLOGS_EXPORTED)
+                            PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
                         }
                 )
     }
@@ -172,7 +173,7 @@ object LogExporter {
     }
 
     private fun doOnZipComplete() {
-        PLog.getLogBus().send(LogEvents.PLOGS_EXPORTED)
+        PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
         //Print zip entries
         FilterUtils.readZipEntries(exportPath + zipName)

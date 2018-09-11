@@ -1,8 +1,12 @@
 package com.blackbox.plog.utils
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
+import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import java.io.File
+
+private var currentNameOfDirectory = ""
 
 fun writeToFile(path: String, data: String) {
     try {
@@ -65,8 +69,15 @@ fun setupFilePaths(fileName: String = ""): String {
             val parentPath = rootFolderPath + DateControl.instance.today
             Utils.instance.createDirIfNotExists(parentPath)
 
-            val folderPath = parentPath + File.separator + PLog.logsConfig?.nameForEventDirectory
-            Utils.instance.createDirIfNotExists(folderPath)
+            val nameForEventDirectory = PLog.logsConfig?.nameForEventDirectory!!
+
+            val folderPath = parentPath + File.separator + nameForEventDirectory
+
+            //Create directory for event name and check it's result
+            if (Utils.instance.createDirIfNotExists(folderPath)) {
+                isDirectoryChanged(nameForEventDirectory)
+            }
+            currentNameOfDirectory = nameForEventDirectory //Set current name of directory
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
                 val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
@@ -86,5 +97,14 @@ fun setupFilePaths(fileName: String = ""): String {
                 rootFolderPath + File.separator + fileName + PLog.logsConfig?.logFileExtension?.ext
             }
         }
+    }
+}
+
+/*
+ * This will publish a event to notify in case a new directory is created for an event.
+ */
+private fun isDirectoryChanged(name: String) {
+    if (name.isNotEmpty() && currentNameOfDirectory.isNotEmpty() && name != currentNameOfDirectory) {
+        PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_DIRECTORY_CREATED, name))
     }
 }

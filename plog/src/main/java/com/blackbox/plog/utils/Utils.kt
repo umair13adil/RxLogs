@@ -11,11 +11,12 @@ class Utils {
 
     private val TAG = Utils::class.java.simpleName
 
-    fun createDirIfNotExists(path: String) {
+    fun createDirIfNotExists(path: String): Boolean {
         val file = File(path)
         if (!file.exists()) {
-            file.mkdirs()
+            return file.mkdirs()
         }
+        return false
     }
 
     companion object {

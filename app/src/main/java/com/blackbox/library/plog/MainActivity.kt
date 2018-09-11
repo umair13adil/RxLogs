@@ -3,6 +3,7 @@ package com.blackbox.library.plog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -11,6 +12,7 @@ import android.widget.Toast
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.models.LogType
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -34,8 +36,8 @@ class MainActivity : AppCompatActivity() {
         )*/
 
         //This will get 'DataLogger' object for predefined type in ConfigFile.
-        val locationsLog = PLog.getLoggerFor("Locations")
-        val notificationsLog = PLog.getLoggerFor("Notifications")
+        val locationsLog = PLog.getLoggerFor(LogType.Location.type)
+        val notificationsLog = PLog.getLoggerFor(LogType.Notification.type)
 
         //Will log to PLogs
         log_plog_event.setOnClickListener {
@@ -171,6 +173,18 @@ class MainActivity : AppCompatActivity() {
 
         //Uncomment this line to cause a crash
         //throw (RuntimeException(Throwable("Error")))
+
+
+        object : CountDownTimer(60000, 1000) {
+            override fun onFinish() {
+                PLog.getLogsConfig()?.setEventNameForDirectory(System.currentTimeMillis().toString())
+            }
+
+            override fun onTick(p0: Long) {
+
+            }
+
+        }.start()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

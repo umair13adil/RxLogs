@@ -4,6 +4,8 @@ package com.blackbox.plog.utils
  * Created by umair on 15/05/2017.
  */
 
+import android.util.Log
+import com.blackbox.plog.pLogs.PLog
 import io.reactivex.Observable
 import java.io.*
 import java.util.zip.ZipEntry
@@ -65,6 +67,9 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
             val path = f.name + File.separator
             zipOut.putNextEntry(createZipEntry(path, f))
 
+            if (PLog.getLogsConfig()?.isDebuggable!!)
+                Log.i(TAG, "Adding directory: $path")
+
             //Call recursively to add files within this directory
             zipFiles(zipOut, f, f.name)
         } else {
@@ -100,6 +105,11 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
     FileInputStream(f).use { fi ->
         BufferedInputStream(fi).use { origin ->
             zos.putNextEntry(zipEntry)
+
+            if (PLog.getLogsConfig()?.isDebuggable!!)
+                Log.i(TAG, "Adding file: ${f.name}")
+
+
             while (true) {
                 val readBytes = origin.read(data)
                 if (readBytes == -1) {

@@ -7,6 +7,7 @@ package com.blackbox.plog.pLogs
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.config.*
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
@@ -75,8 +76,25 @@ object PLog {
     fun setLogsConfig(config: LogsConfig, saveToFile: Boolean = false) {
         logsConfig = config
 
-        if (saveToFile) //Only save if parameter value 'true'
-            ConfigWriter.saveToXML(config)
+        if (saveToFile) {
+            //Only save if parameter value 'true'
+
+            if (!localConfigurationExists()) {
+                ConfigWriter.saveToXML(config)
+            }
+        }
+
+        //Perform operations on Initializing.
+        doOnInit()
+    }
+
+    /*
+     * This will forcefully overwrite existing logs configuration.
+     */
+    fun forceWriteLogsConfig(config: LogsConfig) {
+        logsConfig = config
+
+        ConfigWriter.saveToXML(config)
 
         //Perform operations on Initializing.
         doOnInit()
@@ -89,6 +107,17 @@ object PLog {
 
         if (localConfigurationExists())
             logsConfig = ConfigReader.readXML()
+
+        return null
+    }
+
+    /*
+     * Get LogsConfig object.
+     */
+    fun getLogsConfig(): LogsConfig? {
+
+        if (isLogsConfigSet())
+            return logsConfig
 
         return null
     }
@@ -137,6 +166,12 @@ object PLog {
         } else {
             writeSimpleLogs(className, functionName, text, type.level)
         }
+
+        //Check if log level is of Error
+        if (type == LogLevel.ERROR || type == LogLevel.SEVERE) {
+            //Send event to notify error is reported
+            PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, text))
+        }
     }
 
     /**
@@ -159,11 +194,16 @@ object PLog {
         if (!isLogLevelEnabled(type))
             return
 
+        val data = Utils.instance.getStackTrace(e)
+
         if (logsConfig?.encryptionEnabled!!) {
-            writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+            writeEncryptedLogs(className, functionName, data, type.level)
         } else {
-            writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+            writeSimpleLogs(className, functionName, data, type.level)
         }
+
+        //Send event to notify error is reported
+        PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data = data))
     }
 
     /**
@@ -186,11 +226,16 @@ object PLog {
         if (!isLogLevelEnabled(type))
             return
 
+        val data = Utils.instance.getStackTrace(e)
+
         if (logsConfig?.encryptionEnabled!!) {
-            writeEncryptedLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+            writeEncryptedLogs(className, functionName, data, type.level)
         } else {
-            writeSimpleLogs(className, functionName, Utils.instance.getStackTrace(e), type.level)
+            writeSimpleLogs(className, functionName, data, type.level)
         }
+
+        //Send event to notify error is reported
+        PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data = data))
     }
 
     /**
@@ -289,7 +334,10 @@ object PLog {
             if (logTypes.containsKey(type))
                 return logTypes.get(type)
 
-            throw IllegalArgumentException(Throwable("No log type defined for provided type '$type'"))
+            if (logsConfig?.isDebuggable!!)
+                Log.e(TAG, "No log type defined for provided type '$type'")
+
+            return null
         } else {
             return null
         }

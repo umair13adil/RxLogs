@@ -49,16 +49,22 @@ object ConfigReader {
 
                         LOG_LEVELS_ENABLED_TAG -> {
                             logLevelsTag = true
+                            logTypesTag = false
+                            autoExportlogTypesTag = false
                         }
 
                         LOG_TYPES_ENABLED_TAG -> {
+                            logLevelsTag = false
                             logTypesTag = true
+                            autoExportlogTypesTag = false
                         }
 
                         FORMAT_TYPE_TAG -> {
                             logsConfig.formatType = FormatType.valueOf(readAttribute(attributes, VALUE_ATTR))
                             logsConfig.attachTimeStamp = readAttribute(attributes, ATTACH_TIME_STAMPS_ATTR).toBoolean()
                             logsConfig.attachNoOfFiles = readAttribute(attributes, ATTACH_NO_OF_FILES_ATTR).toBoolean()
+                            //TODO Add TimeStampFormat
+                            //TODO Add Extensions
                             logsConfig.customFormatOpen = readAttribute(attributes, FORMAT_CUSTOM_OPEN_ATTR)
                             logsConfig.customFormatClose = readAttribute(attributes, FORMAT_CUSTOM_CLOSE_ATTR)
                         }
@@ -79,6 +85,7 @@ object ConfigReader {
                             logsConfig.exportFileNamePreFix = readAttribute(attributes, NAME_PREFIX_ATTR)
                             logsConfig.exportFileNamePostFix = readAttribute(attributes, NAME_POSTFIX_ATTR)
                             logsConfig.zipFileName = readAttribute(attributes, ZIP_FILE_NAME_ATTR)
+                            logsConfig.zipFilesOnly = readAttribute(attributes, ZIP_FILES_ATTR).toBoolean()
                         }
 
                         AUTO_EXPORT_ERRORS_TAG -> {
@@ -87,7 +94,7 @@ object ConfigReader {
 
                         ENCRYPTION_ENABLED_TAG -> {
                             logsConfig.encryptionEnabled = readAttribute(attributes, VALUE_ATTR).toBoolean()
-                            logsConfig.encryptionKey = readAttribute(attributes, VALUE_ATTR)
+                            logsConfig.encryptionKey = readAttribute(attributes, ENCRYPTION_KEY_ATTR)
                         }
 
                         LOG_FILE_SIZE_TAG -> {
@@ -108,8 +115,10 @@ object ConfigReader {
                         }
 
                         AUTO_EXPORT_TYPES_TAG -> {
+                            logLevelsTag = false
+                            logTypesTag = false
                             autoExportlogTypesTag = true
-                            logsConfig.autoExportLogTypesPeriod = readAttribute(attributes, VALUE_ATTR).toInt()
+                            logsConfig.autoExportLogTypesPeriod = readAttribute(attributes, AUTO_EXPORT_PERIOD_ATTR).toInt()
                         }
 
                         LOGS_DELETE_DATE_TAG -> {
@@ -129,7 +138,7 @@ object ConfigReader {
                         }
 
                         CSV_TAG -> {
-                            logsConfig.csvDeliminator = readAttribute(attributes, VALUE_ATTR)
+                            logsConfig.csvDeliminator = readAttribute(attributes, CSV_DELIMINATOR_ATTR)
                         }
                     }
                 }
@@ -143,8 +152,9 @@ object ConfigReader {
 
                         VALUE_ATTR -> {
 
-                            if (logLevelsTag)
+                            if (logLevelsTag) {
                                 logsConfig.logLevelsEnabled.add(LogLevel.valueOf(currentValue))
+                            }
 
                             if (logTypesTag)
                                 logsConfig.logTypesEnabled.add(currentValue)
@@ -176,6 +186,10 @@ object ConfigReader {
     }
 }
 
-fun readAttribute(attributes: Attributes, name: String): String {
-    return attributes.getValue(name)
+fun readAttribute(attributes: Attributes?, name: String?): String {
+    if (name != null && attributes != null) {
+        return attributes.getValue(name)
+    } else {
+        return ""
+    }
 }

@@ -46,7 +46,7 @@ class LogsConfig(
         var directoryStructure: DirectoryStructure = DirectoryStructure.FOR_DATE, //Default Directory Structure
         var nameForEventDirectory: String = "", //Name of directory in case of 'DirectoryStructure.FOR_EVENT'
         var logSystemCrashes: Boolean = false,
-        var autoExportLogTypes: ArrayList<String> = arrayListOf(),
+        var autoExportLogTypes: ArrayList<String> = arrayListOf<String>(),
         var autoExportLogTypesPeriod: Int = 0,
         var logsDeleteDate: String = "", //Last Time logs were cleared
         var zipDeleteDate: String = "", //Last Time exported zip files were cleared
