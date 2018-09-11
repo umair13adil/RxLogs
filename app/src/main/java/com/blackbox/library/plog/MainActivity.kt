@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
+import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -31,9 +32,9 @@ class MainActivity : AppCompatActivity() {
 
         //This must be initialized before calling DataLogger
         //Each DataLogger builder can be used to log different data files
-        /*val myLogs = DataLogger(
+        val myLogs = DataLogger(
                 logFileName = "SevereLogs"
-        )*/
+        )
 
         //This will get 'DataLogger' object for predefined type in ConfigFile.
         val locationsLog = PLog.getLoggerFor(LogType.Location.type)
@@ -65,8 +66,6 @@ class MainActivity : AppCompatActivity() {
                 locationsLog?.appendToFile(dataToLog)
                 notificationsLog?.appendToFile(dataToLog)
             }
-
-            Log.i(TAG, "Data Logged: $dataToLog")
         }
 
         //Will delete all Logs
@@ -75,16 +74,13 @@ class MainActivity : AppCompatActivity() {
             //Will clear All PLogs
             PLog.clearLogs()
 
-            //Will clear All data logs for tha data location provided in builder
-            locationsLog?.clearLogs()
-
             Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
         }
 
         //Will export PLogs
         export_plogs.setOnClickListener {
 
-            PLog.getZippedLog(ExportType.ALL, false)
+            PLog.exportLogsForType(ExportType.ALL, false)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -104,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         //Will Export custom data log
         export_data_logs.setOnClickListener {
 
-            locationsLog?.getZippedLogs(false)!!
+            PLog.exportAllDataLogs()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -124,12 +120,12 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in PLogs
         print_plogs.setOnClickListener {
 
-            PLog.getLoggedData(ExportType.TODAY, true)
+            PLog.printLogsForType(ExportType.ALL)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
                             onNext = {
-                                Log.i("PLog", "$it")
+                                Log.i("PLog", it)
                             },
                             onError = {
                                 it.printStackTrace()
@@ -142,12 +138,12 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in DataLogs
         print_data_logs.setOnClickListener {
 
-            locationsLog?.getLoggedData(true)!!
+            PLog.printDataLogsForName(LogType.Location.type)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
                             onNext = {
-                                Log.i("DataLog", "$it")
+                                Log.i("DataLog", it)
                             },
                             onError = {
                                 it.printStackTrace()
@@ -175,9 +171,10 @@ class MainActivity : AppCompatActivity() {
         //throw (RuntimeException(Throwable("Error")))
 
 
-        object : CountDownTimer(60000, 1000) {
+        object : CountDownTimer(30000, 1000) {
             override fun onFinish() {
-                PLog.getLogsConfig()?.setEventNameForDirectory(System.currentTimeMillis().toString())
+                PLog.getLogsConfig()?.setEventNameForDirectory("Job_${System.currentTimeMillis().toString().substring(3)}")
+                start()
             }
 
             override fun onTick(p0: Long) {

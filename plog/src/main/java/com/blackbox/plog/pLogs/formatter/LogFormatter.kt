@@ -58,16 +58,16 @@ object LogFormatter {
     internal fun getFormatType(data: LogData): String {
 
         var t = ""
-        val providedFormat = PLog.logsConfig?.formatType!!
+        val providedFormat = PLog.getLogsConfig()?.formatType!!
 
         t = when (providedFormat) {
             FormatType.FORMAT_CURLY -> formatCurly(data)
 
             FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-            FormatType.FORMAT_CSV -> formatCSV(data, PLog.logsConfig?.csvDeliminator!!)
+            FormatType.FORMAT_CSV -> formatCSV(data, PLog.getLogsConfig()?.csvDeliminator!!)
 
-            FormatType.FORMAT_CUSTOM -> formatCustom(data, PLog.logsConfig?.customFormatOpen!!, PLog.logsConfig?.customFormatClose!!)
+            FormatType.FORMAT_CUSTOM -> formatCustom(data, PLog.getLogsConfig()?.customFormatOpen!!, PLog.getLogsConfig()?.customFormatClose!!)
         }
 
         return t

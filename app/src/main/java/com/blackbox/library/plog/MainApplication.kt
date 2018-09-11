@@ -54,7 +54,7 @@ class MainApplication : Application() {
                 singleLogFileSize = 2048 * 2,
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_EVENT,
-                nameForEventDirectory = "Job 101",
+                nameForEventDirectory = "Job_101",
                 logSystemCrashes = true,
                 autoExportLogTypes = arrayListOf(LogType.Location.type, LogType.Navigation.type),
                 autoExportLogTypesPeriod = 3,
@@ -94,7 +94,7 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        //PLog.setLogsConfig(logsConfig, saveToFile = true)
+        PLog.setLogsConfig(logsConfig, saveToFile = true)
         PLog.forceWriteLogsConfig(logsConfig)
     }
 

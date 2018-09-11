@@ -3,10 +3,10 @@ package com.blackbox.plog.pLogs.filter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
-import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.Utils
 import java.io.File
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
 object FilterUtils {
@@ -21,7 +21,7 @@ object FilterUtils {
 
     fun prepareOutputFile(outputPath: String) {
 
-        if (PLog.logsConfig?.autoClearLogsOnExport!!)
+        if (PLog.getLogsConfig()?.autoClearLogsOnExport!!)
             File(outputPath).deleteRecursively() //Delete all previous Exports
 
         //Create export directory if it doesn't already exists
@@ -34,7 +34,7 @@ object FilterUtils {
         for (i in files.indices) {
             val fileHour = extractHour(files[i].name)
 
-            if (PLog.logsConfig?.isDebuggable!!)
+            if (PLog.getLogsConfig()?.isDebuggable!!)
                 Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
             if (fileHour == lastHour) {
@@ -83,17 +83,19 @@ object FilterUtils {
      * Print all entries in zip file created.
      */
     internal fun readZipEntries(path: String) {
-        val zipFile = ZipFile(path)
+        try {
+            val zipFile = ZipFile(path)
 
-        //List all entries in a Zip file
-        val entries = zipFile.entries()
+            //List all entries in a Zip file
+            val entries = zipFile.entries()
 
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
 
-            if (PLog.logsConfig?.isDebuggable!!)
-                PLog.logThis(FileFilter.TAG, "readZip", entry.name, LogLevel.INFO)
-        }
+                if (PLog.getLogsConfig()?.isDebuggable!!)
+                    Log.i(FileFilter.TAG, entry.name)
+            }
+        } catch (e: ZipException) { }
     }
 
     /*

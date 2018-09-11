@@ -1,48 +1,15 @@
 package com.blackbox.plog.dataLogs
 
-import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
+import android.util.Log
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.exporter.ExportType
-import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.utils.*
-import io.reactivex.Observable
-import java.io.File
 
 /**
  * Created by umair on 04/01/2018.
  */
-class DataLogger(
-        var exportPath: String = FilterUtils.getPathForType(ExportType.TODAY),
-        var logFileName: String = "log",
-        var savePath: String = setupFilePaths(logFileName),
-        var zipFileName: String = PLog.logsConfig?.zipFileName!!
-) {
+class DataLogger(var logFileName: String = "log") {
 
-    companion object {
-        private val TAG = "DataLogger"
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs based on filter type to export location with export name provided.
-     *
-     * @return the logs
-     */
-    fun getZippedLogs(exportDecrypted: Boolean): Observable<String> {
-        return DataLogsExporter.getDataLogs(logFileName, logPath, zipFileName, outputPath, exportDecrypted)
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs as plain String.
-     *
-     * @return the String data
-     */
-    fun getLoggedData(printDecrypted: Boolean): Observable<String> {
-        return DataLogsExporter.getLoggedData(logFileName, logPath, zipFileName, outputPath, printDecrypted)
-    }
+    val TAG = "DataLogger"
 
     /**
      * Overwrite to file.
@@ -58,13 +25,18 @@ class DataLogger(
      */
     fun overwriteToFile(dataToWrite: String) {
 
+        val logFilePath = setupFilePaths(logFileName)
+
         dataLoggerCalledBeforePLoggerException()
 
-        if (PLog.logsConfig?.encryptionEnabled!!) {
-            writeToFileEncrypted(dataToWrite, PLog.logsConfig?.secretKey!!, logPath)
+        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
+            writeToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
         } else {
-            writeToFile(logPath, dataToWrite)
+            writeToFile(logFilePath, dataToWrite)
         }
+
+        if (PLog.getLogsConfig()?.isDebuggable!!)
+            Log.i(TAG, "Written: $dataToWrite in '$logFilePath'")
     }
 
     /**
@@ -81,43 +53,17 @@ class DataLogger(
      */
     fun appendToFile(dataToWrite: String) {
 
+        val logFilePath = setupFilePaths(logFileName)
+
         dataLoggerCalledBeforePLoggerException()
 
-        if (PLog.logsConfig?.encryptionEnabled!!) {
-            appendToFileEncrypted(dataToWrite, PLog.logsConfig?.secretKey!!, logPath)
+        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
+            appendToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
         } else {
-            appendToFile(logPath, dataToWrite)
+            appendToFile(logFilePath, dataToWrite)
         }
+
+        if (PLog.getLogsConfig()?.isDebuggable!!)
+            Log.i(TAG, "Appended: $dataToWrite in '$logFilePath'")
     }
-
-    /**
-     * Clear logs boolean.
-     *
-     * Will return true if delete was successful
-     *
-     * @return the boolean
-     */
-    fun clearLogs() {
-        File(logPath).deleteRecursively()
-    }
-
-    /**
-     * Gets output path.
-     *
-     * Sets the export path of Logs.
-     *
-     * @return the output path
-     */
-    private val outputPath: String
-        get() = exportPath + File.separator
-
-    /**
-     * Gets Logs path.
-     *
-     * Sets the save path of Logs.
-     *
-     * @return the save path
-     */
-    private val logPath: String
-        get() = savePath + File.separator
 }

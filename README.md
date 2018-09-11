@@ -16,14 +16,14 @@ All logs are saved to files in storage path provided. These logs are helpful whe
 4. Save logs to custom path
 5. Export Logs to custom path as zip file
 6. RxJava2 support
-7. Custom Log formats
+7. Custom Log formatting
 8. CSV support
 9. Custom timestamps support
 10. Custom data logging support with **'DataLogs'** logger.
 11. Encryption support added
 12. Auto Log system crashes
 
-### Usage:
+### Add to project:
 
 Add module to your project:
 
@@ -36,12 +36,107 @@ Add module to your project:
         //PLogger
         implementation project(':plog')
     }
+    
+# Usage:
+
+## Setup PLogs:
+
+Add following implementation in your Application class.
+
+        class MainApplication : Application() {
+        
+            override fun onCreate() {
+                super.onCreate()
+        
+                setUpPLogger() //Initialize PLogger here
+            }
+        }
+        
+         private fun setUpPLogger() {
+                 val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
+                 
+                         val logsConfig = LogsConfig(
+                                 isDebuggable = true,
+                                 savePath = logsPath,
+                                 zipFileName = "MyLogs",
+                                 exportPath = logsPath + File.separator + "PLogsOutput"
+                         ).also {
+                             it.getLogEventsListener()
+                                     .doOnNext {
+                 
+                                         when (it.event) {
+                                             EventTypes.NEW_ERROR_REPORTED -> {
+                                                 PLog.logThis("PLogger", "event", it.data, LogLevel.INFO)
+                                             }
+                                             EventTypes.PLOGS_EXPORTED -> {
+                                             }
+                                             EventTypes.DATA_LOGS_EXPORTED -> {
+                                             }
+                                             EventTypes.LOGS_CONFIG_FOUND -> {
+                                                 PLog.getLogsConfigFromXML()?.also {
+                                                     PLog.logThis("PLogger", "event", Gson().toJson(it).toString(), LogLevel.INFO)
+                                                 }
+                                             }
+                                             EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
+                                                 PLog.logThis("PLogger", "event", "New directory created: " + it.data, LogLevel.INFO)
+                                             }
+                                         }
+                                     }
+                                     .subscribe()
+                         }
+                 
+                  
+                         PLog.setLogsConfig(logsConfig, saveToFile = true) //Initialize configurations
+                       
+             }
+
+###### Log Types:
+
+There are some predefined log types that can be used along with custom type. For each type defined in builder, logger object will be created and provided for later use.
+
+    1. LogType.Device //To Log device related data
+    2. LogType.Location //To Log Locations
+    3. LogType.Notification //To Log notifications
+    4. LogType.Network //To Log network calls
+    5. LogType.Navigation //To Log user screen navigation
+    6. LogType.History //To Log device & app history 
+    7. LogType.Tasks //To Log Tasks performed
+    8. LogType.Jobs //To Log Jobs data
+    
+Add these types to your Log configuration like this:
+
+    val logsConfig = LogsConfig(
+                            logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, "Deliveries")
+                    )
+    
+To access logger of these types simply call:
+
+    val locationsLog = PLog.getLoggerFor(LogType.Location.type)
+    locationsLog?.appendToFile("My Log Data!")
+    
+    val deliveriesLog = PLog.getLoggerFor("Deliveries")
+    deliveriesLog?.overwriteToFile("My Log Data!")
+                
+### Log data to File:
+    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
+    
+### Log Exceptions to File:
+Both Exceptions & Throwable can be passed to logger.
+
+    PLog.logExc(TAG, "uncaughtException", e)
+    
+Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
+
+    PLog.logExc(TAG, "uncaughtException", e, LogLevel.SEVERE)
+
 
 ###### Apply Encryption to Logs:
-To enable AES encryption, set following to builder:
+To enable AES encryption, set following fields in 'LogsConfig' builder:
 
-        .enableEncryption(true) //Enable Encryption
-        .setEncryptionKey("YOUR_ENCRYPTION_KEY") //Set Encryption Key
+        val logsConfig = LogsConfig(
+                        encryptionEnabled = false,
+                        encryptionKey = ""
+                )
         
 Key length should be greater than 32.
 
@@ -86,101 +181,27 @@ There are multiple formats available to choose from
    
    Logs can be exported with following request filters:
    
-    1.  LogRequestType.TODAY
-    2.  LogRequestType.LAST_HOUR,
-    3.  LogRequestType.WEEKS,
-    4.  LogRequestType.LAST_24_HOURS
+    1.  ExportType.TODAY
+    2.  ExportType.LAST_HOUR
+    3.  ExportType.WEEKS
+    4.  ExportType.LAST_24_HOURS
+    5.  ExportType.ALL
     
-###### Log Types:
+###### Log Severity Levels:
 
-You can use following Log Types to identify type:
+You can use following Log severity levels to tag logs:
 
     1. LogLevel.INFO
     2. LogLevel.WARNING
     3. LogLevel.ERROR
     4. LogLevel.SEVERE
-
-# Usage:
-
-## Setup PLogs:
-
-        class MainApplication : Application() {
-        
-            override fun onCreate() {
-                super.onCreate()
-        
-                setUpPLogger() //Initialize PLogger here
-            }
-        }
-        
-         private fun setUpPLogger() {
-                 val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
-         
-                 val logsConfig = LogsConfig(
-                         logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
-                         logTypesEnabled = arrayListOf("Locations", "APIs", "Notifications"),
-                         formatType = FormatType.FORMAT_CURLY,
-                         logsRetentionPeriodInDays = 7,
-                         zipsRetentionPeriodInDays = 7,
-                         autoClearLogsOnExport = true,
-                         enabled = true,
-                         exportFileNamePreFix = "",
-                         exportFileNamePostFix = "",
-                         autoExportErrors = true,
-                         encryptionEnabled = false,
-                         encryptionKey = "",
-                         singleLogFileSize = 2048 * 2,
-                         logFilesLimit = 30,
-                         directoryStructure = DirectoryStructure.FOR_DATE,
-                         logSystemCrashes = true,
-                         autoExportLogTypes = arrayListOf("Notifications", "Locations"),
-                         autoExportLogTypesPeriod = 3,
-                         logsDeleteDate = "",
-                         zipDeleteDate = "",
-                         savePath = logsPath,
-                         exportPath = logsPath + File.separator + "PLogsOutput",
-                         zipFileName = "MyLogs",
-                         isDebuggable = true,
-                         logFileExtension = LogExtension.TXT,
-                         attachTimeStamp = false,
-                         attachNoOfFiles = true,
-                         timeStampFormat = TimeStampFormat.DATE_FORMAT_1,
-                         nameForEventDirectory = "My Name",
-                         zipFilesOnly = false
-                 ).also {
-                     it.getLogEventsListener()
-                             .doOnNext {
-                                 PLog.logThis("PLogger", "getLogEventsListener", "Event: $it", LogLevel.INFO)
-         
-                                 PLog.getLogsConfigFromXML()?.also {
-                                     PLog.logThis("PLog", "XML", Gson().toJson(it).toString(), LogLevel.INFO)
-                                 }
-                             }
-                             .subscribe()
-                 }
-         
-                 logsConfig.setEventNameForDirectory("My Name 2")
-                 PLog.setLogsConfig(logsConfig, saveToFile = true)
-             }
-                
-### Log data to File:
-    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
     
-### Log Exceptions to File:
-Both Exceptions & Throwable can be passed to logger.
-
-    PLog.logExc(TAG, "uncaughtException", e)
-    
-Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
-
-    PLog.logExc(TAG, "uncaughtException", e, LogLevel.SEVERE)
-
 ### Clear Logs:
     PLog.clearLogs()
               
-### Export Logs:    
+### Export PLogs:    
 
-    PLog.getZippedLogs(LogRequestType.TODAY, true) //Set true, if logs exported should be decrypted
+    PLog.exportLogsForType(ExportType.TODAY)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
@@ -195,9 +216,9 @@ Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
                                 onComplete = { }
                         )
                         
-### Print Logs: 
+### Print PLogs: 
 
-        PLog.getLoggedData(LogRequestType.TODAY)
+        PLog.printLogsForType(ExportType.TODAY)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeBy(
@@ -211,25 +232,10 @@ Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
                                     onComplete = { }
                             )
          
-## Setup DataLogger
-
-            val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
-            
-            val myLogs: DataLogger = DataLogBuilder()
-                            .setLogsSavePath(logsPath) 
-                            .setLogsExportPath(logsPath + File.separator + "ZippedLogs")
-                            .setLogFileName("myLogs.txt")
-                            .setExportFileName("myLogsExported")
-                            .attachTimeStampToFiles(false)
-                            .debuggable(true)
-                            .enableEncryption(true) //Enable Encryption
-                            .setEncryptionKey("YOUR_ENCRYPTION_KEY") //Set Encryption Key
-                            .enabled(true)
-                            .build()
                 
-### Export Logs:
+### Export Data Logs:
 
-                myLogs.getZippedLogs(true) //Set true, if logs exported should be decrypted
+               PLog.exportAllDataLogs() 
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeBy(  
@@ -245,9 +251,9 @@ Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
                         )
                         
                                                 
-### Print Logs: 
+### Print Data Logs: 
 
-            myLogs.getLoggedData()
+            PLog.printDataLogsForName(LogType.Location.type)
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribeBy(
@@ -260,17 +266,6 @@ Exceptions & Throwable can be tagged as severe by adding LogLevel.SEVERE:
                                         },
                                         onComplete = { }
                                 )
-
-### Log to custom file:
-    
-    //This Will append data to log file
-    myLogs.appendToFile("Log: " + Math.random() + "\n");
-    
-    //This Will overwrite data to log file
-    myLogs.overwriteToFile("Log: " + Math.random() + "\n");
-    
-### Clear Logs:
-    myLogs.clearLogs()
                 
                 
 ## Auto Log System Crashes

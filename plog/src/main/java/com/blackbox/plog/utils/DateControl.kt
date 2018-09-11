@@ -47,6 +47,13 @@ class DateControl {
             return sdf.format(currentTime)
         }
 
+    val time: String
+        get() {
+            val currentTime = Date(System.currentTimeMillis())
+            val sdf = SimpleDateFormat("HH_mm", Locale.ENGLISH)
+            return sdf.format(currentTime)
+        }
+
     val currentDate: String
         get() {
             val currentTime = Date(System.currentTimeMillis())

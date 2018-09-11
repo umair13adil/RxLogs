@@ -9,6 +9,7 @@ import com.blackbox.plog.pLogs.PLog
 import io.reactivex.Observable
 import java.io.*
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
 
 
@@ -65,7 +66,14 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
         if (f.isDirectory) {
 
             val path = f.name + File.separator
-            zipOut.putNextEntry(createZipEntry(path, f))
+
+            try {
+                zipOut.putNextEntry(createZipEntry(path, f))
+            } catch (e: ZipException) {
+                if (PLog.getLogsConfig()?.isDebuggable!!) {
+                    Log.e(TAG, e.message)
+                }
+            }
 
             if (PLog.getLogsConfig()?.isDebuggable!!)
                 Log.i(TAG, "Adding directory: $path")
@@ -104,10 +112,17 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
 
     FileInputStream(f).use { fi ->
         BufferedInputStream(fi).use { origin ->
-            zos.putNextEntry(zipEntry)
+
+            try {
+                zos.putNextEntry(zipEntry)
+            } catch (e: ZipException) {
+                if (PLog.getLogsConfig()?.isDebuggable!!) {
+                    Log.e(TAG, e.message)
+                }
+            }
 
             if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.i(TAG, "Adding file: ${f.name}")
+                Log.i(TAG, "Adding file: ${f.path}")
 
 
             while (true) {
@@ -115,7 +130,14 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 if (readBytes == -1) {
                     break
                 }
-                zos.write(data, 0, readBytes)
+
+                try {
+                    zos.write(data, 0, readBytes)
+                } catch (e: ZipException) {
+                    if (PLog.getLogsConfig()?.isDebuggable!!) {
+                        Log.e(TAG, e.message)
+                    }
+                }
             }
         }
     }

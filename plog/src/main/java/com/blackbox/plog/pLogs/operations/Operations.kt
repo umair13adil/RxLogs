@@ -33,7 +33,7 @@ private fun createLogTypes() {
 
     val map = hashMapOf<String, DataLogger>()
 
-    for (logType in PLog.logsConfig?.logTypesEnabled!!) {
+    for (logType in PLog.getLogsConfig()?.logTypesEnabled!!) {
         val logger = DataLogger(logFileName = logType)
         map[logType] = logger
     }
