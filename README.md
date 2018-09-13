@@ -90,7 +90,7 @@ private fun setUpPLogger() {
                              exportPath = logsPath + File.separator + "PLogsOutput"
                      )
 
-                     PLog.setLogsConfig(logsConfig, saveToFile = true) //Initialize configurations
+                     PLog.applyConfigurations(logsConfig, saveToFile = true) //Initialize configurations
                    
          }
 }
