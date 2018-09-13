@@ -99,7 +99,7 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        PLog.applyConfigurations(logsConfig,true)
+        PLog.applyConfigurations(logsConfig)
         //PLog.forceWriteLogsConfig(logsConfig)
     }
 
