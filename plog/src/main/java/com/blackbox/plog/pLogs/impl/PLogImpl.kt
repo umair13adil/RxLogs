@@ -13,6 +13,7 @@ import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.doOnInit
+import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
@@ -62,7 +63,7 @@ open class PLogImpl : PLogger {
      *
      * @param 'saveToFile' if true, file will be written to storage
      */
-    override fun setLogsConfig(config: LogsConfig, saveToFile: Boolean) {
+    override fun applyConfigurations(config: LogsConfig, saveToFile: Boolean) {
         PLog.logsConfig = config
 
         if (saveToFile) {
@@ -94,8 +95,10 @@ open class PLogImpl : PLogger {
      */
     override fun getLogsConfigFromXML(): LogsConfig? {
 
-        if (localConfigurationExists())
+        if (localConfigurationExists()) {
             PLog.logsConfig = ConfigReader.readXML()
+            return PLog.logsConfig
+        }
 
         return null
     }
@@ -116,6 +119,13 @@ open class PLogImpl : PLogger {
      */
     fun localConfigurationExists(): Boolean {
         return File(XML_PATH).exists()
+    }
+
+    /*
+     * Will send 'true' if local configuration XML is deleted.
+     */
+    fun deleteLocalConfiguration(): Boolean {
+        return File(XML_PATH).delete()
     }
 
     /*
@@ -157,10 +167,7 @@ open class PLogImpl : PLogger {
         }
 
         //Check if log level is of Error
-        if (type == LogLevel.ERROR || type == LogLevel.SEVERE) {
-            //Send event to notify error is reported
-            PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, text))
-        }
+        autoExportError(text, type)
     }
 
     /**
@@ -191,8 +198,8 @@ open class PLogImpl : PLogger {
             writeSimpleLogs(className, functionName, data, type.level)
         }
 
-        //Send event to notify error is reported
-        PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data = data))
+        //Check if log level is of Error
+        autoExportError(data, type)
     }
 
     /**
@@ -223,8 +230,8 @@ open class PLogImpl : PLogger {
             writeSimpleLogs(className, functionName, data, type.level)
         }
 
-        //Send event to notify error is reported
-        PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data = data))
+        //Check if log level is of Error
+        autoExportError(data, type)
     }
 
     /**
@@ -255,7 +262,17 @@ open class PLogImpl : PLogger {
      *
      */
     override fun clearLogs() {
-        File(PLog.logPath).deleteRecursively()
+        val rootFolderName = LOG_FOLDER
+        val rootFolderPath = PLog.logPath + rootFolderName + File.separator
+        File(rootFolderPath).deleteRecursively()
+    }
+
+    /**
+     * Clear all zipped loges from storage directory.
+     *
+     */
+    override fun clearExportedLogs() {
+        File(PLog.outputPath).deleteRecursively()
     }
 
     /*
@@ -366,5 +383,14 @@ open class PLogImpl : PLogger {
     fun printDataLogsForName(name: String, printDecrypted: Boolean = false): Observable<String> {
         val path = getLogsSavedPaths(PLog.getLogsConfig()?.nameForEventDirectory!!)
         return DataLogsExporter.printLogsForName(name, path, printDecrypted)
+    }
+
+    private fun autoExportError(data: String, type: LogLevel) {
+        if (type == LogLevel.ERROR || type == LogLevel.SEVERE) {
+            if (PLog.getLogsConfig()?.autoExportErrors!!) {
+                //Send event to notify error is reported
+                PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
+            }
+        }
     }
 }

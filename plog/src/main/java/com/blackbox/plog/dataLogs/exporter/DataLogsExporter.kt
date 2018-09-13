@@ -60,7 +60,7 @@ object DataLogsExporter {
                         .subscribeBy(
                                 onNext = {
                                     if (PLog.getLogsConfig()?.isDebuggable!!)
-                                       Log.i(TAG, "Output Zip: ${exportFileName}")
+                                        Log.i(TAG, "Output Zip: ${exportFileName}")
 
                                     emitter.onNext(it)
                                 },
@@ -135,18 +135,8 @@ object DataLogsExporter {
      */
     private fun getDataLogsForName(logFileName: String, exportFileName: String, logPath: String): Pair<String, List<File>> {
 
-        var timeStamp = ""
-        var noOfFiles = ""
-
         val files = DataLogsFilter.getFilesForLogName(logPath, logFileName)
-
-        if (PLog.getLogsConfig()?.attachTimeStamp!!)
-            timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
-
-        if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-            noOfFiles = "_[${files.size}]"
-
-        val zipName = "$exportFileName$timeStamp$noOfFiles.zip"
+        val zipName = composeZipName(files)
 
         return Pair(zipName, files)
     }
@@ -156,18 +146,8 @@ object DataLogsExporter {
      */
     private fun getDataLogsForAll(exportFileName: String, logPath: String): Pair<String, List<File>> {
 
-        var timeStamp = ""
-        var noOfFiles = ""
-
         val files = DataLogsFilter.getFilesForAll(logPath)
-
-        if (PLog.getLogsConfig()?.attachTimeStamp!!)
-            timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
-
-        if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-            noOfFiles = "_[${files.size}]"
-
-        val zipName = "$exportFileName$timeStamp$noOfFiles.zip"
+        val zipName = composeZipName(files)
 
         return Pair(zipName, files)
     }
@@ -180,5 +160,21 @@ object DataLogsExporter {
 
         //Clear all copied files
         FilterUtils.deleteFilesExceptZip()
+    }
+
+    private fun composeZipName(files: List<File>): String {
+        var timeStamp = ""
+        var noOfFiles = ""
+
+        if (PLog.getLogsConfig()?.attachTimeStamp!!)
+            timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
+
+        if (PLog.getLogsConfig()?.attachNoOfFiles!!)
+            noOfFiles = "_[${files.size}]"
+
+        val preName = PLog.getLogsConfig()?.exportFileNamePreFix!!
+        val postName = PLog.getLogsConfig()?.exportFileNamePostFix!!
+
+        return "$preName$exportFileName$timeStamp$noOfFiles$postName.zip"
     }
 }

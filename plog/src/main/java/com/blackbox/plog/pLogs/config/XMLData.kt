@@ -111,13 +111,15 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
 
     //Logs Delete date
     val logsDeleteDateElement = dom.createElement(LOGS_DELETE_DATE_TAG)
-    logsDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.logsDeleteDate)
     rootEle.appendChild(logsDeleteDateElement)
 
     //Zip Delete date
     val zipDeleteDateElement = dom.createElement(ZIP_DELETE_DATE_TAG)
-    zipDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.zipDeleteDate)
     rootEle.appendChild(zipDeleteDateElement)
+
+    //Auto Export Start date
+    val exportStartDateElement = dom.createElement(EXPORT_START_DATE_TAG)
+    rootEle.appendChild(exportStartDateElement)
 
     //Save Path for Log Files
     val logsSavePathElement = dom.createElement(LOGS_SAVE_PATH_TAG)
@@ -131,7 +133,7 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
 
     //File Export Name
     val csvElement = dom.createElement(CSV_TAG)
-    csvElement.setAttribute(CSV_DELIMINATOR_ATTR, logsConfig.csvDeliminator)
+    csvElement.setAttribute(CSV_DELIMITER_ATTR, logsConfig.csvDelimiter)
     rootEle.appendChild(csvElement)
 }
 

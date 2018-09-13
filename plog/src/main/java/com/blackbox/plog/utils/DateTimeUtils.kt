@@ -11,11 +11,17 @@ object DateTimeUtils {
 
     private val TAG = DateTimeUtils::class.java.simpleName
 
-    private fun getFullDateTimeString(timestamp: Long): String {
+    internal fun getFullDateTimeString(timestamp: Long): String {
         val date = Date(timestamp)
         val dayNumberSuffix = getDayOfMonthSuffix(date.date)
-        val f1 = SimpleDateFormat("d'$dayNumberSuffix' MMMM yyyy ;;:mm:ss", Locale.ENGLISH)
+        val f1 = SimpleDateFormat("d'$dayNumberSuffix' MMMM yyyy hh:mm:ss a", Locale.ENGLISH)
         return f1.format(date)
+    }
+
+    internal fun dateToLong(time: String): Long {
+        val f1 = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1.value, Locale.ENGLISH)
+        val date = f1.parse(time)
+        return date.time
     }
 
     fun getTimeFormatted(timestampFormat: String?): String {

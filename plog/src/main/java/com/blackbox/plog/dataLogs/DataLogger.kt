@@ -2,6 +2,9 @@ package com.blackbox.plog.dataLogs
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
+import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.utils.*
 
 /**
@@ -10,6 +13,7 @@ import com.blackbox.plog.utils.*
 class DataLogger(var logFileName: String = "log") {
 
     val TAG = "DataLogger"
+    val autoExportTypes = PLog.getLogsConfig()?.autoExportLogTypes!!
 
     /**
      * Overwrite to file.
@@ -37,6 +41,9 @@ class DataLogger(var logFileName: String = "log") {
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
             Log.i(TAG, "Written: $dataToWrite in '$logFilePath'")
+
+        //Check if auto Export is enabled, and then  export it
+        autoExportLogType(dataToWrite, logFileName)
     }
 
     /**
@@ -65,5 +72,17 @@ class DataLogger(var logFileName: String = "log") {
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
             Log.i(TAG, "Appended: $dataToWrite in '$logFilePath'")
+
+        //Check if auto Export is enabled, and then  export it
+        autoExportLogType(dataToWrite, logFileName)
+    }
+
+    private fun autoExportLogType(data: String, type: String) {
+
+        if (autoExportTypes.contains(type)) {
+            if (Triggers.shouldExportLogs()) {
+                PLog.getLogBus().send(LogEvents(EventTypes.LOG_TYPE_EXPORTED, data))
+            }
+        }
     }
 }

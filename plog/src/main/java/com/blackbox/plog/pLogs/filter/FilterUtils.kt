@@ -3,6 +3,7 @@ package com.blackbox.plog.pLogs.filter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
+import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.Utils
 import java.io.File
@@ -52,7 +53,7 @@ object FilterUtils {
     internal fun getPathForType(requestType: ExportType): String {
 
         //Create Root folder
-        val rootFolderName = "Logs"
+        val rootFolderName = LOG_FOLDER
         val rootFolderPath = PLog.logPath + rootFolderName + File.separator
 
         when (requestType) {

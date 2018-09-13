@@ -42,8 +42,8 @@ class MainApplication : Application() {
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
                 logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, "Deliveries"),
                 formatType = FormatType.FORMAT_CURLY,
-                logsRetentionPeriodInDays = 7,
-                zipsRetentionPeriodInDays = 7,
+                logsRetentionPeriodInDays = 1,
+                zipsRetentionPeriodInDays = 2,
                 autoClearLogsOnExport = true,
                 enabled = true,
                 exportFileNamePreFix = "",
@@ -56,7 +56,7 @@ class MainApplication : Application() {
                 directoryStructure = DirectoryStructure.FOR_EVENT,
                 nameForEventDirectory = "Job_101",
                 logSystemCrashes = true,
-                autoExportLogTypes = arrayListOf(LogType.Location.type, LogType.Navigation.type),
+                autoExportLogTypes = arrayListOf(),
                 autoExportLogTypesPeriod = 3,
                 logsDeleteDate = "",
                 zipDeleteDate = "",
@@ -89,13 +89,18 @@ class MainApplication : Application() {
                             EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
                                 PLog.logThis("PLogger", "event", "New directory created: " + it.data, LogLevel.INFO)
                             }
+                            EventTypes.LOG_TYPE_EXPORTED -> {
+                                PLog.logThis("PLogger", "event", "Log Type: " + it.data, LogLevel.INFO)
+                            }
+                            else -> {
+                            }
                         }
                     }
                     .subscribe()
         }
 
-        PLog.setLogsConfig(logsConfig, saveToFile = true)
-        PLog.forceWriteLogsConfig(logsConfig)
+        PLog.applyConfigurations(logsConfig,true)
+        //PLog.forceWriteLogsConfig(logsConfig)
     }
 
 }

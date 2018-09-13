@@ -8,7 +8,7 @@ import io.reactivex.Observable
 
 interface PLogger{
 
-    fun setLogsConfig(config: LogsConfig, saveToFile: Boolean = false)
+    fun applyConfigurations(config: LogsConfig, saveToFile: Boolean = false)
 
     fun forceWriteLogsConfig(config: LogsConfig)
 
@@ -23,6 +23,8 @@ interface PLogger{
     fun logExc(className: String, functionName: String, e: Exception, type: LogLevel = LogLevel.ERROR)
 
     fun clearLogs()
+
+    fun clearExportedLogs()
 
     fun getLogEvents(): Observable<LogEvents>
 

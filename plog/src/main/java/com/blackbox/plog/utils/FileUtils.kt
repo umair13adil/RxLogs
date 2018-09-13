@@ -4,6 +4,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
+import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import java.io.File
 
 private var currentNameOfDirectory = ""
@@ -35,8 +36,12 @@ fun appendToFile(path: String, data: String) {
 }
 
 fun checkFileExists(path: String) {
-    if (!File(path).exists())
-        File(path).createNewFile()
+    val file = File(path)
+
+    if (!file.exists()) {
+        PLog.getLogBus().send(LogEvents(EventTypes.NEW_LOG_FILE_CREATED, file.name))
+        file.createNewFile()
+    }
 }
 
 /*
@@ -45,7 +50,7 @@ fun checkFileExists(path: String) {
 fun setupFilePaths(fileName: String = ""): String {
 
     //Create Root folder
-    val rootFolderName = "Logs"
+    val rootFolderName = LOG_FOLDER
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
     Utils.instance.createDirIfNotExists(rootFolderPath)
 
@@ -107,7 +112,7 @@ fun setupFilePaths(fileName: String = ""): String {
 fun getLogsSavedPaths(nameForEventDirectory: String = "", isForAll: Boolean = false): String {
 
     //Create Root folder
-    val rootFolderName = "Logs"
+    val rootFolderName = LOG_FOLDER
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
 
     when (PLog.getLogsConfig()?.directoryStructure!!) {

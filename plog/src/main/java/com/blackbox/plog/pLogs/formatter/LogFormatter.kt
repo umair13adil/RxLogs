@@ -65,7 +65,7 @@ object LogFormatter {
 
             FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-            FormatType.FORMAT_CSV -> formatCSV(data, PLog.getLogsConfig()?.csvDeliminator!!)
+            FormatType.FORMAT_CSV -> formatCSV(data, PLog.getLogsConfig()?.csvDelimiter!!)
 
             FormatType.FORMAT_CUSTOM -> formatCustom(data, PLog.getLogsConfig()?.customFormatOpen!!, PLog.getLogsConfig()?.customFormatClose!!)
         }

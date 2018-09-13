@@ -10,15 +10,11 @@ internal fun doOnInit() {
     //Run only if Config file is set
     if (PLog.isLogsConfigSet()) {
 
-        //Overwrite with XML data
-        PLog.getLogsConfigFromXML()?.let {
+        //Overwrite with XML data, Send Event to notify that XML is loaded
+        PLog.getLogsConfigFromXML() ?: PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
 
-            //If config XML is found, use those configurations Instead
-            PLog.logsConfig = it
-
-            //Send Event to notify that XML is loaded
-            PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
-        }
+        //Do Initial tasks
+        PLog.getLogsConfig()?.doOnSetup()
 
         //Create LogTypes for types Enabled
         createLogTypes()

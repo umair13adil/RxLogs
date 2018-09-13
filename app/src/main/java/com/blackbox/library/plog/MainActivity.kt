@@ -3,7 +3,6 @@ package com.blackbox.library.plog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -171,7 +170,7 @@ class MainActivity : AppCompatActivity() {
         //throw (RuntimeException(Throwable("Error")))
 
 
-        object : CountDownTimer(30000, 1000) {
+        /*object : CountDownTimer(30000, 1000) {
             override fun onFinish() {
                 PLog.getLogsConfig()?.setEventNameForDirectory("Job_${System.currentTimeMillis().toString().substring(3)}")
                 start()
@@ -181,7 +180,7 @@ class MainActivity : AppCompatActivity() {
 
             }
 
-        }.start()
+        }.start()*/
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

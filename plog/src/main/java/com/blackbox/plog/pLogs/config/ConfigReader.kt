@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.config
 
+import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
@@ -121,14 +122,6 @@ object ConfigReader {
                             logsConfig.autoExportLogTypesPeriod = readAttribute(attributes, AUTO_EXPORT_PERIOD_ATTR).toInt()
                         }
 
-                        LOGS_DELETE_DATE_TAG -> {
-                            logsConfig.logsDeleteDate = readAttribute(attributes, VALUE_ATTR)
-                        }
-
-                        ZIP_DELETE_DATE_TAG -> {
-                            logsConfig.zipDeleteDate = readAttribute(attributes, VALUE_ATTR)
-                        }
-
                         LOGS_SAVE_PATH_TAG -> {
                             logsConfig.savePath = readAttribute(attributes, VALUE_ATTR)
                         }
@@ -138,7 +131,7 @@ object ConfigReader {
                         }
 
                         CSV_TAG -> {
-                            logsConfig.csvDeliminator = readAttribute(attributes, CSV_DELIMINATOR_ATTR)
+                            logsConfig.csvDelimiter = readAttribute(attributes, CSV_DELIMITER_ATTR)
                         }
                     }
                 }
@@ -163,6 +156,21 @@ object ConfigReader {
                                 logsConfig.autoExportLogTypes.add(currentValue)
                         }
 
+                        LOGS_DELETE_DATE_TAG -> {
+                            val logsDeleteTime = currentValue
+                            logsConfig.logsDeleteDate = logsDeleteTime
+                        }
+
+                        ZIP_DELETE_DATE_TAG -> {
+                            val zipDeleteTime = currentValue
+                            logsConfig.zipDeleteDate = zipDeleteTime
+                        }
+
+                        EXPORT_START_DATE_TAG -> {
+                            val startDate = currentValue
+                            logsConfig.exportStartDate = startDate
+                        }
+
                     }
                 }
 
@@ -178,6 +186,12 @@ object ConfigReader {
             }
 
             saxParser.parse(inputStream, handler)
+        } catch (e: Exception) {
+            e.printStackTrace()
+
+            //Delete configuration file
+            PLog.deleteLocalConfiguration()
+
         } finally {
             inputStream.close()
         }

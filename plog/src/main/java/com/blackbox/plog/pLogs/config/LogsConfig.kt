@@ -7,6 +7,7 @@ import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.checkIfKeyValid
 import com.blackbox.plog.utils.generateKey
@@ -50,27 +51,38 @@ class LogsConfig(
         var autoExportLogTypesPeriod: Int = 0,
         var logsDeleteDate: String = "", //Last Time logs were cleared
         var zipDeleteDate: String = "", //Last Time exported zip files were cleared
+        var exportStartDate: String = "", //Last Time auto-export was triggered
         var savePath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be created
         var exportPath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be exported as zip
-        var csvDeliminator: String = "" //Deliminator for CSV files
+        var csvDelimiter: String = "" //Delimiter for CSV files
 ) {
 
-    init {
+    val TAG = "LogsConfig"
+
+    fun doOnSetup() {
 
         //Initializes Encryption Key
         setupEncryption()
 
-        validateData()
+        validateConfigurations()
+
+        //Check if Logs need to be cleared
+        Triggers.shouldClearLogs()
+        Triggers.shouldClearExports()
     }
 
-    fun updateLogsDeleteDate(date: String) {
-        if (PLog.localConfigurationExists())
-            updateValue(date, LOGS_DELETE_DATE_TAG)
-    }
+    /*
+     * This will update value of date in XML for specified TAG.
+     */
+    fun updateDateForTAG(date: String, tag: String) {
 
-    fun updateZipDeleteDate(date: String) {
-        if (PLog.localConfigurationExists())
-            updateValue(date, ZIP_DELETE_DATE_TAG)
+        if (PLog.localConfigurationExists()) {
+            updateValue(date, tag)
+
+            //Reload configurations from XML file
+            PLog.getLogsConfigFromXML()
+        } else
+            throw Exception(Throwable("No local XML configuration file found!"))
     }
 
     internal var secretKey: SecretKey? = null//SecretKey for Encryption
@@ -93,16 +105,24 @@ class LogsConfig(
         nameForEventDirectory = name
     }
 
+    /*
+     * Validate & setup encryption.
+     */
     private fun setupEncryption() {
 
-        if (encryptionEnabled) {
+        if (encryptionEnabled && enabled) {
             val key = checkIfKeyValid(encryptionKey)
             secretKey = generateKey(key)
         }
     }
 
-    private fun validateData() {
-        if (directoryStructure == DirectoryStructure.FOR_EVENT) {
+    /*
+     * Validate configurations provided.
+     */
+    private fun validateConfigurations() {
+
+        //Check Directory Structure
+        if (directoryStructure == DirectoryStructure.FOR_EVENT && enabled) {
             if (nameForEventDirectory.isEmpty()) {
                 throw Exception(Throwable("Name for event must be provided. Set name using this method 'PLogger.setEventNameForDirectory(name)'\nor set in" +
                         "'PLogBuilder().also {it.setEventNameForDirectory()}'"))

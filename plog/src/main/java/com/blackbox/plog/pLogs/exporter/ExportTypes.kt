@@ -47,14 +47,7 @@ private fun getLogsForToday(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.TODAY)
     val files = FileFilter.getFilesForToday(path)
-
-    if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
-
-    if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-        noOfFiles = "_[${files.first.size}]"
-
-    val zipName = "$timeStamp$noOfFiles.zip"
+    val zipName = composeZipName(files)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -66,14 +59,7 @@ private fun getLogsForLastHour(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.LAST_HOUR)
     val files = FileFilter.getFilesForLastHour(path)
-
-    if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.LAST_HOUR.type
-
-    if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-        noOfFiles = "_[${files.first.size}]"
-
-    val zipName = "$timeStamp$noOfFiles.zip"
+    val zipName = composeZipName(files)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -85,14 +71,7 @@ private fun getLogsForWeek(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.WEEKS)
     val files = FileFilter.getFilesForLastWeek(path)
-
-    if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.WEEKS.type
-
-    if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-        noOfFiles = "_[${files.first.size}]"
-
-    val zipName = "$timeStamp$noOfFiles.zip"
+    val zipName = composeZipName(files)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -104,14 +83,7 @@ private fun getLogsForLast24Hours(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.LAST_24_HOURS)
     val files = FileFilter.getFilesForLast24Hours(path)
-
-    if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.LAST_24_HOURS.type
-
-    if (PLog.getLogsConfig()?.attachNoOfFiles!!)
-        noOfFiles = "_[${files.first.size}]"
-
-    val zipName = "$timeStamp$noOfFiles.zip"
+    val zipName = composeZipName(files)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -123,14 +95,21 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.ALL)
     val files = FileFilter.getFilesForAll(path)
+    val zipName = composeZipName(files)
+
+    return Triple(zipName, files.first, files.second)
+}
+
+private fun composeZipName(files: Pair<List<File>, String>): String {
 
     if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.ALL.type
+        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
 
     if (PLog.getLogsConfig()?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"
 
-    val zipName = "$timeStamp$noOfFiles.zip"
+    val preName = PLog.getLogsConfig()?.exportFileNamePreFix!!
+    val postName = PLog.getLogsConfig()?.exportFileNamePostFix!!
 
-    return Triple(zipName, files.first, files.second)
+    return "$preName$timeStamp$noOfFiles$postName.zip"
 }
