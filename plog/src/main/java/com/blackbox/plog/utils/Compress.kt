@@ -76,7 +76,7 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
             }
 
             if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.i(TAG, "Adding directory: $path")
+                Log.i(PLog.TAG, "Adding directory: $path")
 
             //Call recursively to add files within this directory
             zipFiles(zipOut, f, f.name)
@@ -122,7 +122,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
             }
 
             if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.i(TAG, "Adding file: ${f.path}")
+                Log.i(PLog.TAG, "Adding file: ${f.path}")
 
 
             while (true) {

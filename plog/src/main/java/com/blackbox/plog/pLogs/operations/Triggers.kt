@@ -36,7 +36,7 @@ object Triggers {
             if (Math.abs(elapsedHours) >= 1) {
 
                 if (PLog.getLogsConfig()?.isDebuggable!!)
-                    Log.i(TAG, "An hour has passed, sending event!")
+                    Log.i(PLog.TAG, "An hour has passed, sending event!")
             }
         } catch (e: Exception) {
             //e.printStackTrace();
@@ -76,7 +76,7 @@ object Triggers {
                 return
 
             if (logsConfig.isDebuggable)
-                Log.i(TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -95,7 +95,7 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(TAG, info)
+                    Log.i(PLog.TAG, info)
 
                 //Clear Logs
                 PLog.clearLogs()
@@ -143,7 +143,7 @@ object Triggers {
                 return
 
             if (logsConfig.isDebuggable)
-                Log.i(TAG, "Last Zip delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.TAG, "Last Zip delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -162,7 +162,7 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(TAG, info)
+                    Log.i(PLog.TAG, info)
 
                 //Clear exported logs
                 PLog.clearExportedLogs()
@@ -214,7 +214,7 @@ object Triggers {
                 return true
 
             if (logsConfig.isDebuggable)
-                Log.i(TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -233,7 +233,7 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(TAG, info)
+                    Log.i(PLog.TAG, info)
 
                 PLog.getLogBus().send(LogEvents(EventTypes.AUTO_EXPORT_PERIOD_COMPLETED, info))
 
@@ -253,7 +253,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", LOGS_DELETE_DATE_TAG)
     }
@@ -262,7 +262,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", ZIP_DELETE_DATE_TAG)
     }
@@ -271,7 +271,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", EXPORT_START_DATE_TAG)
     }
@@ -279,7 +279,7 @@ object Triggers {
     private fun clearExportStartDate() {
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Clear export start date!")
+            Log.i(PLog.TAG, "Clear export start date!")
 
         PLog.getLogsConfig()?.updateDateForTAG("", EXPORT_START_DATE_TAG)
     }

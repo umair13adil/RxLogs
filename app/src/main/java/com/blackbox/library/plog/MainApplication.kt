@@ -36,7 +36,7 @@ class MainApplication : Application() {
     }
 
     private fun setUpPLogger() {
-        val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
+        val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + ".PLogs Folder"
 
         val logsConfig = LogsConfig(
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
@@ -44,14 +44,14 @@ class MainApplication : Application() {
                 formatType = FormatType.FORMAT_CURLY,
                 logsRetentionPeriodInDays = 1,
                 zipsRetentionPeriodInDays = 2,
-                autoClearLogsOnExport = true,
+                autoClearLogsOnExport = false,
                 enabled = true,
-                exportFileNamePreFix = "",
-                exportFileNamePostFix = "",
+                exportFileNamePreFix = "[",
+                exportFileNamePostFix = "]",
                 autoExportErrors = true,
                 encryptionEnabled = false,
                 encryptionKey = "",
-                singleLogFileSize = 2048 * 2,
+                singleLogFileSize = 200, //Bytes
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_EVENT,
                 nameForEventDirectory = "Job_101",
@@ -62,14 +62,14 @@ class MainApplication : Application() {
                 zipDeleteDate = "",
                 isDebuggable = true,
                 logFileExtension = LogExtension.TXT,
-                attachTimeStamp = false,
+                attachTimeStamp = true,
                 attachNoOfFiles = true,
-                timeStampFormat = TimeStampFormat.DATE_FORMAT_1,
+                timeStampFormat = TimeStampFormat.TIME_FORMAT_READABLE,
                 zipFilesOnly = false,
                 savePath = logsPath,
                 zipFileName = "MyLogs",
                 exportPath = logsPath + File.separator + "PLogsOutput"
-        ).also {
+        ).also { it ->
             it.getLogEventsListener()
                     .doOnNext {
 
@@ -99,8 +99,8 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        PLog.applyConfigurations(logsConfig)
-        //PLog.forceWriteLogsConfig(logsConfig)
+        PLog.applyConfigurations(logsConfig, saveToFile = true)
+        PLog.forceWriteLogsConfig(logsConfig)
     }
 
 }

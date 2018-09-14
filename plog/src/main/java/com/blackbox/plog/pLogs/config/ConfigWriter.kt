@@ -1,6 +1,9 @@
 package com.blackbox.plog.pLogs.config
 
+import com.blackbox.plog.pLogs.utils.CONFIG_FILE_NAME
+import com.blackbox.plog.pLogs.utils.XML_PATH
 import org.w3c.dom.Document
+import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import javax.xml.parsers.DocumentBuilderFactory
@@ -42,7 +45,7 @@ object ConfigWriter {
                 tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
 
                 // send DOM to file
-                tr.transform(DOMSource(dom), StreamResult(FileOutputStream(XML_PATH)))
+                tr.transform(DOMSource(dom), StreamResult(FileOutputStream(File(XML_PATH, CONFIG_FILE_NAME).path)))
 
             } catch (te: TransformerException) {
                 println(te.message)

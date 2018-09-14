@@ -20,7 +20,7 @@ object DataLogsFilter {
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Found files: ${files.size}")
+            Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {
 
@@ -44,7 +44,7 @@ object DataLogsFilter {
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Found files: ${files.size}")
+            Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {
 

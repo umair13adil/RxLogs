@@ -1,11 +1,5 @@
 package com.blackbox.plog.pLogs.config
 
-import com.blackbox.plog.pLogs.PLog
-import java.io.File
-
-//XML Save Path
-val XML_PATH = PLog.logPath + File.separator + "config.xml"
-
 //Parent TAGs
 const val ROOT_TAG = "Config"
 const val LOG_TYPES_ENABLED_TAG = "LogTypesEnabled"

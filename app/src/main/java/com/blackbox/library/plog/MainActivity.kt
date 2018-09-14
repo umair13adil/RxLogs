@@ -181,6 +181,12 @@ class MainActivity : AppCompatActivity() {
             }
 
         }.start()*/
+
+
+        //Print List of Exported Files
+        for (f in PLog.getListOfExportedFiles()) {
+            Log.i(PLog.TAG, "File: ${f.name}")
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

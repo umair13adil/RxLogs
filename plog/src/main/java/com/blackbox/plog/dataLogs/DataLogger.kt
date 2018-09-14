@@ -40,7 +40,7 @@ class DataLogger(var logFileName: String = "log") {
         }
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Written: $dataToWrite in '$logFilePath'")
+            Log.i(PLog.TAG, "Written: $dataToWrite in '$logFilePath'")
 
         //Check if auto Export is enabled, and then  export it
         autoExportLogType(dataToWrite, logFileName)
@@ -71,7 +71,7 @@ class DataLogger(var logFileName: String = "log") {
         }
 
         if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, "Appended: $dataToWrite in '$logFilePath'")
+            Log.i(PLog.TAG, "Appended: $dataToWrite in '$logFilePath'")
 
         //Check if auto Export is enabled, and then  export it
         autoExportLogType(dataToWrite, logFileName)

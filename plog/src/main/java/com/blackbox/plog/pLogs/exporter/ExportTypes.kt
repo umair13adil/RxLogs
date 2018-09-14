@@ -3,7 +3,6 @@ package com.blackbox.plog.pLogs.exporter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FileFilter
 import com.blackbox.plog.pLogs.filter.FilterUtils.getPathForType
-import com.blackbox.plog.utils.DateTimeUtils
 import java.io.File
 
 private val path = PLog.logPath
@@ -47,7 +46,7 @@ private fun getLogsForToday(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.TODAY)
     val files = FileFilter.getFilesForToday(path)
-    val zipName = composeZipName(files)
+    val zipName = composeZipName(files, ExportType.TODAY)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -59,7 +58,7 @@ private fun getLogsForLastHour(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.LAST_HOUR)
     val files = FileFilter.getFilesForLastHour(path)
-    val zipName = composeZipName(files)
+    val zipName = composeZipName(files, ExportType.LAST_HOUR)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -71,7 +70,7 @@ private fun getLogsForWeek(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.WEEKS)
     val files = FileFilter.getFilesForLastWeek(path)
-    val zipName = composeZipName(files)
+    val zipName = composeZipName(files, ExportType.WEEKS)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -83,7 +82,7 @@ private fun getLogsForLast24Hours(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.LAST_24_HOURS)
     val files = FileFilter.getFilesForLast24Hours(path)
-    val zipName = composeZipName(files)
+    val zipName = composeZipName(files, ExportType.LAST_24_HOURS)
 
     return Triple(zipName, files.first, files.second)
 }
@@ -95,15 +94,15 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
 
     val path = getPathForType(ExportType.ALL)
     val files = FileFilter.getFilesForAll(path)
-    val zipName = composeZipName(files)
+    val zipName = composeZipName(files, ExportType.ALL)
 
     return Triple(zipName, files.first, files.second)
 }
 
-private fun composeZipName(files: Pair<List<File>, String>): String {
+private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportType): String {
 
     if (PLog.getLogsConfig()?.attachTimeStamp!!)
-        timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
+        timeStamp = PLog.getFormattedTimeStamp() + "_" + exportType.type
 
     if (PLog.getLogsConfig()?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"

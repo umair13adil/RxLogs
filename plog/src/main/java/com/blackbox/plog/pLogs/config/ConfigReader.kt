@@ -4,6 +4,8 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
+import com.blackbox.plog.pLogs.utils.CONFIG_FILE_NAME
+import com.blackbox.plog.pLogs.utils.XML_PATH
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.DefaultHandler
@@ -19,7 +21,7 @@ object ConfigReader {
 
         val logsConfig = LogsConfig()
 
-        val inputStream = File(XML_PATH).inputStream()
+        val inputStream = File(XML_PATH, CONFIG_FILE_NAME).inputStream()
 
         try {
             val factory = SAXParserFactory.newInstance()
@@ -64,8 +66,8 @@ object ConfigReader {
                             logsConfig.formatType = FormatType.valueOf(readAttribute(attributes, VALUE_ATTR))
                             logsConfig.attachTimeStamp = readAttribute(attributes, ATTACH_TIME_STAMPS_ATTR).toBoolean()
                             logsConfig.attachNoOfFiles = readAttribute(attributes, ATTACH_NO_OF_FILES_ATTR).toBoolean()
-                            //TODO Add TimeStampFormat
-                            //TODO Add Extensions
+                            logsConfig.timeStampFormat = readAttribute(attributes, TIME_STAMP_FORMAT_ATTR)
+                            logsConfig.logFileExtension = readAttribute(attributes, LOG_FILE_EXT_ATTR)
                             logsConfig.customFormatOpen = readAttribute(attributes, FORMAT_CUSTOM_OPEN_ATTR)
                             logsConfig.customFormatClose = readAttribute(attributes, FORMAT_CUSTOM_CLOSE_ATTR)
                         }

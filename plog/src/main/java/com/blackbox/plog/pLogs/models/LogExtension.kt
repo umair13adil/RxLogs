@@ -1,7 +1,7 @@
 package com.blackbox.plog.pLogs.models
 
-enum class LogExtension(val ext: String) {
-    TXT(".txt"),
-    CSV(".csv"),
-    NONE(""),
+object LogExtension {
+    val TXT = ".txt"
+    val CSV = ".csv"
+    val NONE = ""
 }

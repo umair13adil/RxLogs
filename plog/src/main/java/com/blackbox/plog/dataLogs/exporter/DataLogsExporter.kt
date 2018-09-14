@@ -8,7 +8,6 @@ import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
-import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
 import io.reactivex.Observable
@@ -60,7 +59,7 @@ object DataLogsExporter {
                         .subscribeBy(
                                 onNext = {
                                     if (PLog.getLogsConfig()?.isDebuggable!!)
-                                        Log.i(TAG, "Output Zip: ${exportFileName}")
+                                        Log.i(PLog.TAG, "Output Zip: ${exportFileName}")
 
                                     emitter.onNext(it)
                                 },
@@ -79,7 +78,7 @@ object DataLogsExporter {
                         .subscribeBy(
                                 onNext = {
                                     if (PLog.getLogsConfig()?.isDebuggable!!)
-                                        Log.i(TAG, "Output Zip: $exportPath${exportFileName}")
+                                        Log.i(PLog.TAG, "Output Zip: $exportPath${exportFileName}")
 
                                     emitter.onNext(exportPath + exportFileName)
                                 },
@@ -167,7 +166,7 @@ object DataLogsExporter {
         var noOfFiles = ""
 
         if (PLog.getLogsConfig()?.attachTimeStamp!!)
-            timeStamp = DateTimeUtils.getFullDateTimeStringCompressed(System.currentTimeMillis()) + "_" + ExportType.TODAY.type
+            timeStamp = PLog.getFormattedTimeStamp() + "_" + ExportType.TODAY.type
 
         if (PLog.getLogsConfig()?.attachNoOfFiles!!)
             noOfFiles = "_[${files.size}]"

@@ -116,7 +116,7 @@ object LogExporter {
                 .subscribeBy(
                         onNext = {
                             if (PLog.getLogsConfig()?.isDebuggable!!)
-                                Log.i(TAG, "Output Zip: $zipName")
+                                Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(it)
                         },
@@ -137,7 +137,7 @@ object LogExporter {
                 .subscribeBy(
                         onNext = {
                             if (PLog.getLogsConfig()?.isDebuggable!!)
-                                Log.i(TAG, "Output Zip: $zipName")
+                                Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)
                         },
@@ -158,7 +158,7 @@ object LogExporter {
                 .subscribeBy(
                         onNext = {
                             if (PLog.getLogsConfig()?.isDebuggable!!)
-                                Log.i(TAG, "Output Zip: $zipName")
+                                Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)
                         },

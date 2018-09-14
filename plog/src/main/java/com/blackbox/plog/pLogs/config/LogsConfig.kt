@@ -28,8 +28,8 @@ class LogsConfig(
         var formatType: FormatType = FormatType.FORMAT_CURLY, //Default format of '{String}' log data
         var attachTimeStamp: Boolean = false, //Should append 'TimeStamp' to export file name
         var attachNoOfFiles: Boolean = false, //Should append 'Size Of Logs Files' to export file name
-        var timeStampFormat: TimeStampFormat = TimeStampFormat.DATE_FORMAT_1, //TimeStamp format
-        var logFileExtension: LogExtension = LogExtension.TXT, //Extension of Log Files
+        var timeStampFormat: String = TimeStampFormat.DATE_FORMAT_1, //TimeStamp format
+        var logFileExtension: String = LogExtension.TXT, //Extension of Log Files
         var customFormatOpen: String = " ", //For log field open
         var customFormatClose: String = " ", //For log field close
         var logsRetentionPeriodInDays: Int = 0,
@@ -42,7 +42,7 @@ class LogsConfig(
         var autoExportErrors: Boolean = true,
         var encryptionEnabled: Boolean = false, //Encryption enabled
         var encryptionKey: String = "", //Encryption Key
-        var singleLogFileSize: Int = 2048 * 2, //Size in MBs (4Mb)
+        var singleLogFileSize: Int = 2048 * 2, //Size in Bytes
         var logFilesLimit: Int = 100, //Max number of log files
         var directoryStructure: DirectoryStructure = DirectoryStructure.FOR_DATE, //Default Directory Structure
         var nameForEventDirectory: String = "", //Name of directory in case of 'DirectoryStructure.FOR_EVENT'

@@ -1,5 +1,7 @@
 package com.blackbox.plog.pLogs.config
 
+import com.blackbox.plog.pLogs.utils.CONFIG_FILE_NAME
+import com.blackbox.plog.pLogs.utils.XML_PATH
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
@@ -37,8 +39,8 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
     formatTypeElement.setAttribute(VALUE_ATTR, logsConfig.formatType.value)
     formatTypeElement.setAttribute(ATTACH_TIME_STAMPS_ATTR, logsConfig.attachTimeStamp.toString())
     formatTypeElement.setAttribute(ATTACH_NO_OF_FILES_ATTR, logsConfig.attachNoOfFiles.toString())
-    formatTypeElement.setAttribute(TIME_STAMP_FORMAT_ATTR, logsConfig.timeStampFormat.value)
-    formatTypeElement.setAttribute(LOG_FILE_EXT_ATTR, logsConfig.logFileExtension.ext)
+    formatTypeElement.setAttribute(TIME_STAMP_FORMAT_ATTR, logsConfig.timeStampFormat)
+    formatTypeElement.setAttribute(LOG_FILE_EXT_ATTR, logsConfig.logFileExtension)
     formatTypeElement.setAttribute(FORMAT_CUSTOM_OPEN_ATTR, logsConfig.customFormatOpen)
     formatTypeElement.setAttribute(FORMAT_CUSTOM_CLOSE_ATTR, logsConfig.customFormatClose)
     rootEle.appendChild(formatTypeElement)
@@ -139,8 +141,8 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
 
 internal fun updateValue(value: String, tag: String) {
     try {
-        val filePath = XML_PATH
-        val file = File(filePath)
+
+        val file = File(XML_PATH, CONFIG_FILE_NAME)
         val docFactory = DocumentBuilderFactory.newInstance()
         val docBuilder = docFactory.newDocumentBuilder()
         val doc = docBuilder.parse(file)
@@ -153,7 +155,7 @@ internal fun updateValue(value: String, tag: String) {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")
 
         // initialize StreamResult with File object to save to file
-        val result = StreamResult(file)
+        val result = StreamResult(File(XML_PATH, CONFIG_FILE_NAME).path)
         val source = DOMSource(doc)
         transformer.transform(source, result)
     } catch (e: Exception) {

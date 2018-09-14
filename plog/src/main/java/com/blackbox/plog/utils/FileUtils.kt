@@ -11,12 +11,17 @@ private var currentNameOfDirectory = ""
 
 fun writeToFile(path: String, data: String) {
     try {
-        if (File(path).exists()) {
-            File(path).printWriter().use { out ->
-                out.println(data)
+        val file = File(path)
+        if (file.exists()) {
+
+            if (PLog.shouldWriteLog(file)) {
+                file.printWriter().use { out ->
+                    out.println(data)
+                }
             }
+
         } else {
-            File(path).createNewFile()
+            file.createNewFile()
         }
     } catch (e: Exception) {
         e.printStackTrace()
@@ -25,23 +30,32 @@ fun writeToFile(path: String, data: String) {
 
 fun appendToFile(path: String, data: String) {
     try {
-        if (File(path).exists()) {
-            File(path).appendText(data, Charsets.UTF_8)
+        val file = File(path)
+
+        if (file.exists()) {
+
+            if (PLog.shouldWriteLog(file)) {
+                file.appendText(data, Charsets.UTF_8)
+            }
+
         } else {
-            File(path).createNewFile()
+            file.createNewFile()
         }
+
     } catch (e: Exception) {
         e.printStackTrace()
     }
 }
 
-fun checkFileExists(path: String) {
+fun checkFileExists(path: String): File {
     val file = File(path)
 
     if (!file.exists()) {
         PLog.getLogBus().send(LogEvents(EventTypes.NEW_LOG_FILE_CREATED, file.name))
         file.createNewFile()
     }
+
+    return file
 }
 
 /*
@@ -62,10 +76,10 @@ fun setupFilePaths(fileName: String = ""): String {
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
                 val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
-                folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension?.ext
+                folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
             } else {
                 //Otherwise it's DataLogger file.
-                folderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension?.ext
+                folderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension!!
             }
         }
 
@@ -87,20 +101,20 @@ fun setupFilePaths(fileName: String = ""): String {
             val hourlyFileName = currentNameOfDirectory + "_" + DateControl.instance.hour //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension?.ext
+                folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
             } else {
                 //Otherwise it's DataLogger file.
-                folderPath + File.separator + fileName + "_" + hourlyFileName + PLog.getLogsConfig()?.logFileExtension?.ext
+                folderPath + File.separator + fileName + "_" + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
             }
         }
 
         DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
             val todayPath = DateControl.instance.today
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                rootFolderPath + File.separator + todayPath + PLog.getLogsConfig()?.logFileExtension?.ext
+                rootFolderPath + File.separator + todayPath + PLog.getLogsConfig()?.logFileExtension!!
             } else {
                 //Otherwise it's DataLogger file.
-                rootFolderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension?.ext
+                rootFolderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension!!
             }
         }
     }

@@ -4,23 +4,27 @@ import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.config.*
+import com.blackbox.plog.pLogs.config.ConfigReader
+import com.blackbox.plog.pLogs.config.ConfigWriter
+import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.config.isLogLevelEnabled
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
+import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.doOnInit
-import com.blackbox.plog.pLogs.utils.LOG_FOLDER
+import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.*
 import io.reactivex.Observable
 import java.io.File
 
 open class PLogImpl : PLogger {
 
-    private val TAG = "PLogger"
+    val TAG = "PLogger"
 
     private lateinit var bus: RxBus
 
@@ -43,10 +47,10 @@ open class PLogImpl : PLogger {
      * @return the output path
      */
     internal val outputPath: String
-        get() = logsConfig?.exportPath + File.separator
+        get() = getExportPath(logsConfig)
 
     internal val exportTempPath: String
-        get() = outputPath + "Temp" + File.separator
+        get() = getTempExportPath(logsConfig)
 
     /**
      * Gets Logs path.
@@ -56,7 +60,7 @@ open class PLogImpl : PLogger {
      * @return the save path
      */
     internal val logPath: String
-        get() = logsConfig?.savePath + File.separator
+        get() = getLogPath(logsConfig)
 
     /*
      * This will set logs configuration.
@@ -64,11 +68,14 @@ open class PLogImpl : PLogger {
      * @param 'saveToFile' if true, file will be written to storage
      */
     override fun applyConfigurations(config: LogsConfig, saveToFile: Boolean) {
+
+        //Create 'Save' Path
+        Utils.instance.createDirIfNotExists(config.savePath)
+
         PLog.logsConfig = config
 
         if (saveToFile) {
             //Only save if parameter value 'true'
-
             if (!PLog.localConfigurationExists()) {
                 ConfigWriter.saveToXML(config)
             }
@@ -118,14 +125,14 @@ open class PLogImpl : PLogger {
      * Will send 'true' if local configuration XML exists.
      */
     fun localConfigurationExists(): Boolean {
-        return File(XML_PATH).exists()
+        return File(XML_PATH, CONFIG_FILE_NAME).exists()
     }
 
     /*
      * Will send 'true' if local configuration XML is deleted.
      */
     fun deleteLocalConfiguration(): Boolean {
-        return File(XML_PATH).delete()
+        return File(XML_PATH, CONFIG_FILE_NAME).delete()
     }
 
     /*
@@ -281,16 +288,19 @@ open class PLogImpl : PLogger {
     private fun writeSimpleLogs(className: String, functionName: String, text: String, type: String) {
         val path = setupFilePaths()
 
-        checkFileExists(path)
+        val f = checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(PLog.getLogsConfig()?.timeStampFormat?.value!!), type)
+        if (PLog.shouldWriteLog(f)) {
 
-        val logFormatted = LogFormatter.getFormatType(logData)
+            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, logFormatted)
+            val logFormatted = LogFormatter.getFormatType(logData)
 
-        appendToFile(path, logFormatted)
+            if (PLog.getLogsConfig()?.isDebuggable!!)
+                Log.i(PLog.TAG, logFormatted)
+
+            appendToFile(path, logFormatted)
+        }
     }
 
     /*
@@ -303,16 +313,20 @@ open class PLogImpl : PLogger {
 
         val path = setupFilePaths()
 
-        checkFileExists(path)
+        val f = checkFileExists(path)
 
-        val logData = LogData(className, functionName, text, DateTimeUtils.getTimeFormatted(PLog.getLogsConfig()?.timeStampFormat?.value), type)
+        if (PLog.shouldWriteLog(f)) {
 
-        val logFormatted = LogFormatter.getFormatType(logData)
+            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
-            Log.i(TAG, logFormatted)
+            val logFormatted = LogFormatter.getFormatType(logData)
 
-        appendToFileEncrypted(logFormatted, PLog.getLogsConfig()?.secretKey!!, path)
+            if (PLog.getLogsConfig()?.isDebuggable!!)
+                Log.i(PLog.TAG, logFormatted)
+
+            appendToFileEncrypted(logFormatted, PLog.getLogsConfig()?.secretKey!!, path)
+
+        }
     }
 
 
@@ -392,5 +406,47 @@ open class PLogImpl : PLogger {
                 PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
             }
         }
+    }
+
+    fun getFormattedTimeStamp(): String {
+        return DateTimeUtils.getTimeFormatted(PLog.getLogsConfig()?.timeStampFormat!!)
+    }
+
+    fun getListOfExportedFiles(): List<File> {
+        return FilterUtils.listFiles(outputPath, arrayListOf())
+    }
+
+    /*
+     * Verify if logs can be written.
+     */
+    fun shouldWriteLog(file: File): Boolean {
+
+        if (file.length() > 0) {
+            val length = (file.length() / 100)
+            val maxLength = PLog.getLogsConfig()?.singleLogFileSize!! * 1000
+            if (length > maxLength) {
+
+                if (PLog.getLogsConfig()?.isDebuggable!!)
+                    Log.i(PLog.TAG, "File size exceeded!")
+
+                return false
+            } else {
+                if (PLog.getLogsConfig()?.isDebuggable!!)
+                    Log.i(PLog.TAG, "File Length: $length < $maxLength")
+            }
+        }
+
+        //TODO update no of files created in config XML for easy access
+        /*val totalFiles = FilterUtils.listFiles(logPath, arrayListOf())
+        if (totalFiles.isNotEmpty()) {
+            if (totalFiles.size > PLog.getLogsConfig()?.logFilesLimit!!)
+
+                if (PLog.getLogsConfig()?.isDebuggable!!)
+                    Log.i(PLog.TAG, "No of log files exceeded!")
+
+            return false
+        }*/
+
+        return true
     }
 }
