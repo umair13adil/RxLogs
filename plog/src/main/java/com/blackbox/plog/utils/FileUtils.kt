@@ -5,6 +5,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
+import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import java.io.File
 
 private var currentNameOfDirectory = ""
@@ -51,7 +52,6 @@ fun checkFileExists(path: String): File {
     val file = File(path)
 
     if (!file.exists()) {
-        PLog.getLogBus().send(LogEvents(EventTypes.NEW_LOG_FILE_CREATED, file.name))
         file.createNewFile()
     }
 
@@ -66,13 +66,13 @@ fun setupFilePaths(fileName: String = ""): String {
     //Create Root folder
     val rootFolderName = LOG_FOLDER
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
-    Utils.instance.createDirIfNotExists(rootFolderPath)
+    createDirIfNotExists(rootFolderPath)
 
     when (PLog.getLogsConfig()?.directoryStructure!!) {
 
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today
-            Utils.instance.createDirIfNotExists(folderPath)
+            createDirIfNotExists(folderPath)
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
                 val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
@@ -86,14 +86,14 @@ fun setupFilePaths(fileName: String = ""): String {
         DirectoryStructure.FOR_EVENT -> {
 
             val parentPath = rootFolderPath + DateControl.instance.today
-            Utils.instance.createDirIfNotExists(parentPath)
+            createDirIfNotExists(parentPath)
 
             val nameForEventDirectory = PLog.getLogsConfig()?.nameForEventDirectory!!
 
             val folderPath = parentPath + File.separator + nameForEventDirectory
 
             //Create directory for event name and check it's result
-            if (Utils.instance.createDirIfNotExists(folderPath)) {
+            if (createDirIfNotExists(folderPath)) {
                 isDirectoryChanged(nameForEventDirectory)
             }
             currentNameOfDirectory = nameForEventDirectory //Set current name of directory

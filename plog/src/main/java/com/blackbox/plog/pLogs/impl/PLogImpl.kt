@@ -19,6 +19,9 @@ import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.*
+import com.blackbox.plog.utils.Utils.bytesToReadable
+import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import com.blackbox.plog.utils.Utils.getStackTrace
 import io.reactivex.Observable
 import java.io.File
 
@@ -70,7 +73,7 @@ open class PLogImpl : PLogger {
     override fun applyConfigurations(config: LogsConfig, saveToFile: Boolean) {
 
         //Create 'Save' Path
-        Utils.instance.createDirIfNotExists(config.savePath)
+        createDirIfNotExists(config.savePath)
 
         PLog.logsConfig = config
 
@@ -197,7 +200,7 @@ open class PLogImpl : PLogger {
         if (!isLogLevelEnabled(type))
             return
 
-        val data = Utils.instance.getStackTrace(e)
+        val data = getStackTrace(e)
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, data, type.level)
@@ -229,7 +232,7 @@ open class PLogImpl : PLogger {
         if (!isLogLevelEnabled(type))
             return
 
-        val data = Utils.instance.getStackTrace(e)
+        val data = getStackTrace(e)
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, data, type.level)
@@ -335,13 +338,21 @@ open class PLogImpl : PLogger {
      */
     override fun getLogEvents(): Observable<LogEvents> {
 
-        return Observable.create {
+        return Observable.create { it ->
             val emitter = it
-            PLog.getLogBus().toObservable().subscribe {
-                if (it is LogEvents) {
-                    emitter.onNext(it)
-                }
-            }
+            PLog.getLogBus()
+                    .toObservable()
+                    .doOnError {
+
+                        if (PLog.getLogsConfig()?.isDebuggable!!)
+                            Log.e(TAG, "Error '${it.message}'")
+
+                    }.subscribe {
+
+                        if (it is LogEvents) {
+                            emitter.onNext(it)
+                        }
+                    }
         }
     }
 
@@ -422,8 +433,9 @@ open class PLogImpl : PLogger {
     fun shouldWriteLog(file: File): Boolean {
 
         if (file.length() > 0) {
-            val length = (file.length() / 100)
-            val maxLength = PLog.getLogsConfig()?.singleLogFileSize!! * 1000
+            val length = file.length()
+            val maxLength = PLog.getLogsConfig()?.singleLogFileSize!! * (1024 * 1024)
+
             if (length > maxLength) {
 
                 if (PLog.getLogsConfig()?.isDebuggable!!)
@@ -432,7 +444,7 @@ open class PLogImpl : PLogger {
                 return false
             } else {
                 if (PLog.getLogsConfig()?.isDebuggable!!)
-                    Log.i(PLog.TAG, "File Length: $length < $maxLength")
+                    Log.i(PLog.TAG, "File Length: ${bytesToReadable(length.toInt())} < ${bytesToReadable(maxLength)}")
             }
         }
 

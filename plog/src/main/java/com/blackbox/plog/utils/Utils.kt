@@ -7,9 +7,7 @@ import java.io.StringWriter
 /**
  * Created by Umair Adil on 18/11/2016.
  */
-class Utils {
-
-    private val TAG = Utils::class.java.simpleName
+object Utils {
 
     fun createDirIfNotExists(path: String): Boolean {
         val file = File(path)
@@ -17,10 +15,6 @@ class Utils {
             return file.mkdirs()
         }
         return false
-    }
-
-    companion object {
-        val instance = Utils()
     }
 
     fun getStackTrace(e: Exception): String {
@@ -65,5 +59,27 @@ class Utils {
 
         }
 
+    }
+
+    fun bytesToReadable(b: Int): String {
+
+        var bytes = b
+
+        if (bytes < 1024)
+            return bytes.toString() + " bytes";
+
+        bytes /= 1024;
+        if (bytes < 1024)
+            return bytes.toString() + " Kb";
+
+        bytes /= 1024;
+        if (bytes < 1024)
+            return bytes.toString() + " Mb";
+
+        bytes /= 1024;
+        if (bytes < 1024)
+            return bytes.toString() + " Gb";
+
+        return ""
     }
 }

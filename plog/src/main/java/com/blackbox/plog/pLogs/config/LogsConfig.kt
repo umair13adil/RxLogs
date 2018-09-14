@@ -42,7 +42,7 @@ class LogsConfig(
         var autoExportErrors: Boolean = true,
         var encryptionEnabled: Boolean = false, //Encryption enabled
         var encryptionKey: String = "", //Encryption Key
-        var singleLogFileSize: Int = 2048 * 2, //Size in Bytes
+        var singleLogFileSize: Int = 2, //2Mb
         var logFilesLimit: Int = 100, //Max number of log files
         var directoryStructure: DirectoryStructure = DirectoryStructure.FOR_DATE, //Default Directory Structure
         var nameForEventDirectory: String = "", //Name of directory in case of 'DirectoryStructure.FOR_EVENT'

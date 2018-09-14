@@ -36,7 +36,7 @@ class MainApplication : Application() {
     }
 
     private fun setUpPLogger() {
-        val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + ".PLogs Folder"
+        val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
 
         val logsConfig = LogsConfig(
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
@@ -51,7 +51,7 @@ class MainApplication : Application() {
                 autoExportErrors = true,
                 encryptionEnabled = false,
                 encryptionKey = "",
-                singleLogFileSize = 200, //Bytes
+                singleLogFileSize = 1, //1Mb
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_EVENT,
                 nameForEventDirectory = "Job_101",

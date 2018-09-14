@@ -5,7 +5,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.DateControl
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import java.io.File
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
@@ -26,7 +26,7 @@ object FilterUtils {
             File(outputPath).deleteRecursively() //Delete all previous Exports
 
         //Create export directory if it doesn't already exists
-        Utils.instance.createDirIfNotExists(outputPath)
+        createDirIfNotExists(outputPath)
     }
 
     internal fun filterFile(folderPath: String, files: Array<File>, lastHour: Int): Boolean {

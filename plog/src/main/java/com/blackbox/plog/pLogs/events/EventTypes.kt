@@ -7,7 +7,6 @@ enum class EventTypes(var data: String) {
     LOGS_CONFIG_FOUND("3"),
     NEW_ERROR_REPORTED("4"),
     NEW_EVENT_DIRECTORY_CREATED("5"),
-    NEW_LOG_FILE_CREATED("6"),
     DELETE_LOGS("7"),
     DELETE_EXPORTED_FILES("8"),
     AUTO_EXPORT_PERIOD_COMPLETED("9"),
