@@ -6,6 +6,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.utils.*
+import java.io.File
 
 /**
  * Created by umair on 04/01/2018.
@@ -34,7 +35,9 @@ class DataLogger(var logFileName: String = "log") {
         dataLoggerCalledBeforePLoggerException()
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-            writeToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
+            if (PLog.shouldWriteLog(File(logFilePath))) {
+                writeToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
+            }
         } else {
             writeToFile(logFilePath, dataToWrite)
         }
@@ -65,7 +68,9 @@ class DataLogger(var logFileName: String = "log") {
         dataLoggerCalledBeforePLoggerException()
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-            appendToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
+            if (PLog.shouldWriteLog(File(logFilePath))) {
+                appendToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, logFilePath)
+            }
         } else {
             appendToFile(logFilePath, dataToWrite)
         }
