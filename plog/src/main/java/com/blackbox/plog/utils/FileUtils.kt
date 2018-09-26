@@ -1,10 +1,14 @@
 package com.blackbox.plog.utils
 
+import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
+import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
+import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_PLOG
+import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import java.io.File
 
@@ -14,13 +18,9 @@ fun writeToFile(path: String, data: String) {
     try {
         val file = File(path)
         if (file.exists()) {
-
-            if (PLog.shouldWriteLog(file)) {
-                file.printWriter().use { out ->
-                    out.println(data)
-                }
+            file.printWriter().use { out ->
+                out.println(data)
             }
-
         } else {
             file.createNewFile()
         }
@@ -34,11 +34,7 @@ fun appendToFile(path: String, data: String) {
         val file = File(path)
 
         if (file.exists()) {
-
-            if (PLog.shouldWriteLog(file)) {
-                file.appendText(data, Charsets.UTF_8)
-            }
-
+            file.appendText(data, Charsets.UTF_8)
         } else {
             file.createNewFile()
         }
@@ -48,11 +44,21 @@ fun appendToFile(path: String, data: String) {
     }
 }
 
-fun checkFileExists(path: String): File {
+fun checkFileExists(path: String, isPLog: Boolean = true): File {
     val file = File(path)
 
     if (!file.exists()) {
         file.createNewFile()
+
+        //Check if file created if part file
+        if (isPLog && !file.name.contains(PART_FILE_PREFIX)) {
+            PART_FILE_CREATED_PLOG = false
+        } else if (!isPLog && !file.name.contains(PART_FILE_PREFIX)) {
+            PART_FILE_CREATED_DATALOG = false
+        }
+
+        if (PLog.getLogsConfig()?.debugFileOperations!!)
+            Log.i(PLog.TAG, "New file created: ${file.path}")
     }
 
     return file
@@ -61,7 +67,7 @@ fun checkFileExists(path: String): File {
 /*
  * This will setup directory structure according to provided 'Directory Structure' Value.
  */
-fun setupFilePaths(fileName: String = ""): String {
+fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
 
     //Create Root folder
     val rootFolderName = LOG_FOLDER
@@ -73,13 +79,17 @@ fun setupFilePaths(fileName: String = ""): String {
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today
             createDirIfNotExists(folderPath)
+            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
                 folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
             } else {
-                //Otherwise it's DataLogger file.
-                folderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension!!
+                if (isPLog) {
+                    folderPath + File.separator + hourlyFileName + fileName + PLog.getLogsConfig()?.logFileExtension!!
+                } else {
+                    //Otherwise it's DataLogger file.
+                    folderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension!!
+                }
             }
         }
 
@@ -103,8 +113,12 @@ fun setupFilePaths(fileName: String = ""): String {
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
                 folderPath + File.separator + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
             } else {
-                //Otherwise it's DataLogger file.
-                folderPath + File.separator + fileName + "_" + hourlyFileName + PLog.getLogsConfig()?.logFileExtension!!
+                if (isPLog) {
+                    folderPath + File.separator + hourlyFileName + fileName + PLog.getLogsConfig()?.logFileExtension!!
+                } else {
+                    //Otherwise it's DataLogger file.
+                    folderPath + File.separator + fileName + PLog.getLogsConfig()?.logFileExtension!!
+                }
             }
         }
 

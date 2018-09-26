@@ -8,7 +8,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
-import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -29,11 +28,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //This must be initialized before calling DataLogger
-        //Each DataLogger builder can be used to log different data files
-        val myLogs = DataLogger(
-                logFileName = "SevereLogs"
-        )
+        //Check read write permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_CODE)
+            return
+        }
 
         //This will get 'DataLogger' object for predefined type in ConfigFile.
         val locationsLog = PLog.getLoggerFor(LogType.Location.type)
@@ -155,33 +156,6 @@ class MainActivity : AppCompatActivity() {
         switch1.setOnCheckedChangeListener { compoundButton, b ->
             encryptLogs = b
         }
-
-        //Check read write permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    PERMISSION_CODE)
-        }
-
-
-        //Uncomment this line to cause a crash
-        //throw (RuntimeException(Throwable("Error")))
-
-
-        /*object : CountDownTimer(30000, 1000) {
-            override fun onFinish() {
-                PLog.getLogsConfig()?.setEventNameForDirectory("Job_${System.currentTimeMillis().toString().substring(3)}")
-                start()
-            }
-
-            override fun onTick(p0: Long) {
-
-            }
-
-        }.start()*/
-
 
         //Print List of Exported Files
         for (f in PLog.getListOfExportedFiles()) {

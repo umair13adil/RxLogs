@@ -12,6 +12,14 @@ const val CONFIG_FILE_NAME = "config.xml"
 const val LOG_FOLDER = "Logs"
 const val TEMP_FOLDER = "Temp"
 
+const val PART_FILE_PREFIX = "_part"
+
+//Configurations
+var CURRENT_PART_FILE_PATH_PLOG = ""
+var PART_FILE_CREATED_PLOG = false
+var CURRENT_PART_FILE_PATH_DATALOG = ""
+var PART_FILE_CREATED_DATALOG = false
+
 fun getLogPath(logsConfig: LogsConfig?): String {
     val uri = Uri.parse(logsConfig?.savePath + File.separator)
     val file = File(uri.path)

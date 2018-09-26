@@ -44,7 +44,7 @@ class MainApplication : Application() {
                 formatType = FormatType.FORMAT_CURLY,
                 logsRetentionPeriodInDays = 1,
                 zipsRetentionPeriodInDays = 2,
-                autoClearLogsOnExport = false,
+                autoClearLogsOnExport = true,
                 enabled = true,
                 exportFileNamePreFix = "[",
                 exportFileNamePostFix = "]",
@@ -54,13 +54,13 @@ class MainApplication : Application() {
                 singleLogFileSize = 1, //1Mb
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_EVENT,
-                nameForEventDirectory = "Job_101",
+                nameForEventDirectory = "MyLogs",
                 logSystemCrashes = true,
                 autoExportLogTypes = arrayListOf(),
                 autoExportLogTypesPeriod = 3,
                 logsDeleteDate = "",
                 zipDeleteDate = "",
-                isDebuggable = false,
+                isDebuggable = true,
                 logFileExtension = LogExtension.LOG,
                 attachTimeStamp = true,
                 attachNoOfFiles = true,
@@ -99,7 +99,7 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        PLog.applyConfigurations(logsConfig, saveToFile = true)
+        //PLog.applyConfigurations(logsConfig, saveToFile = true)
         PLog.forceWriteLogsConfig(logsConfig)
     }
 

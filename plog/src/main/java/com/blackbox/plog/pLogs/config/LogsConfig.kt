@@ -22,6 +22,8 @@ import javax.crypto.SecretKey
  */
 class LogsConfig(
         var isDebuggable: Boolean = false, //Debug for LogCat
+        var debugFileOperations: Boolean = true, //Debug for File operations
+        var forceWriteLogs: Boolean = true, //Forcefully write logs even if size exceeds
         var enabled: Boolean = true, //Logs are enabled
         var logLevelsEnabled: ArrayList<LogLevel> = arrayListOf<LogLevel>(), //Levels like Info, Warning, Error, Severe
         var logTypesEnabled: ArrayList<String> = arrayListOf<String>(),

@@ -289,11 +289,19 @@ open class PLogImpl : PLogger {
      * Write plain String logs.
      */
     private fun writeSimpleLogs(className: String, functionName: String, text: String, type: String) {
-        val path = setupFilePaths()
 
+        val shouldLog: Pair<Boolean, String>
+
+        val path = setupFilePaths()
         val f = checkFileExists(path)
 
-        if (PLog.shouldWriteLog(f)) {
+        if (!PART_FILE_CREATED_PLOG) {
+            shouldLog = PLog.shouldWriteLog(f)
+        } else {
+            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
+        }
+
+        if (shouldLog.first) {
 
             val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
@@ -302,7 +310,7 @@ open class PLogImpl : PLogger {
             if (PLog.getLogsConfig()?.isDebuggable!!)
                 Log.i(PLog.TAG, logFormatted)
 
-            appendToFile(path, logFormatted)
+            appendToFile(shouldLog.second, logFormatted)
         }
     }
 
@@ -314,11 +322,18 @@ open class PLogImpl : PLogger {
         if (PLog.getLogsConfig()?.secretKey == null)
             return
 
-        val path = setupFilePaths()
+        val shouldLog: Pair<Boolean, String>
 
+        val path = setupFilePaths()
         val f = checkFileExists(path)
 
-        if (PLog.shouldWriteLog(f)) {
+        if (!PART_FILE_CREATED_PLOG) {
+            shouldLog = PLog.shouldWriteLog(f)
+        } else {
+            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
+        }
+
+        if (shouldLog.first) {
 
             val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
@@ -327,8 +342,7 @@ open class PLogImpl : PLogger {
             if (PLog.getLogsConfig()?.isDebuggable!!)
                 Log.i(PLog.TAG, logFormatted)
 
-            appendToFileEncrypted(logFormatted, PLog.getLogsConfig()?.secretKey!!, path)
-
+            appendToFileEncrypted(logFormatted, PLog.getLogsConfig()?.secretKey!!, shouldLog.second)
         }
     }
 
@@ -430,7 +444,8 @@ open class PLogImpl : PLogger {
     /*
      * Verify if logs can be written.
      */
-    fun shouldWriteLog(file: File): Boolean {
+    fun shouldWriteLog(file: File, isPLog: Boolean = true, logFileName: String = ""): Pair<Boolean, String> {
+        val path = file.path
 
         if (file.length() > 0) {
             val length = file.length()
@@ -438,12 +453,24 @@ open class PLogImpl : PLogger {
 
             if (length > maxLength) {
 
-                if (PLog.getLogsConfig()?.isDebuggable!!)
-                    Log.i(PLog.TAG, "File size exceeded!")
+                if (isPLog)
+                    PART_FILE_CREATED_PLOG = true
+                else
+                    PART_FILE_CREATED_DATALOG = true
 
-                return false
+                if (!PLog.getLogsConfig()?.forceWriteLogs!!) {
+
+                    if (PLog.getLogsConfig()?.debugFileOperations!!)
+                        Log.i(PLog.TAG, "File size exceeded!")
+
+                    return Pair(false, path)
+                } else {
+                    //Create part file
+                    createPartFile(file, isPLog, logFileName)
+                }
             } else {
-                if (PLog.getLogsConfig()?.isDebuggable!!)
+
+                if (PLog.getLogsConfig()?.debugFileOperations!!)
                     Log.i(PLog.TAG, "File Length: ${bytesToReadable(length.toInt())} < ${bytesToReadable(maxLength)}")
             }
         }
@@ -459,6 +486,57 @@ open class PLogImpl : PLogger {
             return false
         }*/
 
-        return true
+        return Pair(true, path)
+    }
+
+    /*
+     * This will create a new part file for existing parent file.
+     */
+    private fun createPartFile(file: File, isPLog: Boolean = true, logFileName: String = ""): String {
+        var path = ""
+        val name = file.name.substringBeforeLast(".")
+
+        if (name.contains(PART_FILE_PREFIX)) {
+            val value = name.substringAfterLast(PART_FILE_PREFIX)
+            val valueWithoutExt = value.substringBeforeLast(".")
+            if (valueWithoutExt.isNotEmpty()) {
+                val newValue = valueWithoutExt.toInt().plus(1)
+
+                var newFileName = ""
+
+                if (isPLog) {
+                    newFileName = "$PART_FILE_PREFIX$newValue"
+                } else {
+                    newFileName = "$logFileName$PART_FILE_PREFIX$newValue"
+                }
+
+                path = setupFilePaths(fileName = newFileName, isPLog = isPLog)
+
+                if (isPLog)
+                    CURRENT_PART_FILE_PATH_PLOG = path
+                else
+                    CURRENT_PART_FILE_PATH_DATALOG = path
+
+                checkFileExists(path, isPLog = isPLog)
+            }
+        } else {
+            var newFileName = ""
+
+            if (isPLog) {
+                newFileName = "${PART_FILE_PREFIX}2"
+            } else {
+                newFileName = "$logFileName${PART_FILE_PREFIX}2"
+            }
+
+            path = setupFilePaths(fileName = newFileName, isPLog = isPLog)
+
+            if (isPLog)
+                CURRENT_PART_FILE_PATH_PLOG = path
+            else
+                CURRENT_PART_FILE_PATH_DATALOG = path
+
+            checkFileExists(path, isPLog = isPLog)
+        }
+        return path
     }
 }
