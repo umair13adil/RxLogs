@@ -3,6 +3,8 @@
 ### PLogger and Data Logger
 ##### `A kotlin based advanced logging framework`. 
 
+[![](https://jitpack.io/v/umair13adil/RxLogs.svg)](https://jitpack.io/#umair13adil/RxLogs)
+
 Overview
 --------
 
@@ -62,7 +64,7 @@ allprojects {
 
 ```groovy
 dependencies {
-   implementation 'com.github.umair13adil:RxLogs:v0.5'
+   implementation 'com.github.umair13adil:RxLogs:v0.6'
 }
 ```
     
