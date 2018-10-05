@@ -3,6 +3,7 @@ package com.blackbox.library.plog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -161,6 +162,17 @@ class MainActivity : AppCompatActivity() {
         for (f in PLog.getListOfExportedFiles()) {
             Log.i(PLog.TAG, "File: ${f.name}")
         }
+
+        object : CountDownTimer(2000, 1000) {
+            override fun onFinish() {
+                PLog.logThis(TAG, "Error", info = "CountDownTimer", throwable = Throwable("This is an Error"))
+            }
+
+            override fun onTick(p0: Long) {
+
+            }
+
+        }.start()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

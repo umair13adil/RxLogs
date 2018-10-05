@@ -16,6 +16,7 @@ import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.*
@@ -190,7 +191,7 @@ open class PLogImpl : PLogger {
      * @param e             Exception
      * @param type         the type
      */
-    override fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel) {
+    override fun logThis(className: String, functionName: String, info: String, throwable: Throwable, type: LogLevel) {
 
         //Do nothing if logs are disabled
         if (!PLog.getLogsConfig()?.enabled!!)
@@ -200,7 +201,11 @@ open class PLogImpl : PLogger {
         if (!isLogLevelEnabled(type))
             return
 
-        val data = getStackTrace(e)
+        val data = if (info.isNotEmpty()) {
+            "$info, ${getStackTrace(throwable)}"
+        } else {
+            getStackTrace(throwable)
+        }
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, data, type.level)
@@ -210,6 +215,13 @@ open class PLogImpl : PLogger {
 
         //Check if log level is of Error
         autoExportError(data, type)
+
+        if (PLog.isLogsConfigSet()) {
+            if (PLog.logTypes.containsKey(LogType.Errors.type)) {
+                val errorLog = PLog.getLoggerFor(LogType.Errors.type)
+                errorLog?.appendToFile(data)
+            }
+        }
     }
 
     /**
@@ -222,7 +234,7 @@ open class PLogImpl : PLogger {
      * @param e             Exception
      * @param type         the type
      */
-    override fun logExc(className: String, functionName: String, e: Exception, type: LogLevel) {
+    override fun logThis(className: String, functionName: String, info: String, exception: Exception, type: LogLevel) {
 
         //Do nothing if logs are disabled
         if (!PLog.getLogsConfig()?.enabled!!)
@@ -232,7 +244,11 @@ open class PLogImpl : PLogger {
         if (!isLogLevelEnabled(type))
             return
 
-        val data = getStackTrace(e)
+        val data = if (info.isNotEmpty()) {
+            "$info, ${getStackTrace(exception)}"
+        } else {
+            getStackTrace(exception)
+        }
 
         if (PLog.getLogsConfig()?.encryptionEnabled!!) {
             writeEncryptedLogs(className, functionName, data, type.level)
@@ -242,6 +258,13 @@ open class PLogImpl : PLogger {
 
         //Check if log level is of Error
         autoExportError(data, type)
+
+        if (PLog.isLogsConfigSet()) {
+            if (PLog.logTypes.containsKey(LogType.Errors.type)) {
+                val errorLog = PLog.getLoggerFor(LogType.Errors.type)
+                errorLog?.appendToFile(data)
+            }
+        }
     }
 
     /**

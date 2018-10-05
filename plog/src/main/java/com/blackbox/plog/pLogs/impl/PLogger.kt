@@ -6,7 +6,7 @@ import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.models.LogLevel
 import io.reactivex.Observable
 
-interface PLogger{
+interface PLogger {
 
     fun applyConfigurations(config: LogsConfig, saveToFile: Boolean = false)
 
@@ -18,9 +18,9 @@ interface PLogger{
 
     fun logThis(className: String, functionName: String, text: String, type: LogLevel)
 
-    fun logExc(className: String, functionName: String, e: Throwable, type: LogLevel = LogLevel.ERROR)
+    fun logThis(className: String, functionName: String, info: String = "", throwable: Throwable, type: LogLevel = LogLevel.ERROR)
 
-    fun logExc(className: String, functionName: String, e: Exception, type: LogLevel = LogLevel.ERROR)
+    fun logThis(className: String, functionName: String, info: String = "", exception: Exception, type: LogLevel = LogLevel.ERROR)
 
     fun clearLogs()
 

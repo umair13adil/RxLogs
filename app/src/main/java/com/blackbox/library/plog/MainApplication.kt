@@ -40,7 +40,7 @@ class MainApplication : Application() {
 
         val logsConfig = LogsConfig(
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
-                logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, "Deliveries"),
+                logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, LogType.Errors.type, "Deliveries"),
                 formatType = FormatType.FORMAT_CURLY,
                 logsRetentionPeriodInDays = 1,
                 zipsRetentionPeriodInDays = 2,

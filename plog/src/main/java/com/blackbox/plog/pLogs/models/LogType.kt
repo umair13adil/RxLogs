@@ -8,5 +8,6 @@ enum class LogType(val type: String) {
     Navigation("Navigation"),
     History("History"),
     Tasks("Tasks"),
-    Jobs("Jobs");
+    Jobs("Jobs"),
+    Errors("Errors");
 }
