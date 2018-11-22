@@ -42,8 +42,8 @@ class MainApplication : Application() {
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
                 logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, LogType.Errors.type, "Deliveries"),
                 formatType = FormatType.FORMAT_CURLY,
-                logsRetentionPeriodInDays = 1,
-                zipsRetentionPeriodInDays = 2,
+                logsRetentionPeriodInDays = 1, //Will not work if local XML config file is not present
+                zipsRetentionPeriodInDays = 2, //Will not work if local XML config file is not present
                 autoClearLogsOnExport = true,
                 enabled = true,
                 exportFileNamePreFix = "[",
@@ -61,6 +61,7 @@ class MainApplication : Application() {
                 logsDeleteDate = "",
                 zipDeleteDate = "",
                 isDebuggable = true,
+                debugFileOperations = false,
                 logFileExtension = LogExtension.LOG,
                 attachTimeStamp = true,
                 attachNoOfFiles = true,
@@ -92,6 +93,12 @@ class MainApplication : Application() {
                             EventTypes.LOG_TYPE_EXPORTED -> {
                                 PLog.logThis("PLogger", "event", "Log Type: " + it.data, LogLevel.INFO)
                             }
+                            EventTypes.DELETE_LOGS -> {
+                                PLog.logThis("PLogger", "event", "DELETE_LOGS" + it.data, LogLevel.INFO)
+                            }
+                            EventTypes.DELETE_EXPORTED_FILES -> {
+                                PLog.logThis("PLogger", "event", "DELETE_EXPORTED_FILES" + it.data, LogLevel.INFO)
+                            }
                             else -> {
                             }
                         }
@@ -99,8 +106,7 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        //PLog.applyConfigurations(logsConfig, saveToFile = true)
-        PLog.forceWriteLogsConfig(logsConfig)
+        PLog.applyConfigurations(logsConfig)
     }
 
 }

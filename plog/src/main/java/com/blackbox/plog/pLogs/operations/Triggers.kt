@@ -51,7 +51,7 @@ object Triggers {
     fun shouldClearLogs() {
 
         try {
-            if(!PLog.localConfigurationExists())
+            if (!PLog.localConfigurationExists())
                 return
 
             //Check if logs configuration is set
@@ -72,8 +72,22 @@ object Triggers {
                 savedTime = logsConfig.logsDeleteDate.toLong()
             }
 
-            if (savedTime == 0L)
+            if (savedTime == 0L) {
+
+                val info = "Logs were found and are cleared."
+
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.TAG, info)
+
+                //Clear Logs
+                PLog.clearLogs()
+
+                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_LOGS, info))
+
+                updateLogsDeleteDate()
+
                 return
+            }
 
             if (logsConfig.isDebuggable)
                 Log.i(PLog.TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
@@ -118,7 +132,7 @@ object Triggers {
 
         try {
 
-            if(!PLog.localConfigurationExists())
+            if (!PLog.localConfigurationExists())
                 return
 
             //Check if logs configuration is set
@@ -139,8 +153,22 @@ object Triggers {
                 savedTime = logsConfig.zipDeleteDate.toLong()
             }
 
-            if (savedTime == 0L)
+            if (savedTime == 0L) {
+
+                val info = "Log Zip files were found and are cleared."
+
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.TAG, info)
+
+                //Clear exported logs
+                PLog.clearExportedLogs()
+
+                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_EXPORTED_FILES, info))
+
+                updateZipDeleteDate()
+
                 return
+            }
 
             if (logsConfig.isDebuggable)
                 Log.i(PLog.TAG, "Last Zip delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
@@ -185,7 +213,7 @@ object Triggers {
 
         try {
 
-            if(!PLog.localConfigurationExists())
+            if (!PLog.localConfigurationExists())
                 return true
 
             //Check if logs configuration is set
