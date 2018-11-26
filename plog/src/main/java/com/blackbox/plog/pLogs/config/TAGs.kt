@@ -27,6 +27,8 @@ const val CSV_TAG = "CSV"
 //Attributes
 const val VALUE_ATTR = "value"
 const val IS_DEBUGGABLE_ATTR = "isDebuggable"
+const val FORCE_WRITE_ATTR = "forceWriteLogs"
+const val DEBUGGABLE_FILE_OP_ATTR = "debugFileOperations"
 const val LOG_FILE_EXT_ATTR = "extension"
 const val NAME_POSTFIX_ATTR = "postFixName"
 const val NAME_PREFIX_ATTR = "preFixName"

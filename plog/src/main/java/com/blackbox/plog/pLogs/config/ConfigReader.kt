@@ -49,6 +49,8 @@ object ConfigReader {
 
                             ROOT_TAG -> {
                                 logsConfig.isDebuggable = readAttribute(attributes, IS_DEBUGGABLE_ATTR).toBoolean()
+                                logsConfig.debugFileOperations = readAttribute(attributes, DEBUGGABLE_FILE_OP_ATTR).toBoolean()
+                                logsConfig.forceWriteLogs = readAttribute(attributes, FORCE_WRITE_ATTR).toBoolean()
                                 logsConfig.enabled = readAttribute(attributes, ENABLED_ATTR).toBoolean()
                             }
 
