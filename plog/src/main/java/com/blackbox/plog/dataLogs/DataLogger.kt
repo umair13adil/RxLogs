@@ -71,43 +71,48 @@ class DataLogger(var logFileName: String = "log") {
         }
     }
 
-    private fun writeDataLog(dataToWrite: String, overwrite: Boolean = false) {
+    private fun writeDataLog(dataToWrite: String?, overwrite: Boolean = false) {
 
-        val logFilePath = setupFilePaths(logFileName, isPLog = false)
-        dataLoggerCalledBeforePLoggerException()
+        dataToWrite?.let {
 
-        val shouldLog: Pair<Boolean, String>
-        val f = checkFileExists(logFilePath, isPLog = false)
+            val logFilePath = setupFilePaths(logFileName, isPLog = false)
+            dataLoggerCalledBeforePLoggerException()
 
-        if (!PART_FILE_CREATED_DATALOG) {
-            shouldLog = LogWriter.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
-        } else {
-            shouldLog = LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
-        }
+            val shouldLog: Pair<Boolean, String>
+            val f = checkFileExists(logFilePath, isPLog = false)
 
-        if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!!) {
-
-            if (shouldLog.first) {
-                if (overwrite)
-                    writeToFileEncrypted(dataToWrite, PLogImpl.getLogsConfig(PLog)?.secretKey!!, shouldLog.second)
-                else
-                    appendToFileEncrypted(dataToWrite, PLogImpl.getLogsConfig(PLog)?.secretKey!!, shouldLog.second)
+            if (!PART_FILE_CREATED_DATALOG) {
+                shouldLog = LogWriter.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
+            } else {
+                shouldLog = LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
             }
 
-        } else {
+            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!!) {
 
-            if (shouldLog.first) {
-                if (overwrite)
-                    writeToFile(shouldLog.second, dataToWrite)
-                else
-                    appendToFile(shouldLog.second, dataToWrite)
+                val secretKey = PLogImpl.getLogsConfig(PLog)?.secretKey!!
+
+                if (shouldLog.first) {
+                    if (overwrite)
+                        writeToFileEncrypted(it, secretKey, shouldLog.second)
+                    else
+                        appendToFileEncrypted(it, secretKey, shouldLog.second)
+                }
+
+            } else {
+
+                if (shouldLog.first) {
+                    if (overwrite)
+                        writeToFile(shouldLog.second, it)
+                    else
+                        appendToFile(shouldLog.second, it)
+                }
             }
+
+            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                Log.i(PLog.TAG, it)
+
+            //Check if auto Export is enabled, and then  export it
+            autoExportLogType(it, logFileName)
         }
-
-        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
-            Log.i(PLog.TAG, dataToWrite)
-
-        //Check if auto Export is enabled, and then  export it
-        autoExportLogType(dataToWrite, logFileName)
     }
 }
