@@ -4,6 +4,8 @@ import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.impl.LogWriter
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.pLogs.utils.CURRENT_PART_FILE_PATH_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
@@ -16,7 +18,7 @@ import java.io.File
 class DataLogger(var logFileName: String = "log") {
 
     val TAG = "DataLogger"
-    val autoExportTypes = PLog.getLogsConfig()?.autoExportLogTypes!!
+    val autoExportTypes = PLogImpl.getLogsConfig(PLog)?.autoExportLogTypes!!
 
     /**
      * Overwrite to file.
@@ -32,36 +34,11 @@ class DataLogger(var logFileName: String = "log") {
      */
     fun overwriteToFile(dataToWrite: String) {
 
-        val logFilePath = setupFilePaths(logFileName, isPLog = false)
-        dataLoggerCalledBeforePLoggerException()
-
-        val shouldLog: Pair<Boolean, String>
-        val f = checkFileExists(logFilePath, isPLog = false)
-
-        if (!PART_FILE_CREATED_DATALOG) {
-            shouldLog = PLog.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
+        if (PLog.isLogsConfigSet()) {
+            writeDataLog(dataToWrite, overwrite = true)
         } else {
-            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
-        }
-
-        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-
-            if (shouldLog.first) {
-                writeToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, shouldLog.second)
-            }
-
-        } else {
-
-            if (shouldLog.first) {
-                writeToFile(shouldLog.second, dataToWrite)
-            }
-        }
-
-        if (PLog.getLogsConfig()?.isDebuggable!!)
             Log.i(PLog.TAG, dataToWrite)
-
-        //Check if auto Export is enabled, and then  export it
-        autoExportLogType(dataToWrite, logFileName)
+        }
     }
 
     /**
@@ -78,35 +55,11 @@ class DataLogger(var logFileName: String = "log") {
      */
     fun appendToFile(dataToWrite: String) {
 
-        val logFilePath = setupFilePaths(logFileName, isPLog = false)
-        dataLoggerCalledBeforePLoggerException()
-
-        val shouldLog: Pair<Boolean, String>
-        val f = checkFileExists(logFilePath, isPLog = false)
-
-        if (!PART_FILE_CREATED_DATALOG) {
-            shouldLog = PLog.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
+        if (PLog.isLogsConfigSet()) {
+            writeDataLog(dataToWrite, overwrite = false)
         } else {
-            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
-        }
-
-        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-
-            if (shouldLog.first) {
-                appendToFileEncrypted(dataToWrite, PLog.getLogsConfig()?.secretKey!!, shouldLog.second)
-            }
-        } else {
-
-            if (shouldLog.first) {
-                appendToFile(shouldLog.second, dataToWrite)
-            }
-        }
-
-        if (PLog.getLogsConfig()?.isDebuggable!!)
             Log.i(PLog.TAG, dataToWrite)
-
-        //Check if auto Export is enabled, and then  export it
-        autoExportLogType(dataToWrite, logFileName)
+        }
     }
 
     private fun autoExportLogType(data: String, type: String) {
@@ -116,5 +69,45 @@ class DataLogger(var logFileName: String = "log") {
                 PLog.getLogBus().send(LogEvents(EventTypes.LOG_TYPE_EXPORTED, data))
             }
         }
+    }
+
+    private fun writeDataLog(dataToWrite: String, overwrite: Boolean = false) {
+
+        val logFilePath = setupFilePaths(logFileName, isPLog = false)
+        dataLoggerCalledBeforePLoggerException()
+
+        val shouldLog: Pair<Boolean, String>
+        val f = checkFileExists(logFilePath, isPLog = false)
+
+        if (!PART_FILE_CREATED_DATALOG) {
+            shouldLog = LogWriter.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
+        } else {
+            shouldLog = LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
+        }
+
+        if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!!) {
+
+            if (shouldLog.first) {
+                if (overwrite)
+                    writeToFileEncrypted(dataToWrite, PLogImpl.getLogsConfig(PLog)?.secretKey!!, shouldLog.second)
+                else
+                    appendToFileEncrypted(dataToWrite, PLogImpl.getLogsConfig(PLog)?.secretKey!!, shouldLog.second)
+            }
+
+        } else {
+
+            if (shouldLog.first) {
+                if (overwrite)
+                    writeToFile(shouldLog.second, dataToWrite)
+                else
+                    appendToFile(shouldLog.second, dataToWrite)
+            }
+        }
+
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+            Log.i(PLog.TAG, dataToWrite)
+
+        //Check if auto Export is enabled, and then  export it
+        autoExportLogType(dataToWrite, logFileName)
     }
 }

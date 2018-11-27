@@ -2,6 +2,7 @@ package com.blackbox.plog.utils
 
 import android.annotation.SuppressLint
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.*
 import java.security.InvalidKeyException
 import java.security.NoSuchAlgorithmException
@@ -48,7 +49,7 @@ fun readFileDecrypted(filePath: String): String {
     try {
 
         val aes2 = Cipher.getInstance(ALGORITHM)
-        aes2.init(Cipher.DECRYPT_MODE, PLog.getLogsConfig()?.secretKey!!)
+        aes2.init(Cipher.DECRYPT_MODE, PLogImpl.getLogsConfig(PLog)?.secretKey!!)
 
         val fis = FileInputStream(filePath)
         val cipherInputStream = CipherInputStream(fis, aes2)

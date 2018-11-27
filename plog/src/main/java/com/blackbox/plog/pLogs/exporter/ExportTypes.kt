@@ -3,6 +3,7 @@ package com.blackbox.plog.pLogs.exporter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FileFilter
 import com.blackbox.plog.pLogs.filter.FilterUtils.getPathForType
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
 private val path = PLog.logPath
@@ -101,14 +102,14 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
 
 private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportType): String {
 
-    if (PLog.getLogsConfig()?.attachTimeStamp!!)
+    if (PLogImpl.getLogsConfig(PLog)?.attachTimeStamp!!)
         timeStamp = PLog.getFormattedTimeStamp() + "_" + exportType.type
 
-    if (PLog.getLogsConfig()?.attachNoOfFiles!!)
+    if (PLogImpl.getLogsConfig(PLog)?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"
 
-    val preName = PLog.getLogsConfig()?.exportFileNamePreFix!!
-    val postName = PLog.getLogsConfig()?.exportFileNamePostFix!!
+    val preName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePreFix!!
+    val postName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePostFix!!
 
     return "$preName$timeStamp$noOfFiles$postName.zip"
 }

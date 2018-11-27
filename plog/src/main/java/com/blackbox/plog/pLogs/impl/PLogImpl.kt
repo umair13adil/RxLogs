@@ -2,33 +2,29 @@ package com.blackbox.plog.pLogs.impl
 
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
-import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.ConfigReader
 import com.blackbox.plog.pLogs.config.ConfigWriter
 import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.config.isLogLevelEnabled
-import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
-import com.blackbox.plog.pLogs.exporter.ExportType
-import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.formatter.LogFormatter
+import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
-import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.*
-import com.blackbox.plog.utils.Utils.bytesToReadable
+import com.blackbox.plog.utils.DateTimeUtils
+import com.blackbox.plog.utils.RxBus
+import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
-import com.blackbox.plog.utils.Utils.getStackTrace
 import io.reactivex.Observable
 import java.io.File
 
-open class PLogImpl : PLogger {
+open class PLogImpl {
 
-    val TAG = "PLogger"
+    internal val TAG = "PLogger"
 
     private lateinit var bus: RxBus
 
@@ -39,8 +35,23 @@ open class PLogImpl : PLogger {
         return bus
     }
 
-    fun setLogBus(listener: RxBus) {
+    internal fun setLogBus(listener: RxBus) {
         bus = listener
+    }
+
+    /*
+     * Check if logs configuration file is set.
+     */
+    fun isLogsConfigSet(): Boolean {
+
+        PLog.logsConfig?.let {
+            return true
+        }
+
+
+        print(Throwable("No logs configuration provided!"))
+
+        return false
     }
 
     /**
@@ -71,7 +82,7 @@ open class PLogImpl : PLogger {
      *
      * @param 'saveToFile' if true, file will be written to storage
      */
-    override fun applyConfigurations(config: LogsConfig, saveToFile: Boolean) {
+    fun applyConfigurations(config: LogsConfig, saveToFile: Boolean = false) {
 
         //Create 'Save' Path
         createDirIfNotExists(config.savePath)
@@ -92,7 +103,7 @@ open class PLogImpl : PLogger {
     /*
      * This will forcefully overwrite existing logs configuration.
      */
-    override fun forceWriteLogsConfig(config: LogsConfig) {
+    fun forceWriteLogsConfig(config: LogsConfig) {
         PLog.logsConfig = config
 
         ConfigWriter.saveToXML(config)
@@ -104,7 +115,7 @@ open class PLogImpl : PLogger {
     /*
      * Get LogsConfig XML file.
      */
-    override fun getLogsConfigFromXML(): LogsConfig? {
+    fun getLogsConfigFromXML(): LogsConfig? {
 
         if (localConfigurationExists()) {
             PLog.logsConfig = ConfigReader.readXML()
@@ -115,265 +126,29 @@ open class PLogImpl : PLogger {
     }
 
     /*
-     * Get LogsConfig object.
-     */
-    override fun getLogsConfig(): LogsConfig? {
-
-        if (isLogsConfigSet())
-            return PLog.logsConfig
-
-        return null
-    }
-
-    /*
      * Will send 'true' if local configuration XML exists.
      */
-    fun localConfigurationExists(): Boolean {
+    internal fun localConfigurationExists(): Boolean {
         return File(XML_PATH, CONFIG_FILE_NAME).exists()
     }
 
     /*
      * Will send 'true' if local configuration XML is deleted.
      */
-    fun deleteLocalConfiguration(): Boolean {
+    internal fun deleteLocalConfiguration(): Boolean {
         return File(XML_PATH, CONFIG_FILE_NAME).delete()
     }
 
-    /*
-     * Check if logs configuration file is set.
-     */
-    fun isLogsConfigSet(): Boolean {
+    internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String): String {
+        val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
-        PLog.logsConfig?.let {
-            return true
-        }
-
-        throw IllegalArgumentException(Throwable("No logs configuration provided!"))
+        return LogFormatter.getFormatType(logData)
     }
-
-    /**
-     * Log this.
-     *
-     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
-     *
-     * @param className    the class name
-     * @param functionName the function name
-     * @param text         the text
-     * @param type         the type
-     */
-    override fun logThis(className: String, functionName: String, text: String, type: LogLevel) {
-
-        //Do nothing if logs are disabled
-        if (!PLog.getLogsConfig()?.enabled!!)
-            return
-
-        //Do nothing if log level type is disabled
-        if (!isLogLevelEnabled(type))
-            return
-
-        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-            writeEncryptedLogs(className, functionName, text, type.level)
-        } else {
-            writeSimpleLogs(className, functionName, text, type.level)
-        }
-
-        //Check if log level is of Error
-        autoExportError(text, type)
-    }
-
-    /**
-     * Log Exception.
-     *
-     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
-     *
-     * @param className    the class name
-     * @param functionName the function name
-     * @param e             Exception
-     * @param type         the type
-     */
-    override fun logThis(className: String, functionName: String, info: String, throwable: Throwable, type: LogLevel) {
-
-        //Do nothing if logs are disabled
-        if (!PLog.getLogsConfig()?.enabled!!)
-            return
-
-        //Do nothing if log level type is disabled
-        if (!isLogLevelEnabled(type))
-            return
-
-        val data = if (info.isNotEmpty()) {
-            "$info, ${getStackTrace(throwable)}"
-        } else {
-            getStackTrace(throwable)
-        }
-
-        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-            writeEncryptedLogs(className, functionName, data, type.level)
-        } else {
-            writeSimpleLogs(className, functionName, data, type.level)
-        }
-
-        //Check if log level is of Error
-        autoExportError(data, type)
-
-        if (PLog.isLogsConfigSet()) {
-            if (PLog.logTypes.containsKey(LogType.Errors.type)) {
-                val errorLog = PLog.getLoggerFor(LogType.Errors.type)
-                errorLog?.appendToFile(data)
-            }
-        }
-    }
-
-    /**
-     * Log Exception.
-     *
-     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
-     *
-     * @param className    the class name
-     * @param functionName the function name
-     * @param e             Exception
-     * @param type         the type
-     */
-    override fun logThis(className: String, functionName: String, info: String, exception: Exception, type: LogLevel) {
-
-        //Do nothing if logs are disabled
-        if (!PLog.getLogsConfig()?.enabled!!)
-            return
-
-        //Do nothing if log level type is disabled
-        if (!isLogLevelEnabled(type))
-            return
-
-        val data = if (info.isNotEmpty()) {
-            "$info, ${getStackTrace(exception)}"
-        } else {
-            getStackTrace(exception)
-        }
-
-        if (PLog.getLogsConfig()?.encryptionEnabled!!) {
-            writeEncryptedLogs(className, functionName, data, type.level)
-        } else {
-            writeSimpleLogs(className, functionName, data, type.level)
-        }
-
-        //Check if log level is of Error
-        autoExportError(data, type)
-
-        if (PLog.isLogsConfigSet()) {
-            if (PLog.logTypes.containsKey(LogType.Errors.type)) {
-                val errorLog = PLog.getLoggerFor(LogType.Errors.type)
-                errorLog?.appendToFile(data)
-            }
-        }
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs based on filter type to export location with export name provided.
-     *
-     * @param type the type
-     * @return the logs
-     */
-    fun exportLogsForType(type: ExportType, exportDecrypted: Boolean = false): Observable<String> {
-        return LogExporter.getZippedLogs(type.type, exportDecrypted)
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs as plain String.
-     *
-     * @return the String data
-     */
-    fun printLogsForType(type: ExportType, printDecrypted: Boolean = false): Observable<String> {
-        return LogExporter.printLogsForType(type.type, printDecrypted)
-    }
-
-    /**
-     * Clear all logs from storage directory.
-     *
-     */
-    override fun clearLogs() {
-        val rootFolderName = LOG_FOLDER
-        val rootFolderPath = PLog.logPath + rootFolderName + File.separator
-        File(rootFolderPath).deleteRecursively()
-    }
-
-    /**
-     * Clear all zipped loges from storage directory.
-     *
-     */
-    override fun clearExportedLogs() {
-        File(PLog.outputPath).deleteRecursively()
-    }
-
-    /*
-     * Write plain String logs.
-     */
-    private fun writeSimpleLogs(className: String, functionName: String, text: String, type: String) {
-
-        val shouldLog: Pair<Boolean, String>
-
-        val path = setupFilePaths()
-        val f = checkFileExists(path)
-
-        if (!PART_FILE_CREATED_PLOG) {
-            shouldLog = PLog.shouldWriteLog(f)
-        } else {
-            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
-        }
-
-        if (shouldLog.first) {
-
-            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
-
-            val logFormatted = LogFormatter.getFormatType(logData)
-
-            if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.i(PLog.TAG, logFormatted)
-
-            appendToFile(shouldLog.second, logFormatted)
-        }
-    }
-
-    /*
-     * Write AES encrypted String logs.
-     */
-    private fun writeEncryptedLogs(className: String, functionName: String, text: String, type: String) {
-
-        if (PLog.getLogsConfig()?.secretKey == null)
-            return
-
-        val shouldLog: Pair<Boolean, String>
-
-        val path = setupFilePaths()
-        val f = checkFileExists(path)
-
-        if (!PART_FILE_CREATED_PLOG) {
-            shouldLog = PLog.shouldWriteLog(f)
-        } else {
-            shouldLog = PLog.shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
-        }
-
-        if (shouldLog.first) {
-
-            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
-
-            val logFormatted = LogFormatter.getFormatType(logData)
-
-            if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.i(PLog.TAG, logFormatted)
-
-            appendToFileEncrypted(logFormatted, PLog.getLogsConfig()?.secretKey!!, shouldLog.second)
-        }
-    }
-
 
     /*
      * This will return observable to subscribe to logger events.
      */
-    override fun getLogEvents(): Observable<LogEvents> {
+    internal fun getLogEvents(): Observable<LogEvents> {
 
         return Observable.create { it ->
             val emitter = it
@@ -381,7 +156,7 @@ open class PLogImpl : PLogger {
                     .toObservable()
                     .doOnError {
 
-                        if (PLog.getLogsConfig()?.isDebuggable!!)
+                        if (Companion.getLogsConfig(PLog)?.isDebuggable!!)
                             Log.e(TAG, "Error '${it.message}'")
 
                     }.subscribe {
@@ -393,173 +168,81 @@ open class PLogImpl : PLogger {
         }
     }
 
-    /*
-     * This will return 'DataLogger' for log type defined in Config File.
-     */
-    override fun getLoggerFor(type: String): DataLogger? {
+    internal fun getFormattedTimeStamp(): String {
 
-        if (PLog.isLogsConfigSet()) {
-            if (PLog.logTypes.containsKey(type))
-                return PLog.logTypes.get(type)
-
-            if (PLog.getLogsConfig()?.isDebuggable!!)
-                Log.e(TAG, "No log type defined for provided type '$type'")
-
-            return null
-        } else {
-            return null
+        getLogsConfig(PLog)?.let {
+            return DateTimeUtils.getTimeFormatted(it.timeStampFormat)
         }
-    }
 
-    /**
-     * Gets logs.
-     *
-     * This will export logs based on filter type to export location with export name provided.
-     *
-     * @return the logs
-     */
-    fun exportDataLogsForName(name: String, exportDecrypted: Boolean = false): Observable<String> {
-        val path = getLogsSavedPaths(PLog.getLogsConfig()?.nameForEventDirectory!!)
-        return DataLogsExporter.getDataLogs(name, path, outputPath, exportDecrypted)
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs based on filter type to export location with export name provided.
-     *
-     * @return the logs
-     */
-    fun exportAllDataLogs(exportDecrypted: Boolean = false): Observable<String> {
-        val path = getLogsSavedPaths(PLog.getLogsConfig()?.nameForEventDirectory!!, isForAll = true)
-        return DataLogsExporter.getDataLogs("", path, outputPath, exportDecrypted)
-    }
-
-    /**
-     * Gets logs.
-     *
-     * This will export logs as plain String.
-     *
-     * @return the String data
-     */
-    fun printDataLogsForName(name: String, printDecrypted: Boolean = false): Observable<String> {
-        val path = getLogsSavedPaths(PLog.getLogsConfig()?.nameForEventDirectory!!)
-        return DataLogsExporter.printLogsForName(name, path, printDecrypted)
-    }
-
-    private fun autoExportError(data: String, type: LogLevel) {
-        if (type == LogLevel.ERROR || type == LogLevel.SEVERE) {
-            if (PLog.getLogsConfig()?.autoExportErrors!!) {
-                //Send event to notify error is reported
-                PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
-            }
-        }
-    }
-
-    fun getFormattedTimeStamp(): String {
-        return DateTimeUtils.getTimeFormatted(PLog.getLogsConfig()?.timeStampFormat!!)
+        return DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_READABLE)
     }
 
     fun getListOfExportedFiles(): List<File> {
         return FilterUtils.listFiles(outputPath, arrayListOf())
     }
 
-    /*
-     * Verify if logs can be written.
-     */
-    fun shouldWriteLog(file: File, isPLog: Boolean = true, logFileName: String = ""): Pair<Boolean, String> {
-        val path = file.path
+    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel): Pair<Boolean, String> {
 
-        if (file.length() > 0) {
-            val length = file.length()
-            val maxLength = PLog.getLogsConfig()?.singleLogFileSize!! * (1024 * 1024)
+        val logData = PLog.printFormattedLogs(className, functionName, info, type.level)
 
-            if (length > maxLength) {
-
-                if (isPLog)
-                    PART_FILE_CREATED_PLOG = true
-                else
-                    PART_FILE_CREATED_DATALOG = true
-
-                if (!PLog.getLogsConfig()?.forceWriteLogs!!) {
-
-                    if (PLog.getLogsConfig()?.debugFileOperations!!)
-                        Log.i(PLog.TAG, "File size exceeded!")
-
-                    return Pair(false, path)
-                } else {
-                    //Create part file
-                    createPartFile(file, isPLog, logFileName)
-                }
-            } else {
-
-                if (PLog.getLogsConfig()?.debugFileOperations!!)
-                    Log.i(PLog.TAG, "File Length: ${bytesToReadable(length.toInt())} < ${bytesToReadable(maxLength)}")
-            }
+        if (logData.isNotEmpty()) {
+            Log.i(PLog.TAG, logData)
         }
 
-        //TODO update no of files created in config XML for easy access
-        /*val totalFiles = FilterUtils.listFiles(logPath, arrayListOf())
-        if (totalFiles.isNotEmpty()) {
-            if (totalFiles.size > PLog.getLogsConfig()?.logFilesLimit!!)
+        if (getLogsConfig(PLog) != null) {
 
-                if (PLog.getLogsConfig()?.isDebuggable!!)
-                    Log.i(PLog.TAG, "No of log files exceeded!")
+            //Do nothing if logs are disabled
+            if (!getLogsConfig(PLog)?.enabled!!)
+                return Pair(false, logData)
 
-            return false
-        }*/
+            //Do nothing if log level type is disabled
+            if (!isLogLevelEnabled(type))
+                return Pair(false, logData)
 
-        return Pair(true, path)
+        } else {
+            return Pair(false, logData)
+        }
+
+        return Pair(true, logData)
     }
 
-    /*
-     * This will create a new part file for existing parent file.
-     */
-    private fun createPartFile(file: File, isPLog: Boolean = true, logFileName: String = ""): String {
-        var path = ""
-        val name = file.name.substringBeforeLast(".")
+    internal fun writeAndExportLog(data: String, type: LogLevel) {
 
-        if (name.contains(PART_FILE_PREFIX)) {
-            val value = name.substringAfterLast(PART_FILE_PREFIX)
-            val valueWithoutExt = value.substringBeforeLast(".")
-            if (valueWithoutExt.isNotEmpty()) {
-                val newValue = valueWithoutExt.toInt().plus(1)
-
-                var newFileName = ""
-
-                if (isPLog) {
-                    newFileName = "$PART_FILE_PREFIX$newValue"
-                } else {
-                    newFileName = "$logFileName$PART_FILE_PREFIX$newValue"
-                }
-
-                path = setupFilePaths(fileName = newFileName, isPLog = isPLog)
-
-                if (isPLog)
-                    CURRENT_PART_FILE_PATH_PLOG = path
-                else
-                    CURRENT_PART_FILE_PATH_DATALOG = path
-
-                checkFileExists(path, isPLog = isPLog)
-            }
+        if (getLogsConfig(PLog)?.encryptionEnabled!!) {
+            LogWriter.writeEncryptedLogs(data)
         } else {
-            var newFileName = ""
-
-            if (isPLog) {
-                newFileName = "${PART_FILE_PREFIX}2"
-            } else {
-                newFileName = "$logFileName${PART_FILE_PREFIX}2"
-            }
-
-            path = setupFilePaths(fileName = newFileName, isPLog = isPLog)
-
-            if (isPLog)
-                CURRENT_PART_FILE_PATH_PLOG = path
-            else
-                CURRENT_PART_FILE_PATH_DATALOG = path
-
-            checkFileExists(path, isPLog = isPLog)
+            LogWriter.writeSimpleLogs(data)
         }
-        return path
+
+        //Check if log level is of Error
+        AutoExportHelper.autoExportError(data, type)
+    }
+
+    internal fun formatErrorMessage(info: String, throwable: Throwable? = null, exception: Exception? = null): String {
+        return if (info.isNotEmpty()) {
+            if (throwable != null)
+                "$info, ${Utils.getStackTrace(throwable)}"
+            else
+                "$info, ${Utils.getStackTrace(exception)}"
+        } else {
+            if (throwable != null)
+                Utils.getStackTrace(throwable)
+            else
+                Utils.getStackTrace(exception)
+        }
+    }
+
+    companion object {
+
+        /**
+         * Get LogsConfig object.
+         */
+        internal fun getLogsConfig(pLogImpl: PLogImpl): LogsConfig? {
+
+            if (pLogImpl.isLogsConfigSet())
+                return PLog.logsConfig
+
+            return null
+        }
     }
 }

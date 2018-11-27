@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.formatter
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogData
 
 /**
@@ -57,17 +58,19 @@ object LogFormatter {
 
     internal fun getFormatType(data: LogData): String {
 
-        var t = ""
-        val providedFormat = PLog.getLogsConfig()?.formatType!!
+        var t = formatCurly(data)
 
-        t = when (providedFormat) {
-            FormatType.FORMAT_CURLY -> formatCurly(data)
+        PLogImpl.getLogsConfig(PLog)?.let {
 
-            FormatType.FORMAT_SQUARE -> formatSquare(data)
+            t = when (it.formatType) {
+                FormatType.FORMAT_CURLY -> formatCurly(data)
 
-            FormatType.FORMAT_CSV -> formatCSV(data, PLog.getLogsConfig()?.csvDelimiter!!)
+                FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-            FormatType.FORMAT_CUSTOM -> formatCustom(data, PLog.getLogsConfig()?.customFormatOpen!!, PLog.getLogsConfig()?.customFormatClose!!)
+                FormatType.FORMAT_CSV -> formatCSV(data, PLogImpl.getLogsConfig(PLog)?.csvDelimiter!!)
+
+                FormatType.FORMAT_CUSTOM -> formatCustom(data, PLogImpl.getLogsConfig(PLog)?.customFormatOpen!!, PLogImpl.getLogsConfig(PLog)?.customFormatClose!!)
+            }
         }
 
         return t

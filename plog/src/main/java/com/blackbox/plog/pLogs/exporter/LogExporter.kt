@@ -5,6 +5,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
@@ -25,7 +26,7 @@ object LogExporter {
 
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
-    private var zipName = PLog.getLogsConfig()?.zipFileName
+    private var zipName = PLogImpl.getLogsConfig(PLog)?.zipFileName
 
     /*
      * Will filter & export log files to zip package.
@@ -36,11 +37,19 @@ object LogExporter {
 
             val emitter = it
 
-            FilterUtils.prepareOutputFile(exportPath)
+            if (PLog.isLogsConfigSet()) {
 
-            this.files = getFilesForRequestedType(type)
+                FilterUtils.prepareOutputFile(exportPath)
 
-            compressPackage(emitter, exportDecrypted)
+                this.files = getFilesForRequestedType(type)
+
+                compressPackage(emitter, exportDecrypted)
+            } else {
+
+                if (!emitter.isDisposed) {
+                    emitter.onError(Throwable("No Logs configuration provided! Can not perform this action with logs configuration."))
+                }
+            }
         }
     }
 
@@ -54,29 +63,37 @@ object LogExporter {
 
             val emitter = it
 
-            val files = getFilesForRequestedType(type)
+            if (PLog.isLogsConfigSet()) {
 
-            if (files.second.isEmpty()) {
-                if (!emitter.isDisposed)
-                    emitter.onError(Throwable("No logs found!"))
-            }
+                val files = getFilesForRequestedType(type)
 
-            for (f in files.second) {
-                emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                emitter.onNext("File: ${f.name} Start..\n")
-
-                if (PLog.getLogsConfig()?.encryptionEnabled!! && printDecrypted) {
-                    emitter.onNext(readFileDecrypted(f.absolutePath))
-                } else {
-                    f.forEachLine {
-                        emitter.onNext(it)
-                    }
+                if (files.second.isEmpty()) {
+                    if (!emitter.isDisposed)
+                        emitter.onError(Throwable("No logs found for type '$type'"))
                 }
 
-                emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
-            }
+                for (f in files.second) {
+                    emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
+                    emitter.onNext("File: ${f.name} Start..\n")
 
-            emitter.onComplete()
+                    if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && printDecrypted) {
+                        emitter.onNext(readFileDecrypted(f.absolutePath))
+                    } else {
+                        f.forEachLine {
+                            emitter.onNext(it)
+                        }
+                    }
+
+                    emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
+                }
+
+                emitter.onComplete()
+            } else {
+
+                if (!emitter.isDisposed) {
+                    emitter.onError(Throwable("No Logs configuration provided! Can not perform this action with logs configuration."))
+                }
+            }
         }
     }
 
@@ -84,7 +101,7 @@ object LogExporter {
         //First entry is Zip Name
         this.zipName = files.first
 
-        if (PLog.getLogsConfig()?.zipFilesOnly!!) {
+        if (PLogImpl.getLogsConfig(PLog)?.zipFilesOnly!!) {
 
             val filesToSend = files.second //List of filtered files
 
@@ -93,7 +110,7 @@ object LogExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (PLog.getLogsConfig()?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend)
             } else {
                 zipFilesOnly(emitter, filesToSend)
@@ -101,7 +118,7 @@ object LogExporter {
 
         } else {
 
-            if (PLog.getLogsConfig()?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && exportDecrypted) {
                 decryptFirstThenZip(emitter, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)
@@ -115,7 +132,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getLogsConfig()?.isDebuggable!!)
+                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(it)
@@ -136,7 +153,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getLogsConfig()?.isDebuggable!!)
+                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)
@@ -157,7 +174,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLog.getLogsConfig()?.isDebuggable!!)
+                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)

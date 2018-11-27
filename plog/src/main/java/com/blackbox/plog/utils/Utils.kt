@@ -17,16 +17,16 @@ object Utils {
         return false
     }
 
-    fun getStackTrace(e: Exception): String {
+    fun getStackTrace(e: Exception?): String {
         try {
             val sw = StringWriter()
             val pw = PrintWriter(sw)
-            e.printStackTrace(pw)
+            e?.printStackTrace(pw)
             return sw.toString()
         } catch (e2: Exception) {
             e2.printStackTrace()
             try {
-                e.message?.let {
+                e?.message?.let {
                     return it
                 }
                 return "Error"
@@ -34,21 +34,19 @@ object Utils {
                 e3.printStackTrace()
                 return "Error!"
             }
-
         }
-
     }
 
-    fun getStackTrace(e: Throwable): String {
+    fun getStackTrace(e: Throwable?): String {
         try {
             val sw = StringWriter()
             val pw = PrintWriter(sw)
-            e.printStackTrace(pw)
+            e?.printStackTrace(pw)
             return sw.toString()
         } catch (e2: Exception) {
             e2.printStackTrace()
             try {
-                e.message?.let {
+                e?.message?.let {
                     return it
                 }
                 return "Error"
@@ -58,7 +56,6 @@ object Utils {
             }
 
         }
-
     }
 
     fun bytesToReadable(b: Int): String {
@@ -66,19 +63,19 @@ object Utils {
         var bytes = b
 
         if (bytes < 1024)
-            return bytes.toString() + " bytes";
+            return bytes.toString() + " bytes"
 
-        bytes /= 1024;
+        bytes /= 1024
         if (bytes < 1024)
-            return bytes.toString() + " Kb";
+            return bytes.toString() + " Kb"
 
-        bytes /= 1024;
+        bytes /= 1024
         if (bytes < 1024)
-            return bytes.toString() + " Mb";
+            return bytes.toString() + " Mb"
 
-        bytes /= 1024;
+        bytes /= 1024
         if (bytes < 1024)
-            return bytes.toString() + " Gb";
+            return bytes.toString() + " Gb"
 
         return ""
     }

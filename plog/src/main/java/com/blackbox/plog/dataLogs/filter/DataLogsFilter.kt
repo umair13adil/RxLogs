@@ -3,6 +3,7 @@ package com.blackbox.plog.dataLogs.filter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
 object DataLogsFilter {
@@ -11,7 +12,7 @@ object DataLogsFilter {
     val enabledTypes: List<String>
 
     init {
-        enabledTypes = PLog.getLogsConfig()?.logTypesEnabled!!
+        enabledTypes = PLogImpl.getLogsConfig(PLog)?.logTypesEnabled!!
     }
 
     fun getFilesForLogName(logsPath: String, logFileName: String): List<File> {
@@ -19,7 +20,7 @@ object DataLogsFilter {
         val listOfFiles = arrayListOf<File>()
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {
@@ -28,7 +29,14 @@ object DataLogsFilter {
 
                 val fileName = files[i]
 
-                val fileNameShort = fileName.name?.substringBefore("_")
+                val fName = fileName.name
+
+                val fileNameShort = if (fName.contains("_")) {
+                    fName?.substringBefore("_")!! //Check if is a part file
+                } else {
+                    fName?.substringBefore(".")!! //In case of simple file, match name before ext
+                }
+
                 if (fileNameShort == logFileName) {
                     listOfFiles.add(fileName)
                 }
@@ -43,7 +51,7 @@ object DataLogsFilter {
         val listOfFiles = arrayListOf<File>()
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {
@@ -52,7 +60,14 @@ object DataLogsFilter {
 
                 val fileName = files[i]
 
-                val fileNameShort = fileName.name?.substringBefore("_")
+                val fName = fileName.name
+
+                val fileNameShort = if (fName.contains("_")) {
+                    fName?.substringBefore("_")!! //Check if is a part file
+                } else {
+                    fName?.substringBefore(".")!! //In case of simple file, match name before ext
+                }
+
                 if (enabledTypes.contains(fileNameShort)) {
                     listOfFiles.add(fileName)
                 }

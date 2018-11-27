@@ -3,10 +3,11 @@ package com.blackbox.plog.pLogs.utils
 import android.net.Uri
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
 //XML Save Path
-val XML_PATH = getLogPath(PLog.getLogsConfig())
+val XML_PATH = getLogPath(PLogImpl.getLogsConfig(PLog))
 const val CONFIG_FILE_NAME = "config.xml"
 
 const val LOG_FOLDER = "Logs"

@@ -4,6 +4,7 @@ import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.impl.PLogImpl
 
 internal fun doOnInit() {
 
@@ -14,7 +15,7 @@ internal fun doOnInit() {
         PLog.getLogsConfigFromXML() ?: PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
 
         //Do Initial tasks
-        PLog.getLogsConfig()?.doOnSetup()
+        PLogImpl.getLogsConfig(PLog)?.doOnSetup()
 
         //Create LogTypes for types Enabled
         createLogTypes()
@@ -29,7 +30,7 @@ private fun createLogTypes() {
 
     val map = hashMapOf<String, DataLogger>()
 
-    for (logType in PLog.getLogsConfig()?.logTypesEnabled!!) {
+    for (logType in PLogImpl.getLogsConfig(PLog)?.logTypesEnabled!!) {
         val logger = DataLogger(logFileName = logType)
         map[logType] = logger
     }

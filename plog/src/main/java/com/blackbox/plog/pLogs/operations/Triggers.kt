@@ -7,6 +7,7 @@ import com.blackbox.plog.pLogs.config.LOGS_DELETE_DATE_TAG
 import com.blackbox.plog.pLogs.config.ZIP_DELETE_DATE_TAG
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.DateTimeUtils
 import java.util.*
 
@@ -35,7 +36,7 @@ object Triggers {
 
             if (Math.abs(elapsedHours) >= 1) {
 
-                if (PLog.getLogsConfig()?.isDebuggable!!)
+                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                     Log.i(PLog.TAG, "An hour has passed, sending event!")
             }
         } catch (e: Exception) {
@@ -55,7 +56,7 @@ object Triggers {
                 return
 
             //Check if logs configuration is set
-            val logsConfig = PLog.getLogsConfig() ?: return
+            val logsConfig = PLogImpl.getLogsConfig(PLog) ?: return
 
             //Do nothing if retention days == 0
             if (logsConfig.logsRetentionPeriodInDays <= 0)
@@ -136,7 +137,7 @@ object Triggers {
                 return
 
             //Check if logs configuration is set
-            val logsConfig = PLog.getLogsConfig() ?: return
+            val logsConfig = PLogImpl.getLogsConfig(PLog) ?: return
 
             //Do nothing if retention days == 0
             if (logsConfig.zipsRetentionPeriodInDays <= 0)
@@ -217,7 +218,7 @@ object Triggers {
                 return true
 
             //Check if logs configuration is set
-            val logsConfig = PLog.getLogsConfig()!!
+            val logsConfig = PLogImpl.getLogsConfig(PLog)!!
 
             //Do nothing if no log types are present for export
             if (logsConfig.autoExportLogTypes.isEmpty())
@@ -280,36 +281,36 @@ object Triggers {
     private fun updateLogsDeleteDate() {
         val time = System.currentTimeMillis()
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", LOGS_DELETE_DATE_TAG)
+        PLogImpl.getLogsConfig(PLog)?.updateDateForTAG(time.toString() + "", LOGS_DELETE_DATE_TAG)
     }
 
     private fun updateZipDeleteDate() {
         val time = System.currentTimeMillis()
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", ZIP_DELETE_DATE_TAG)
+        PLogImpl.getLogsConfig(PLog)?.updateDateForTAG(time.toString() + "", ZIP_DELETE_DATE_TAG)
     }
 
     private fun setExportStartDate() {
         val time = System.currentTimeMillis()
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLog.getLogsConfig()?.updateDateForTAG(time.toString() + "", EXPORT_START_DATE_TAG)
+        PLogImpl.getLogsConfig(PLog)?.updateDateForTAG(time.toString() + "", EXPORT_START_DATE_TAG)
     }
 
     private fun clearExportStartDate() {
 
-        if (PLog.getLogsConfig()?.isDebuggable!!)
+        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
             Log.i(PLog.TAG, "Clear export start date!")
 
-        PLog.getLogsConfig()?.updateDateForTAG("", EXPORT_START_DATE_TAG)
+        PLogImpl.getLogsConfig(PLog)?.updateDateForTAG("", EXPORT_START_DATE_TAG)
     }
 
 }

@@ -78,6 +78,9 @@ class MainApplication : Application() {
                             EventTypes.NEW_ERROR_REPORTED -> {
                                 PLog.logThis("PLogger", "event", it.data, LogLevel.INFO)
                             }
+                            EventTypes.SEVERE_ERROR_REPORTED -> {
+                                PLog.logThis("PLogger", "Severe Error:", it.data, LogLevel.INFO)
+                            }
                             EventTypes.PLOGS_EXPORTED -> {
                             }
                             EventTypes.DATA_LOGS_EXPORTED -> {

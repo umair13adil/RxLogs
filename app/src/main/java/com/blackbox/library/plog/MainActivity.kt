@@ -158,11 +158,6 @@ class MainActivity : AppCompatActivity() {
             encryptLogs = b
         }
 
-        //Print List of Exported Files
-        for (f in PLog.getListOfExportedFiles()) {
-            Log.i(PLog.TAG, "File: ${f.name}")
-        }
-
         object : CountDownTimer(2000, 1000) {
             override fun onFinish() {
                 PLog.logThis(TAG, "Error", info = "CountDownTimer", throwable = Throwable("This is an Error"))

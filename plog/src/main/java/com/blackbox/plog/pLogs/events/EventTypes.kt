@@ -11,6 +11,7 @@ enum class EventTypes(var data: String) {
     DELETE_EXPORTED_FILES("8"),
     AUTO_EXPORT_PERIOD_COMPLETED("9"),
     LOG_TYPE_EXPORTED("10"),
+    SEVERE_ERROR_REPORTED("11"),
 
 }
 

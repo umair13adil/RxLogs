@@ -3,6 +3,7 @@ package com.blackbox.plog.pLogs.filter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.DateControl
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
@@ -22,7 +23,7 @@ object FilterUtils {
 
     fun prepareOutputFile(outputPath: String) {
 
-        if (PLog.getLogsConfig()?.autoClearLogsOnExport!!)
+        if (PLogImpl.getLogsConfig(PLog)?.autoClearLogsOnExport!!)
             File(outputPath).deleteRecursively() //Delete all previous Exports
 
         //Create export directory if it doesn't already exists
@@ -35,7 +36,7 @@ object FilterUtils {
         for (i in files.indices) {
             val fileHour = extractHour(files[i].name)
 
-            if (PLog.getLogsConfig()?.isDebuggable!!)
+            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                 Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
             if (fileHour == lastHour) {
@@ -93,7 +94,7 @@ object FilterUtils {
             while (entries.hasMoreElements()) {
                 val entry = entries.nextElement()
 
-                if (PLog.getLogsConfig()?.isDebuggable!!)
+                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                     Log.i(FileFilter.TAG, entry.name)
             }
         } catch (e: ZipException) { }

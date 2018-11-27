@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.config
 
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 
 /*
@@ -10,8 +11,8 @@ fun isLogLevelEnabled(logLevel: LogLevel): Boolean {
 
     return if (!PLog.isLogsConfigSet())
         true
-    else if (PLog.isLogsConfigSet() && PLog.getLogsConfig()?.logLevelsEnabled?.isEmpty()!!)
+    else if (PLog.isLogsConfigSet() && PLogImpl.getLogsConfig(PLog)?.logLevelsEnabled?.isEmpty()!!)
         true
-    else PLog.getLogsConfig()?.logLevelsEnabled?.contains(logLevel)!!
+    else PLogImpl.getLogsConfig(PLog)?.logLevelsEnabled?.contains(logLevel)!!
 
 }

@@ -9,7 +9,7 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.blackbox.plog"
+        applicationId "com.blackbox.library.plog"
         minSdkVersion 16
         targetSdkVersion 28
         versionCode 8

@@ -6,6 +6,7 @@ package com.blackbox.plog.utils
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import io.reactivex.Observable
 import java.io.*
 import java.util.zip.ZipEntry
@@ -70,12 +71,12 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
             try {
                 zipOut.putNextEntry(createZipEntry(path, f))
             } catch (e: ZipException) {
-                if (PLog.getLogsConfig()?.isDebuggable!!) {
+                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLog.getLogsConfig()?.isDebuggable!!)
+            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                 Log.i(PLog.TAG, "Adding directory: $path")
 
             //Call recursively to add files within this directory
@@ -116,12 +117,12 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
             try {
                 zos.putNextEntry(zipEntry)
             } catch (e: ZipException) {
-                if (PLog.getLogsConfig()?.isDebuggable!!) {
+                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLog.getLogsConfig()?.isDebuggable!!)
+            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
                 Log.i(PLog.TAG, "Adding file: ${f.path}")
 
 
@@ -134,7 +135,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 try {
                     zos.write(data, 0, readBytes)
                 } catch (e: ZipException) {
-                    if (PLog.getLogsConfig()?.isDebuggable!!) {
+                    if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
                         Log.e(TAG, e.message)
                     }
                 }
