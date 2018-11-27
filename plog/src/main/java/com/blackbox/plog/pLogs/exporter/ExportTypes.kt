@@ -102,14 +102,14 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
 
 private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportType): String {
 
-    if (PLogImpl.getLogsConfig(PLog)?.attachTimeStamp!!)
+    if (PLogImpl.logsConfig?.attachTimeStamp!!)
         timeStamp = PLog.getFormattedTimeStamp() + "_" + exportType.type
 
-    if (PLogImpl.getLogsConfig(PLog)?.attachNoOfFiles!!)
+    if (PLogImpl.logsConfig?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"
 
-    val preName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePreFix!!
-    val postName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePostFix!!
+    val preName = PLogImpl.logsConfig?.exportFileNamePreFix!!
+    val postName = PLogImpl.logsConfig?.exportFileNamePostFix!!
 
     return "$preName$timeStamp$noOfFiles$postName.zip"
 }

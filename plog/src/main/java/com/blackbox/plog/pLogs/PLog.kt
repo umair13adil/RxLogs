@@ -98,7 +98,7 @@ object PLog : PLogImpl() {
      */
     fun exportDataLogsForName(name: String, exportDecrypted: Boolean = false): Observable<String> {
 
-        getLogsConfig(this)?.let {
+        logsConfig?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory)
             return DataLogsExporter.getDataLogs(name, path, outputPath, exportDecrypted)
@@ -116,7 +116,7 @@ object PLog : PLogImpl() {
      */
     fun exportAllDataLogs(exportDecrypted: Boolean = false): Observable<String> {
 
-        getLogsConfig(this)?.let {
+        logsConfig?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory, isForAll = true)
             return DataLogsExporter.getDataLogs("", path, outputPath, exportDecrypted)
@@ -134,7 +134,7 @@ object PLog : PLogImpl() {
      */
     fun printDataLogsForName(name: String, printDecrypted: Boolean = false): Observable<String> {
 
-        getLogsConfig(this)?.let {
+        logsConfig?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory)
             return DataLogsExporter.printLogsForName(name, path, printDecrypted)
@@ -161,7 +161,7 @@ object PLog : PLogImpl() {
             if (PLog.logTypes.containsKey(type))
                 return PLog.logTypes.get(type)
 
-            if (getLogsConfig(PLog)?.isDebuggable!!)
+            if (logsConfig?.isDebuggable!!)
                 Log.e(TAG, "No log type defined for provided type '$type'")
 
             return null

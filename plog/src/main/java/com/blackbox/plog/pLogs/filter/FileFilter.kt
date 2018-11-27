@@ -49,7 +49,7 @@ internal object FileFilter {
                     if (file.isDirectory) {
                         val day = FilterUtils.extractDay(file.name)
 
-                        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                        if (PLogImpl.logsConfig?.isDebuggable!!)
                             Log.i(FileFilter.TAG, "Files between dates: $lastDay & $today,Date File Present: $day")
 
                         if (lastDay < today) {
@@ -77,7 +77,7 @@ internal object FileFilter {
         val lisOfFiles = arrayListOf<File>()
         val listOfDates = DateTimeUtils.getDatesBetween()
 
-        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+        if (PLogImpl.logsConfig?.isDebuggable!!)
             Log.i(FileFilter.TAG, "Files between dates: ${listOfDates.first()} & ${listOfDates.last()}")
 
         for (date in listOfDates) {
@@ -112,7 +112,7 @@ internal object FileFilter {
             for (i in files.indices) {
                 val fileHour = FilterUtils.extractHour(files[i].name)
 
-                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                if (PLogImpl.logsConfig?.isDebuggable!!)
                     Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
                 if (fileHour == lastHour) {
@@ -135,7 +135,7 @@ internal object FileFilter {
         //Copy Files to temp folder
         File(folderPath).copyRecursively(File(tempOutputPath), true)
 
-        return if (PLogImpl.getLogsConfig(PLog)?.zipFilesOnly!!) {
+        return if (PLogImpl.logsConfig?.zipFilesOnly!!) {
             Pair(lisOfFiles, tempOutputPath)
         } else {
             Pair(lisOfFiles, tempOutputPath)

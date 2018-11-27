@@ -3,7 +3,6 @@ package com.blackbox.library.plog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -40,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         //This will get 'DataLogger' object for predefined type in ConfigFile.
         val locationsLog = PLog.getLoggerFor(LogType.Location.type)
         val notificationsLog = PLog.getLoggerFor(LogType.Notification.type)
+        val deliveriesLog = PLog.getLoggerFor("Deliveries")
 
         //Will log to PLogs
         log_plog_event.setOnClickListener {
@@ -61,11 +61,13 @@ class MainActivity : AppCompatActivity() {
 
                 locationsLog?.appendToFile(dataToLog)
                 notificationsLog?.appendToFile(dataToLog)
+                deliveriesLog?.appendToFile("Deliveries: $dataToLog")
             } else {
                 dataToLog = editText.text.toString() + "\n"
 
                 locationsLog?.appendToFile(dataToLog)
                 notificationsLog?.appendToFile(dataToLog)
+                deliveriesLog?.appendToFile("Deliveries: $dataToLog")
             }
         }
 
@@ -157,17 +159,6 @@ class MainActivity : AppCompatActivity() {
         switch1.setOnCheckedChangeListener { compoundButton, b ->
             encryptLogs = b
         }
-
-        object : CountDownTimer(2000, 1000) {
-            override fun onFinish() {
-                PLog.logThis(TAG, "Error", info = "CountDownTimer", throwable = Throwable("This is an Error"))
-            }
-
-            override fun onTick(p0: Long) {
-
-            }
-
-        }.start()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

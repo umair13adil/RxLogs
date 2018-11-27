@@ -21,7 +21,7 @@ object DataLogsExporter {
 
     private val TAG = DataLogsExporter::class.java.simpleName
 
-    private var exportFileName = PLogImpl.getLogsConfig(PLog)?.zipFileName!!
+    private var exportFileName = PLogImpl.logsConfig?.zipFileName!!
     private var exportPath = ""
 
     /*
@@ -59,13 +59,13 @@ object DataLogsExporter {
                             emitter.onError(Throwable("No Files to zip!"))
                 }
 
-                if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && exportDecrypted) {
+                if (PLogImpl.logsConfig?.encryptionEnabled!! && exportDecrypted) {
                     decryptSaveFiles(filesToSend, exportPath, this.exportFileName)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeBy(
                                     onNext = {
-                                        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                                        if (PLogImpl.logsConfig?.isDebuggable!!)
                                             Log.i(PLog.TAG, "Output Zip: ${exportFileName}")
 
                                         emitter.onNext(it)
@@ -84,7 +84,7 @@ object DataLogsExporter {
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeBy(
                                     onNext = {
-                                        if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                                        if (PLogImpl.logsConfig?.isDebuggable!!)
                                             Log.i(PLog.TAG, "Output Zip: $exportPath${exportFileName}")
 
                                         emitter.onNext(exportPath + exportFileName)
@@ -129,7 +129,7 @@ object DataLogsExporter {
                     emitter.onNext("Start...................................................\n")
                     emitter.onNext("File: ${f.name} Start..\n")
 
-                    if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && printDecrypted) {
+                    if (PLogImpl.logsConfig?.encryptionEnabled!! && printDecrypted) {
                         emitter.onNext(readFileDecrypted(f.absolutePath))
                     } else {
                         f.forEachLine {
@@ -186,14 +186,14 @@ object DataLogsExporter {
         var timeStamp = ""
         var noOfFiles = ""
 
-        if (PLogImpl.getLogsConfig(PLog)?.attachTimeStamp!!)
+        if (PLogImpl.logsConfig?.attachTimeStamp!!)
             timeStamp = PLog.getFormattedTimeStamp() + "_" + ExportType.TODAY.type
 
-        if (PLogImpl.getLogsConfig(PLog)?.attachNoOfFiles!!)
+        if (PLogImpl.logsConfig?.attachNoOfFiles!!)
             noOfFiles = "_[${files.size}]"
 
-        val preName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePreFix!!
-        val postName = PLogImpl.getLogsConfig(PLog)?.exportFileNamePostFix!!
+        val preName = PLogImpl.logsConfig?.exportFileNamePreFix!!
+        val postName = PLogImpl.logsConfig?.exportFileNamePostFix!!
 
         return "$preName$exportFileName$timeStamp$noOfFiles$postName.zip"
     }

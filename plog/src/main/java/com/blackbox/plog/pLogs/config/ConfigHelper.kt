@@ -11,8 +11,8 @@ fun isLogLevelEnabled(logLevel: LogLevel): Boolean {
 
     return if (!PLog.isLogsConfigSet())
         true
-    else if (PLog.isLogsConfigSet() && PLogImpl.getLogsConfig(PLog)?.logLevelsEnabled?.isEmpty()!!)
+    else if (PLog.isLogsConfigSet() && PLogImpl.logsConfig?.logLevelsEnabled?.isEmpty()!!)
         true
-    else PLogImpl.getLogsConfig(PLog)?.logLevelsEnabled?.contains(logLevel)!!
+    else PLogImpl.logsConfig?.logLevelsEnabled?.contains(logLevel)!!
 
 }

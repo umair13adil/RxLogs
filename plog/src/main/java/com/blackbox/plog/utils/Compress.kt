@@ -71,12 +71,12 @@ private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: S
             try {
                 zipOut.putNextEntry(createZipEntry(path, f))
             } catch (e: ZipException) {
-                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
+                if (PLogImpl.logsConfig?.isDebuggable!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+            if (PLogImpl.logsConfig?.isDebuggable!!)
                 Log.i(PLog.TAG, "Adding directory: $path")
 
             //Call recursively to add files within this directory
@@ -117,12 +117,12 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
             try {
                 zos.putNextEntry(zipEntry)
             } catch (e: ZipException) {
-                if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
+                if (PLogImpl.logsConfig?.isDebuggable!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+            if (PLogImpl.logsConfig?.isDebuggable!!)
                 Log.i(PLog.TAG, "Adding file: ${f.path}")
 
 
@@ -135,7 +135,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 try {
                     zos.write(data, 0, readBytes)
                 } catch (e: ZipException) {
-                    if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!) {
+                    if (PLogImpl.logsConfig?.isDebuggable!!) {
                         Log.e(TAG, e.message)
                     }
                 }

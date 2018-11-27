@@ -28,7 +28,6 @@ open class PLogImpl {
 
     private lateinit var bus: RxBus
 
-    internal var logsConfig: LogsConfig? = null
     internal var logTypes = hashMapOf<String, DataLogger>()
 
     internal fun getLogBus(): RxBus {
@@ -44,10 +43,9 @@ open class PLogImpl {
      */
     fun isLogsConfigSet(): Boolean {
 
-        PLog.logsConfig?.let {
+        logsConfig?.let {
             return true
         }
-
 
         print(Throwable("No logs configuration provided!"))
 
@@ -87,7 +85,7 @@ open class PLogImpl {
         //Create 'Save' Path
         createDirIfNotExists(config.savePath)
 
-        PLog.logsConfig = config
+        logsConfig = config
 
         if (saveToFile) {
             //Only save if parameter value 'true'
@@ -104,7 +102,7 @@ open class PLogImpl {
      * This will forcefully overwrite existing logs configuration.
      */
     fun forceWriteLogsConfig(config: LogsConfig) {
-        PLog.logsConfig = config
+        logsConfig = config
 
         ConfigWriter.saveToXML(config)
 
@@ -118,8 +116,8 @@ open class PLogImpl {
     fun getLogsConfigFromXML(): LogsConfig? {
 
         if (localConfigurationExists()) {
-            PLog.logsConfig = ConfigReader.readXML()
-            return PLog.logsConfig
+            logsConfig = ConfigReader.readXML()
+            return logsConfig
         }
 
         return null
@@ -156,7 +154,7 @@ open class PLogImpl {
                     .toObservable()
                     .doOnError {
 
-                        if (Companion.getLogsConfig(PLog)?.isDebuggable!!)
+                        if (logsConfig?.isDebuggable!!)
                             Log.e(TAG, "Error '${it.message}'")
 
                     }.subscribe {
@@ -170,7 +168,7 @@ open class PLogImpl {
 
     internal fun getFormattedTimeStamp(): String {
 
-        getLogsConfig(PLog)?.let {
+        logsConfig?.let {
             return DateTimeUtils.getTimeFormatted(it.timeStampFormat)
         }
 
@@ -189,10 +187,10 @@ open class PLogImpl {
             Log.i(PLog.TAG, logData)
         }
 
-        if (getLogsConfig(PLog) != null) {
+        if (logsConfig != null) {
 
             //Do nothing if logs are disabled
-            if (!getLogsConfig(PLog)?.enabled!!)
+            if (!logsConfig?.enabled!!)
                 return Pair(false, logData)
 
             //Do nothing if log level type is disabled
@@ -208,7 +206,7 @@ open class PLogImpl {
 
     internal fun writeAndExportLog(data: String, type: LogLevel) {
 
-        if (getLogsConfig(PLog)?.encryptionEnabled!!) {
+        if (logsConfig?.encryptionEnabled!!) {
             LogWriter.writeEncryptedLogs(data)
         } else {
             LogWriter.writeSimpleLogs(data)
@@ -233,16 +231,6 @@ open class PLogImpl {
     }
 
     companion object {
-
-        /**
-         * Get LogsConfig object.
-         */
-        internal fun getLogsConfig(pLogImpl: PLogImpl): LogsConfig? {
-
-            if (pLogImpl.isLogsConfigSet())
-                return PLog.logsConfig
-
-            return null
-        }
+        internal var logsConfig: LogsConfig? = null
     }
 }

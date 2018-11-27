@@ -13,7 +13,7 @@ object LogWriter {
      */
     fun writeEncryptedLogs(logFormatted: String) {
 
-        if (PLogImpl.getLogsConfig(PLog)?.secretKey == null)
+        if (PLogImpl.logsConfig?.secretKey == null)
             return
 
         val shouldLog: Pair<Boolean, String>
@@ -28,7 +28,7 @@ object LogWriter {
         }
 
         if (shouldLog.first) {
-            appendToFileEncrypted(logFormatted, PLogImpl.getLogsConfig(PLog)?.secretKey!!, shouldLog.second)
+            appendToFileEncrypted(logFormatted, PLogImpl.logsConfig?.secretKey!!, shouldLog.second)
         }
     }
 
@@ -62,7 +62,7 @@ object LogWriter {
 
         if (file.length() > 0) {
             val length = file.length()
-            val maxLength = PLogImpl.getLogsConfig(PLog)?.singleLogFileSize!! * (1024 * 1024)
+            val maxLength = PLogImpl.logsConfig?.singleLogFileSize!! * (1024 * 1024)
 
             if (length > maxLength) {
 
@@ -71,9 +71,9 @@ object LogWriter {
                 else
                     PART_FILE_CREATED_DATALOG = true
 
-                if (!PLogImpl.getLogsConfig(PLog)?.forceWriteLogs!!) {
+                if (!PLogImpl.logsConfig?.forceWriteLogs!!) {
 
-                    if (PLogImpl.getLogsConfig(PLog)?.debugFileOperations!!)
+                    if (PLogImpl.logsConfig?.debugFileOperations!!)
                         Log.i(PLog.TAG, "File size exceeded!")
 
                     return Pair(false, path)
@@ -83,7 +83,7 @@ object LogWriter {
                 }
             } else {
 
-                if (PLogImpl.getLogsConfig(PLog)?.debugFileOperations!!)
+                if (PLogImpl.logsConfig?.debugFileOperations!!)
                     Log.i(PLog.TAG, "File Length: ${Utils.bytesToReadable(length.toInt())} < ${Utils.bytesToReadable(maxLength)}")
             }
         }

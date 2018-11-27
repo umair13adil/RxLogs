@@ -18,7 +18,7 @@ import java.io.File
 class DataLogger(var logFileName: String = "log") {
 
     val TAG = "DataLogger"
-    val autoExportTypes = PLogImpl.getLogsConfig(PLog)?.autoExportLogTypes!!
+    val autoExportTypes = PLogImpl.logsConfig?.autoExportLogTypes!!
 
     /**
      * Overwrite to file.
@@ -78,18 +78,17 @@ class DataLogger(var logFileName: String = "log") {
             val logFilePath = setupFilePaths(logFileName, isPLog = false)
             dataLoggerCalledBeforePLoggerException()
 
-            val shouldLog: Pair<Boolean, String>
             val f = checkFileExists(logFilePath, isPLog = false)
 
-            if (!PART_FILE_CREATED_DATALOG) {
-                shouldLog = LogWriter.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
+            val shouldLog = if (!PART_FILE_CREATED_DATALOG) {
+                LogWriter.shouldWriteLog(f, isPLog = false, logFileName = logFileName)
             } else {
-                shouldLog = LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
+                LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
             }
 
-            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!!) {
+            if (PLogImpl.logsConfig?.encryptionEnabled!!) {
 
-                val secretKey = PLogImpl.getLogsConfig(PLog)?.secretKey!!
+                val secretKey = PLogImpl.logsConfig?.secretKey!!
 
                 if (shouldLog.first) {
                     if (overwrite)
@@ -108,7 +107,7 @@ class DataLogger(var logFileName: String = "log") {
                 }
             }
 
-            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+            if (PLogImpl.logsConfig?.isDebuggable!!)
                 Log.i(PLog.TAG, it)
 
             //Check if auto Export is enabled, and then  export it

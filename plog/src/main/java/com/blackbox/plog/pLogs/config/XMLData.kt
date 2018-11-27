@@ -149,7 +149,7 @@ internal fun updateValue(value: String, tag: String) {
 
         // Change the content of node
         val nodes = doc.getElementsByTagName(tag).item(0)
-        nodes.setTextContent(value)
+        nodes.textContent = value
 
         val transformer = TransformerFactory.newInstance().newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")

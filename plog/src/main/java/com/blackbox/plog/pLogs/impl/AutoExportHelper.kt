@@ -11,14 +11,14 @@ object AutoExportHelper {
     fun autoExportError(data: String, type: LogLevel) {
 
         if (type == LogLevel.ERROR) {
-            if (PLogImpl.getLogsConfig(PLog)?.autoExportErrors!!) {
+            if (PLogImpl.logsConfig?.autoExportErrors!!) {
                 //Send event to notify error is reported
                 PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
             }
         }
 
         if (type == LogLevel.SEVERE) {
-            if (PLogImpl.getLogsConfig(PLog)?.autoExportErrors!!) {
+            if (PLogImpl.logsConfig?.autoExportErrors!!) {
                 //Send event to notify severe error is reported
                 PLog.getLogBus().send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED, data))
             }

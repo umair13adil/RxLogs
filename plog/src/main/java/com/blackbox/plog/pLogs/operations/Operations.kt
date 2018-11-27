@@ -15,7 +15,7 @@ internal fun doOnInit() {
         PLog.getLogsConfigFromXML() ?: PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
 
         //Do Initial tasks
-        PLogImpl.getLogsConfig(PLog)?.doOnSetup()
+        PLogImpl.logsConfig?.doOnSetup()
 
         //Create LogTypes for types Enabled
         createLogTypes()
@@ -30,7 +30,7 @@ private fun createLogTypes() {
 
     val map = hashMapOf<String, DataLogger>()
 
-    for (logType in PLogImpl.getLogsConfig(PLog)?.logTypesEnabled!!) {
+    for (logType in PLogImpl.logsConfig?.logTypesEnabled!!) {
         val logger = DataLogger(logFileName = logType)
         map[logType] = logger
     }

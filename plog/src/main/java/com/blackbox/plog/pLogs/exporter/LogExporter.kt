@@ -26,7 +26,7 @@ object LogExporter {
 
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
-    private var zipName = PLogImpl.getLogsConfig(PLog)?.zipFileName
+    private var zipName = PLogImpl.logsConfig?.zipFileName
 
     /*
      * Will filter & export log files to zip package.
@@ -76,7 +76,7 @@ object LogExporter {
                     emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
                     emitter.onNext("File: ${f.name} Start..\n")
 
-                    if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && printDecrypted) {
+                    if (PLogImpl.logsConfig?.encryptionEnabled!! && printDecrypted) {
                         emitter.onNext(readFileDecrypted(f.absolutePath))
                     } else {
                         f.forEachLine {
@@ -101,7 +101,7 @@ object LogExporter {
         //First entry is Zip Name
         this.zipName = files.first
 
-        if (PLogImpl.getLogsConfig(PLog)?.zipFilesOnly!!) {
+        if (PLogImpl.logsConfig?.zipFilesOnly!!) {
 
             val filesToSend = files.second //List of filtered files
 
@@ -110,7 +110,7 @@ object LogExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.logsConfig?.encryptionEnabled!! && exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend)
             } else {
                 zipFilesOnly(emitter, filesToSend)
@@ -118,7 +118,7 @@ object LogExporter {
 
         } else {
 
-            if (PLogImpl.getLogsConfig(PLog)?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.logsConfig?.encryptionEnabled!! && exportDecrypted) {
                 decryptFirstThenZip(emitter, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)
@@ -132,7 +132,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                            if (PLogImpl.logsConfig?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(it)
@@ -153,7 +153,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                            if (PLogImpl.logsConfig?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)
@@ -174,7 +174,7 @@ object LogExporter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.getLogsConfig(PLog)?.isDebuggable!!)
+                            if (PLogImpl.logsConfig?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
                             emitter.onNext(exportPath + zipName)

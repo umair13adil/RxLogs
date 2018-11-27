@@ -1,6 +1,5 @@
 package com.blackbox.plog.pLogs.formatter
 
-import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogData
 
@@ -60,16 +59,16 @@ object LogFormatter {
 
         var t = formatCurly(data)
 
-        PLogImpl.getLogsConfig(PLog)?.let {
+        PLogImpl.logsConfig?.let {
 
             t = when (it.formatType) {
                 FormatType.FORMAT_CURLY -> formatCurly(data)
 
                 FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-                FormatType.FORMAT_CSV -> formatCSV(data, PLogImpl.getLogsConfig(PLog)?.csvDelimiter!!)
+                FormatType.FORMAT_CSV -> formatCSV(data, PLogImpl.logsConfig?.csvDelimiter!!)
 
-                FormatType.FORMAT_CUSTOM -> formatCustom(data, PLogImpl.getLogsConfig(PLog)?.customFormatOpen!!, PLogImpl.getLogsConfig(PLog)?.customFormatClose!!)
+                FormatType.FORMAT_CUSTOM -> formatCustom(data, PLogImpl.logsConfig?.customFormatOpen!!, PLogImpl.logsConfig?.customFormatClose!!)
             }
         }
 
