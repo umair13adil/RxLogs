@@ -13,6 +13,7 @@ import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import java.io.File
 
+
 private var currentNameOfDirectory = ""
 
 fun writeToFile(path: String, data: String) {
@@ -46,23 +47,40 @@ fun appendToFile(path: String, data: String) {
 }
 
 fun checkFileExists(path: String, isPLog: Boolean = true): File {
+
+    val pFile = File(path).parentFile
+
+    val directory = File(pFile.absolutePath)
+
+    if (!directory.exists())
+        directory.mkdirs()
+
     val file = File(path)
 
-    if (!file.exists()) {
-        file.createNewFile()
-
-        //Check if file created if part file
-        if (isPLog && !file.name.contains(PART_FILE_PREFIX)) {
-            PART_FILE_CREATED_PLOG = false
-        } else if (!isPLog && !file.name.contains(PART_FILE_PREFIX)) {
-            PART_FILE_CREATED_DATALOG = false
+    try {
+        if (!file.exists()) {
+            file.createNewFile()
+            saveFileEvent(file, isPLog)
         }
-
-        if (PLogImpl.logsConfig?.debugFileOperations!!)
-            Log.i(PLog.TAG, "New file created: ${file.path}")
+    } catch (e: Exception) {
+        e.printStackTrace()
+        saveFileEvent(file, isPLog)
     }
 
     return file
+}
+
+private fun saveFileEvent(file: File, isPLog: Boolean = true) {
+
+    //Check if file created if part file
+    if (isPLog && !file.name.contains(PART_FILE_PREFIX)) {
+        PART_FILE_CREATED_PLOG = false
+    } else if (!isPLog && !file.name.contains(PART_FILE_PREFIX)) {
+        PART_FILE_CREATED_DATALOG = false
+    }
+
+    if (PLogImpl.logsConfig?.debugFileOperations!!)
+        Log.i(PLog.TAG, "New file created: ${file.path}")
 }
 
 /*

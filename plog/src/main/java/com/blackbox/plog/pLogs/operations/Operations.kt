@@ -6,19 +6,29 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.PLogImpl
 
-internal fun doOnInit() {
+internal fun doOnInit(saveToFile: Boolean = false) {
 
     //Run only if Config file is set
     if (PLog.isLogsConfigSet()) {
 
-        //Overwrite with XML data, Send Event to notify that XML is loaded
-        PLog.getLogsConfigFromXML() ?: PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
-
         //Do Initial tasks
-        PLogImpl.logsConfig?.doOnSetup()
+        PLogImpl.logsConfig?.doOnSetup(saveToFile)
 
         //Create LogTypes for types Enabled
         createLogTypes()
+
+        //Only look for local configuration if 'saveToFile' is enabled.
+        if (saveToFile) {
+
+            //Overwrite with XML data, Send Event to notify that XML is loaded
+            PLog.getLogsConfigFromXML()?.let {
+                PLogImpl.logsConfig = it
+
+                //Send Event
+                PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
+            }
+                    ?: throw Exception("Unable to read local XML file. Are read storage permissions enabled?")
+        }
     }
 }
 

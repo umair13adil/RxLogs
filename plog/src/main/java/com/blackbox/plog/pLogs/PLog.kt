@@ -35,13 +35,13 @@ object PLog : PLogImpl() {
      * @param text         the text
      * @param type         the type
      */
-    fun logThis(className: String, functionName: String, info: String, type: LogLevel) {
+    fun logThis(className: String, functionName: String, info: String, level: LogLevel) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, type)
+        val logsConfig = isLogsConfigValid(className, functionName, info, level)
         if (logsConfig.first) {
 
             //Write Log and export if an 'Error'
-            writeAndExportLog(logsConfig.second, type)
+            writeAndExportLog(logsConfig.second, level)
         }
     }
 
@@ -55,15 +55,15 @@ object PLog : PLogImpl() {
      * @param e             Exception
      * @param type         the type
      */
-    fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, type: LogLevel = LogLevel.ERROR) {
+    fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, type)
+        val logsConfig = isLogsConfigValid(className, functionName, info, level)
         if (logsConfig.first) {
 
             val data = formatErrorMessage(info, throwable = throwable)
 
             //Write Log and export if an 'Error'
-            writeAndExportLog(data, type)
+            writeAndExportLog(data, level)
         }
     }
 
@@ -77,15 +77,59 @@ object PLog : PLogImpl() {
      * @param e             Exception
      * @param type         the type
      */
-    fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, type: LogLevel = LogLevel.ERROR) {
+    fun logThis(className: String = "", functionName: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, type)
+        val logsConfig = isLogsConfigValid(className, functionName, "", level)
+        if (logsConfig.first) {
+
+            val data = formatErrorMessage("", throwable = throwable)
+
+            //Write Log and export if an 'Error'
+            writeAndExportLog(data, level)
+        }
+    }
+
+    /**
+     * Log Exception.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
+     * @param functionName the function name
+     * @param e             Exception
+     * @param type         the type
+     */
+    fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
+
+        val logsConfig = isLogsConfigValid(className, functionName, info, level)
         if (logsConfig.first) {
 
             val data = formatErrorMessage(info, exception = exception)
 
             //Write Log and export if an 'Error'
-            writeAndExportLog(data, type)
+            writeAndExportLog(data, level)
+        }
+    }
+
+    /**
+     * Log Exception.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
+     * @param functionName the function name
+     * @param e             Exception
+     * @param type         the type
+     */
+    fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
+
+        val logsConfig = isLogsConfigValid(className, functionName, "", level)
+        if (logsConfig.first) {
+
+            val data = formatErrorMessage("", exception = exception)
+
+            //Write Log and export if an 'Error'
+            writeAndExportLog(data, level)
         }
     }
 

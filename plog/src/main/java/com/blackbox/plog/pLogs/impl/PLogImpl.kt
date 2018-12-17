@@ -1,5 +1,7 @@
 package com.blackbox.plog.pLogs.impl
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
@@ -85,29 +87,70 @@ open class PLogImpl {
         //Create 'Save' Path
         createDirIfNotExists(config.savePath)
 
+        //Save Context
+        context = config.context
+
         logsConfig = config
 
         if (saveToFile) {
             //Only save if parameter value 'true'
-            if (!PLog.localConfigurationExists()) {
-                ConfigWriter.saveToXML(config)
-            }
-        }
 
-        //Perform operations on Initializing.
-        doOnInit()
+            //Copy logs & zip delete data from saved XML configuration if it exists
+            copyDataFromSavedConfig()
+
+            logsConfig?.let {
+
+                ConfigWriter.saveToXML(it)
+                        .doOnNext {
+
+                            //Perform operations on Initializing.
+                            doOnInit(saveToFile)
+                        }
+                        .subscribe()
+            }
+        } else {
+
+            //Perform operations on Initializing.
+            doOnInit(saveToFile)
+        }
     }
 
     /*
      * This will forcefully overwrite existing logs configuration.
      */
     fun forceWriteLogsConfig(config: LogsConfig) {
+
+        //Save Context
+        context = config.context
+
         logsConfig = config
 
-        ConfigWriter.saveToXML(config)
+        //Copy logs & zip delete data from saved XML configuration if it exists
+        copyDataFromSavedConfig()
 
-        //Perform operations on Initializing.
-        doOnInit()
+        logsConfig?.let {
+
+            ConfigWriter.saveToXML(it)
+                    .doOnNext {
+
+                        //Perform operations on Initializing.
+                        doOnInit(true)
+
+                    }.subscribe()
+        }
+    }
+
+    private fun copyDataFromSavedConfig() {
+
+        //Load XML config file if exists
+        if (PLog.localConfigurationExists()) {
+            PLog.getLogsConfigFromXML()?.let { xmlConfig ->
+
+                //Save previous saved dates
+                logsConfig?.logsDeleteDate = xmlConfig.logsDeleteDate
+                logsConfig?.zipDeleteDate = xmlConfig.zipDeleteDate
+            }
+        }
     }
 
     /*
@@ -116,8 +159,10 @@ open class PLogImpl {
     fun getLogsConfigFromXML(): LogsConfig? {
 
         if (localConfigurationExists()) {
-            logsConfig = ConfigReader.readXML()
-            return logsConfig
+
+            ConfigReader.readXML().let { savedConfig ->
+                return savedConfig
+            }
         }
 
         return null
@@ -232,5 +277,8 @@ open class PLogImpl {
 
     companion object {
         internal var logsConfig: LogsConfig? = null
+
+        @SuppressLint("StaticFieldLeak")
+        internal var context: Context? = null
     }
 }

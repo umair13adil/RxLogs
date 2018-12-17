@@ -50,7 +50,7 @@ object Triggers {
      *
      */
     fun shouldClearLogs() {
-
+        //TODO Logs are cleared everyday
         try {
             if (!PLog.localConfigurationExists())
                 return
@@ -63,14 +63,20 @@ object Triggers {
                 return
 
             //Set Default Value
-            if (logsConfig.logsDeleteDate.isEmpty()) {
+            if (logsConfig.logsDeleteDate == 0L) {
+
+                val info = "No last delete date found!"
+
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.TAG, info)
+
                 updateLogsDeleteDate()
             }
 
             var savedTime = 0L
 
-            if (!logsConfig.logsDeleteDate.isEmpty()) {
-                savedTime = logsConfig.logsDeleteDate.toLong()
+            if (logsConfig.logsDeleteDate != 0L) {
+                savedTime = logsConfig.logsDeleteDate
             }
 
             if (savedTime == 0L) {
@@ -144,14 +150,14 @@ object Triggers {
                 return
 
             //Set Default Value
-            if (logsConfig.zipDeleteDate.isEmpty()) {
+            if (logsConfig.zipDeleteDate == 0L) {
                 updateZipDeleteDate()
             }
 
             var savedTime = 0L
 
-            if (!logsConfig.zipDeleteDate.isEmpty()) {
-                savedTime = logsConfig.zipDeleteDate.toLong()
+            if (logsConfig.zipDeleteDate != 0L) {
+                savedTime = logsConfig.zipDeleteDate
             }
 
             if (savedTime == 0L) {

@@ -55,10 +55,15 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
     zipRetainElement.setAttribute(VALUE_ATTR, logsConfig.zipsRetentionPeriodInDays.toString())
     rootEle.appendChild(zipRetainElement)
 
+    //Auto Clear Zip files
+    val autoClearZipElement = dom.createElement(AUTO_CLEAR_ZIP_TAG)
+    autoClearZipElement.setAttribute(VALUE_ATTR, logsConfig.autoDeleteZipOnExport.toString())
+    rootEle.appendChild(autoClearZipElement)
+
     //Auto Clear Logs
-    val autoClearElement = dom.createElement(AUTO_CLEAR_TAG)
-    autoClearElement.setAttribute(VALUE_ATTR, logsConfig.autoClearLogsOnExport.toString())
-    rootEle.appendChild(autoClearElement)
+    val autoClearLogsElement = dom.createElement(AUTO_CLEAR_LOGS_TAG)
+    autoClearLogsElement.setAttribute(VALUE_ATTR, logsConfig.autoClearLogs.toString())
+    rootEle.appendChild(autoClearLogsElement)
 
     //File Export Name
     val exportNameElement = dom.createElement(EXPORT_TAG)
@@ -113,10 +118,12 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
 
     //Logs Delete date
     val logsDeleteDateElement = dom.createElement(LOGS_DELETE_DATE_TAG)
+    logsDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.logsDeleteDate.toString())
     rootEle.appendChild(logsDeleteDateElement)
 
     //Zip Delete date
     val zipDeleteDateElement = dom.createElement(ZIP_DELETE_DATE_TAG)
+    zipDeleteDateElement.setAttribute(VALUE_ATTR, logsConfig.zipDeleteDate.toString())
     rootEle.appendChild(zipDeleteDateElement)
 
     //Auto Export Start date
@@ -149,7 +156,8 @@ internal fun updateValue(value: String, tag: String) {
 
         // Change the content of node
         val nodes = doc.getElementsByTagName(tag).item(0)
-        nodes.textContent = value
+        nodes.attributes.getNamedItem(VALUE_ATTR).nodeValue = value
+        //nodes.textContent = value
 
         val transformer = TransformerFactory.newInstance().newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")

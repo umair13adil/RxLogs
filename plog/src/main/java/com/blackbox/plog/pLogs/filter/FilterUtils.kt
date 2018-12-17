@@ -23,7 +23,7 @@ object FilterUtils {
 
     fun prepareOutputFile(outputPath: String) {
 
-        if (PLogImpl.logsConfig?.autoClearLogsOnExport!!)
+        if (PLogImpl.logsConfig?.autoDeleteZipOnExport!!)
             File(outputPath).deleteRecursively() //Delete all previous Exports
 
         //Create export directory if it doesn't already exists

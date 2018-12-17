@@ -159,6 +159,16 @@ class MainActivity : AppCompatActivity() {
         switch1.setOnCheckedChangeListener { compoundButton, b ->
             encryptLogs = b
         }
+
+        print_error.setOnClickListener {
+            val time = System.currentTimeMillis()
+
+            if (time.toInt() % 2 == 0) {
+                PLog.logThis(TAG, "reportError", Exception("This is an Exception!"), LogLevel.ERROR)
+            } else {
+                PLog.logThis(TAG, "reportError", Exception("This is an severe Exception!"), LogLevel.SEVERE)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

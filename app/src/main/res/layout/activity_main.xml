@@ -57,6 +57,13 @@
                 android:layout_height="wrap_content"
                 android:text="Export PLogs" />
 
+            <Button
+                android:id="@+id/print_error"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Print Exception" />
+
         </LinearLayout>
 
         <LinearLayout

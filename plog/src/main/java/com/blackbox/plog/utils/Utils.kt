@@ -1,6 +1,8 @@
 package com.blackbox.plog.utils
 
+import android.content.Context
 import java.io.File
+import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -78,5 +80,21 @@ object Utils {
             return bytes.toString() + " Gb"
 
         return ""
+    }
+
+    fun readAssetsXML(fileName: String, context: Context): String? {
+        var xmlString: String? = null
+        val am = context.assets
+        try {
+            val `is` = am.open(fileName)
+            val length = `is`.available()
+            val data = ByteArray(length)
+            `is`.read(data)
+            xmlString = String(data)
+        } catch (e1: IOException) {
+            e1.printStackTrace()
+        }
+
+        return xmlString
     }
 }

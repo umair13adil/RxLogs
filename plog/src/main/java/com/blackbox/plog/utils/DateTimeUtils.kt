@@ -39,6 +39,10 @@ object DateTimeUtils {
         return formatted
     }
 
+    fun getTimeFormatted(): String {
+        return getFullDateTimeString(System.currentTimeMillis())
+    }
+
     private fun getDayOfMonthSuffix(n: Int): String {
         if (n < 1 || n > 31) {
             throw IllegalArgumentException("Illegal day of month")

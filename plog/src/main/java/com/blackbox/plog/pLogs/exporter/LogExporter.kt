@@ -1,9 +1,13 @@
 package com.blackbox.plog.pLogs.exporter
 
+import android.content.Context
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.exporter.formatter.HtmlExceptionFormatOptions
+import com.blackbox.plog.pLogs.exporter.formatter.HtmlExceptionFormatter
+import com.blackbox.plog.pLogs.exporter.formatter.Theme
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.readFileDecrypted
@@ -197,5 +201,19 @@ object LogExporter {
 
         //Clear all copied files
         FilterUtils.deleteFilesExceptZip()
+    }
+
+    fun formatErrorMessage(errorMessage: String, context: Context): String {
+
+        return try {
+            val options = HtmlExceptionFormatOptions()
+            options.setPrintDetails(true)
+            options.context = context
+            options.theme = Theme.GRAY
+            HtmlExceptionFormatter(options).toString(Throwable(errorMessage))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            errorMessage
+        }
     }
 }

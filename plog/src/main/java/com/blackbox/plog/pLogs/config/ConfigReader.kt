@@ -84,8 +84,12 @@ object ConfigReader {
                                 logsConfig.zipsRetentionPeriodInDays = readAttribute(attributes, VALUE_ATTR).toInt()
                             }
 
-                            AUTO_CLEAR_TAG -> {
-                                logsConfig.autoClearLogsOnExport = readAttribute(attributes, VALUE_ATTR).toBoolean()
+                            AUTO_CLEAR_ZIP_TAG -> {
+                                logsConfig.autoDeleteZipOnExport = readAttribute(attributes, VALUE_ATTR).toBoolean()
+                            }
+
+                            AUTO_CLEAR_LOGS_TAG -> {
+                                logsConfig.autoClearLogs = readAttribute(attributes, VALUE_ATTR).toBoolean()
                             }
 
                             EXPORT_TAG -> {
@@ -128,6 +132,14 @@ object ConfigReader {
                                 logsConfig.autoExportLogTypesPeriod = readAttribute(attributes, AUTO_EXPORT_PERIOD_ATTR).toInt()
                             }
 
+                            LOGS_DELETE_DATE_TAG -> {
+                                logsConfig.logsDeleteDate = readAttribute(attributes, VALUE_ATTR).toLong()
+                            }
+
+                            ZIP_DELETE_DATE_TAG -> {
+                                logsConfig.zipDeleteDate = readAttribute(attributes, VALUE_ATTR).toLong()
+                            }
+
                             LOGS_SAVE_PATH_TAG -> {
                                 logsConfig.savePath = readAttribute(attributes, VALUE_ATTR)
                             }
@@ -162,21 +174,10 @@ object ConfigReader {
                                     logsConfig.autoExportLogTypes.add(currentValue)
                             }
 
-                            LOGS_DELETE_DATE_TAG -> {
-                                val logsDeleteTime = currentValue
-                                logsConfig.logsDeleteDate = logsDeleteTime
-                            }
-
-                            ZIP_DELETE_DATE_TAG -> {
-                                val zipDeleteTime = currentValue
-                                logsConfig.zipDeleteDate = zipDeleteTime
-                            }
-
                             EXPORT_START_DATE_TAG -> {
                                 val startDate = currentValue
                                 logsConfig.exportStartDate = startDate
                             }
-
                         }
                     }
 

@@ -2,6 +2,7 @@ package com.blackbox.plog.pLogs.config
 
 import com.blackbox.plog.pLogs.utils.CONFIG_FILE_NAME
 import com.blackbox.plog.pLogs.utils.XML_PATH
+import io.reactivex.Observable
 import org.w3c.dom.Document
 import java.io.File
 import java.io.FileOutputStream
@@ -16,48 +17,72 @@ import javax.xml.transform.stream.StreamResult
 
 object ConfigWriter {
 
-    fun saveToXML(logsConfig: LogsConfig) {
-        val dom: Document
+    fun saveToXML(logsConfig: LogsConfig): Observable<LogsConfig> {
 
-        // instance of a DocumentBuilderFactory
-        val dbf = DocumentBuilderFactory.newInstance()
-        try {
-            // use factory to get an instance of document builder
-            val db = dbf.newDocumentBuilder()
-            // create instance of DOM
-            dom = db.newDocument()
+        return Observable.create { emitter ->
 
-            // create the root element
-            val rootEle = dom.createElement(ROOT_TAG)
-            rootEle.setAttribute(IS_DEBUGGABLE_ATTR, logsConfig.isDebuggable.toString())
-            rootEle.setAttribute(DEBUGGABLE_FILE_OP_ATTR, logsConfig.debugFileOperations.toString())
-            rootEle.setAttribute(FORCE_WRITE_ATTR, logsConfig.forceWriteLogs.toString())
-            rootEle.setAttribute(ENABLED_ATTR, logsConfig.enabled.toString())
+            val dom: Document
 
-            dataToWrite(dom, logsConfig, rootEle)
-
-            dom.appendChild(rootEle)
-
+            // instance of a DocumentBuilderFactory
+            val dbf = DocumentBuilderFactory.newInstance()
             try {
-                val tr = TransformerFactory.newInstance().newTransformer()
-                tr.setOutputProperty(OutputKeys.INDENT, "yes")
-                tr.setOutputProperty(OutputKeys.METHOD, "xml")
-                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-                tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd")
-                tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
+                // use factory to get an instance of document builder
+                val db = dbf.newDocumentBuilder()
+                // create instance of DOM
+                dom = db.newDocument()
 
-                // send DOM to file
-                tr.transform(DOMSource(dom), StreamResult(FileOutputStream(File(XML_PATH, CONFIG_FILE_NAME).path)))
+                // create the root element
+                val rootEle = dom.createElement(ROOT_TAG)
+                rootEle.setAttribute(IS_DEBUGGABLE_ATTR, logsConfig.isDebuggable.toString())
+                rootEle.setAttribute(DEBUGGABLE_FILE_OP_ATTR, logsConfig.debugFileOperations.toString())
+                rootEle.setAttribute(FORCE_WRITE_ATTR, logsConfig.forceWriteLogs.toString())
+                rootEle.setAttribute(ENABLED_ATTR, logsConfig.enabled.toString())
 
-            } catch (te: TransformerException) {
-                println(te.message)
-            } catch (ioe: IOException) {
-                println(ioe.message)
+                dataToWrite(dom, logsConfig, rootEle)
+
+                dom.appendChild(rootEle)
+
+                try {
+                    val tr = TransformerFactory.newInstance().newTransformer()
+                    tr.setOutputProperty(OutputKeys.INDENT, "yes")
+                    tr.setOutputProperty(OutputKeys.METHOD, "xml")
+                    tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8")
+                    tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd")
+                    tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
+
+                    // send DOM to file
+                    tr.transform(DOMSource(dom), StreamResult(FileOutputStream(File(XML_PATH, CONFIG_FILE_NAME).path)))
+
+                    if (!emitter.isDisposed) {
+                        emitter.onNext(logsConfig)
+                        emitter.onComplete()
+                    }
+
+                } catch (te: TransformerException) {
+                    println(te.message)
+
+                    if (!emitter.isDisposed) {
+                        emitter.onError(te)
+                        emitter.onComplete()
+                    }
+
+                } catch (ioe: IOException) {
+                    println(ioe.message)
+
+                    if (!emitter.isDisposed) {
+                        emitter.onError(ioe)
+                        emitter.onComplete()
+                    }
+                }
+
+            } catch (pce: ParserConfigurationException) {
+                println("UsersXML: Error trying to instantiate DocumentBuilder $pce")
+
+                if (!emitter.isDisposed) {
+                    emitter.onError(pce)
+                    emitter.onComplete()
+                }
             }
-
-        } catch (pce: ParserConfigurationException) {
-            println("UsersXML: Error trying to instantiate DocumentBuilder $pce")
         }
-
     }
 }
