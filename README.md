@@ -1,7 +1,7 @@
 # RxLogs Advanced Logging
 [![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-RxLogs-green.svg?style=flat )]( https://android-arsenal.com/details/1/6633 )
-### PLogger and Data Logger
-##### `A kotlin based advanced logging framework`. 
+### PLog and DataLog (Loggers)
+##### `A file based advanced logging framework written in Kotlin`.
 
 [![](https://jitpack.io/v/umair13adil/RxLogs.svg)](https://jitpack.io/#umair13adil/RxLogs)
 
@@ -31,9 +31,10 @@ Features
 13. Multiple directory structures
 14. Print logs as String
 15. Export all or single types of logs
-16. XML configuration support
-17. Logging events
-18. Advanced Automation
+16. XML configuration support for internal persistence
+17. Logger events Subscription
+18. Advanced Automation for deleting logs automatically
+19. Exports HTML formatted exceptions
 
 Prerequisites
 -------------
@@ -44,6 +45,19 @@ Logging is done on storage directory so it's very important to add these permiss
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 ```
+
+**Check for Runtime permissions:**
+
+```kotlin
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), YOUR_PERMISSION_CODE)
+            return //Don't initialize logger if permissions are not granted
+        }
+```
+
+
 
 Setup
 -------------
@@ -64,7 +78,7 @@ allprojects {
 
 ```groovy
 dependencies {
-   implementation 'com.github.umair13adil:RxLogs:0.16'
+   implementation 'com.github.umair13adil:RxLogs:0.17'
 }
 ```
     
@@ -98,17 +112,74 @@ private fun setUpPLogger() {
 }
 ```
                 
-To Log data to File simply call this:
+#### To Log data to file simply call like this
+_______________________________________________
+
+**1. Simple Info Log**
 
 ```kotlin
-    PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
+    PLog.logThis(TAG, "method_name", "Log: " + Math.random(), LogLevel.INFO)
+```
+
+**2. Simple Warning Log**
+
+```kotlin
+    PLog.logThis(TAG, "method_name", "This is a warning message!", LogLevel.WARNING)
+```
+
+**3. Error Log**
+
+```kotlin
+    PLog.logThis(TAG, "method_name", "This is a error message!", LogLevel.ERROR)
+```
+
+**4. Severe Log**
+
+```kotlin
+    PLog.logThis(TAG, "method_name", "This is a severe error message!", LogLevel.SEVERE)
+```
+
+**5. Exception Log**
+
+```kotlin
+    PLog.logThis(TAG, "reportError", Exception("This is an Exception!"))
+```
+
+**6. Throwable Log**
+
+```kotlin
+    PLog.logThis(TAG, "reportError", Throwable("This is an Throwable!"))
+```
+
+**7. Exception Log with Info**
+
+```kotlin
+    PLog.logThis(TAG, "reportError", info = "Some Info", exception = Exception("This is an Exception!"), level =  LogLevel.ERROR)
+```
+
+**8. Throwable Log with Info**
+
+```kotlin
+    PLog.logThis(TAG, "reportError", info = "Some Info", throwable = Throwable("This is an Exception!"), level =  LogLevel.SEVERE)
 ```
 
 Wiki
 --------
 
-Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information.            
-                
+Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information.
+
+Change Log
+----------
+
+###### Version: 0.17
+- **'autoClearLogs'** parameter in logs configuration changed to **'autoDeleteZipOnExport'**
+- Added **'autoClearLogs'** parameter in logs configuration to enable/disable **'Auto Clear Logs'** feature
+- Added **'context'** parameter in logs configuration to enable **'HTML formatted Logs in case of exceptions'**
+- Added **'Log Events'** for formatted exceptions output
+    * EventTypes.NEW_ERROR_REPORTED_FORMATTED
+    * EventTypes.SEVERE_ERROR_REPORTED_FORMATTED
+- Changed **'type: LogLevel'** parameter in **'logThis()'** function to **'level: LogLevel'**
+
 ## MIT License
 
 ##### Copyright (c) 2018 Muhammad Umair Adil

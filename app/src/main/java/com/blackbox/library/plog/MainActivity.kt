@@ -164,9 +164,9 @@ class MainActivity : AppCompatActivity() {
             val time = System.currentTimeMillis()
 
             if (time.toInt() % 2 == 0) {
-                PLog.logThis(TAG, "reportError", Exception("This is an Exception!"), LogLevel.ERROR)
+                PLog.logThis(TAG, "reportError", info = "Some Info", exception = Exception("This is an Exception!"), level = LogLevel.ERROR)
             } else {
-                PLog.logThis(TAG, "reportError", Exception("This is an severe Exception!"), LogLevel.SEVERE)
+                PLog.logThis(TAG, "reportError", Throwable("This is an severe Throwable!"), LogLevel.SEVERE)
             }
         }
     }
