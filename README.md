@@ -78,7 +78,7 @@ allprojects {
 
 ```groovy
 dependencies {
-   implementation 'com.github.umair13adil:RxLogs:0.17'
+   implementation 'com.github.umair13adil:RxLogs:0.18'
 }
 ```
     
