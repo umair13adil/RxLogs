@@ -78,7 +78,7 @@ allprojects {
 
 ```groovy
 dependencies {
-   implementation 'com.github.umair13adil:RxLogs:0.20'
+   implementation 'com.github.umair13adil:RxLogs:0.21'
 }
 ```
     
@@ -170,6 +170,10 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 
 Change Log
 ----------
+
+###### Version: 0.21
+- Removed **'context'** parameter in logs configuration
+- Added **'exportFormatted'** parameter in logs configuration to enable **'HTML formatted Logs in case of exceptions'**
 
 ###### Version: 0.17
 - **'autoClearLogs'** parameter in logs configuration changed to **'autoDeleteZipOnExport'**
