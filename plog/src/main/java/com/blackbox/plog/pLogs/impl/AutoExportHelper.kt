@@ -18,8 +18,8 @@ object AutoExportHelper {
                 PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
 
                 //Send formatted error message
-                PLogImpl.context?.let {
-                    val formatted = LogExporter.formatErrorMessage(data, it)
+                PLogImpl.logsConfig?.autoExportErrors?.let {
+                    val formatted = LogExporter.formatErrorMessage(data)
 
                     //Send event to notify error is reported
                     PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED_FORMATTED, formatted))
@@ -34,8 +34,8 @@ object AutoExportHelper {
                 PLog.getLogBus().send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED, data))
 
                 //Send formatted error message
-                PLogImpl.context?.let {
-                    val formatted = LogExporter.formatErrorMessage(data, it)
+                PLogImpl.logsConfig?.autoExportErrors?.let {
+                    val formatted = LogExporter.formatErrorMessage(data)
 
                     //Send event to notify error is reported
                     PLog.getLogBus().send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED_FORMATTED, formatted))

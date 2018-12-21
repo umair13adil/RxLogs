@@ -1,6 +1,5 @@
 package com.blackbox.plog.pLogs.config
 
-import android.content.Context
 import android.os.Environment
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.LogEvents
@@ -60,7 +59,7 @@ data class LogsConfig(
         var savePath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be created
         var exportPath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be exported as zip
         var csvDelimiter: String = "", //Delimiter for CSV files
-        var context: Context? = null
+        var exportFormatted: Boolean? = true
 ) {
 
     val TAG = "LogsConfig"

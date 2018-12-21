@@ -12,11 +12,15 @@ android {
         applicationId "com.blackbox.library.plog"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 8
-        versionName "1.9"
+        versionCode 9
+        versionName "2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

@@ -31,6 +31,43 @@ object PLog : PLogImpl() {
      * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
      *
      * @param className    the class name
+     * @param text         the text
+     */
+    fun logThis(className: String, info: String) {
+
+        val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
+        if (logsConfig.first) {
+
+            //Write Log and export if an 'Error'
+            writeAndExportLog(logsConfig.second, LogLevel.INFO)
+        }
+    }
+
+    /**
+     * Log this.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
+     * @param functionName the function name
+     * @param text         the text
+     */
+    fun logThis(className: String, functionName: String, info: String) {
+
+        val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
+        if (logsConfig.first) {
+
+            //Write Log and export if an 'Error'
+            writeAndExportLog(logsConfig.second, LogLevel.INFO)
+        }
+    }
+
+    /**
+     * Log this.
+     *
+     * Logs 'String' data along with class & function name to hourly based file with formatted timestamps.
+     *
+     * @param className    the class name
      * @param functionName the function name
      * @param text         the text
      * @param type         the type

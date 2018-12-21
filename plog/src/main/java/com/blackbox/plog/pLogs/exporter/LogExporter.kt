@@ -1,13 +1,9 @@
 package com.blackbox.plog.pLogs.exporter
 
-import android.content.Context
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
-import com.blackbox.plog.pLogs.exporter.formatter.HtmlExceptionFormatOptions
-import com.blackbox.plog.pLogs.exporter.formatter.HtmlExceptionFormatter
-import com.blackbox.plog.pLogs.exporter.formatter.Theme
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.readFileDecrypted
@@ -203,14 +199,33 @@ object LogExporter {
         FilterUtils.deleteFilesExceptZip()
     }
 
-    fun formatErrorMessage(errorMessage: String, context: Context): String {
+    fun formatErrorMessage(errorMessage: String): String {
+
+        val OPENING_TAG_HEADER = "<br/><b style=\"color:gray;\">"
+        val CLOSING_TAG_HEADER = "&nbsp;</b>"
+
+        val OPENING_TAG = "<br/><style=\"color:gray;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        val CLOSING_TAG = "&nbsp;</>"
 
         return try {
-            val options = HtmlExceptionFormatOptions()
-            options.setPrintDetails(true)
-            options.context = context
-            options.theme = Theme.GRAY
-            HtmlExceptionFormatter(options).toString(Throwable(errorMessage))
+            val lines = errorMessage.split("\\t".toRegex())
+
+            var formatted = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<body>"
+
+            formatted += ("$OPENING_TAG_HEADER${lines.first()}$CLOSING_TAG_HEADER")
+
+            lines.forEachIndexed { index, s ->
+                if (index > 0)
+                    formatted += ("$OPENING_TAG$s$CLOSING_TAG")
+            }
+
+            formatted += "</body>\n" +
+                    "</html>"
+
+            formatted
+
         } catch (e: Exception) {
             e.printStackTrace()
             errorMessage

@@ -70,7 +70,7 @@ class MainApplication : Application() {
                 savePath = logsPath,
                 zipFileName = "MyLogs",
                 exportPath = logsPath + File.separator + "PLogsOutput",
-                context = this //Needed to format exceptions in HTML with CSS styling
+                exportFormatted = true
         ).also { it ->
 
             //Subscribe to Events listener

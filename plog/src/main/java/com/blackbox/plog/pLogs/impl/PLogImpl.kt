@@ -1,7 +1,5 @@
 package com.blackbox.plog.pLogs.impl
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.pLogs.PLog
@@ -88,9 +86,6 @@ open class PLogImpl {
         //Create 'Save' Path
         createDirIfNotExists(config.savePath)
 
-        //Save Context
-        context = config.context
-
         logsConfig = config
 
         if (saveToFile) {
@@ -124,9 +119,6 @@ open class PLogImpl {
      * This will forcefully overwrite existing logs configuration.
      */
     fun forceWriteLogsConfig(config: LogsConfig) {
-
-        //Save Context
-        context = config.context
 
         logsConfig = config
 
@@ -287,8 +279,5 @@ open class PLogImpl {
 
     companion object {
         internal var logsConfig: LogsConfig? = null
-
-        @SuppressLint("StaticFieldLeak")
-        internal var context: Context? = null
     }
 }
