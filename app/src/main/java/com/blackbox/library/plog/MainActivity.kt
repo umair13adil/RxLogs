@@ -36,6 +36,31 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        //If permission granted
+        setupLoggerControls()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == PERMISSION_CODE) {
+
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", LogLevel.INFO)
+
+                //If permission granted
+                setupLoggerControls()
+
+            } else {
+                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", LogLevel.WARNING)
+            }
+
+        }
+    }
+
+    private fun setupLoggerControls() {
+
         //This will get 'DataLogger' object for predefined type in ConfigFile.
         val locationsLog = PLog.getLoggerFor(LogType.Location.type)
         val notificationsLog = PLog.getLoggerFor(LogType.Notification.type)
@@ -168,21 +193,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 PLog.logThis(TAG, "reportError", Throwable("This is an severe Throwable!"), LogLevel.SEVERE)
             }
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == PERMISSION_CODE) {
-
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", LogLevel.INFO)
-            } else {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", LogLevel.WARNING)
-            }
-
         }
     }
 }

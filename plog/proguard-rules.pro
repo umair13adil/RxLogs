@@ -23,3 +23,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class com.blackbox.plog.** {*; }
+-keep class com.blackbox.plog.pLogs.exporter.formatter.** {*; }
+-keep class com.blackbox.plog.pLogs.exporter.** {*; }

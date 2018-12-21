@@ -22,6 +22,7 @@ import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import io.reactivex.Observable
+import io.reactivex.rxkotlin.subscribeBy
 import java.io.File
 
 open class PLogImpl {
@@ -101,12 +102,16 @@ open class PLogImpl {
             logsConfig?.let {
 
                 ConfigWriter.saveToXML(it)
-                        .doOnNext {
-
-                            //Perform operations on Initializing.
-                            doOnInit(saveToFile)
-                        }
-                        .subscribe()
+                        .subscribeBy(
+                                onNext = {
+                                    //Perform operations on Initializing.
+                                    doOnInit(saveToFile)
+                                },
+                                onError = {
+                                    it.printStackTrace()
+                                },
+                                onComplete = {}
+                        )
             }
         } else {
 
@@ -131,12 +136,16 @@ open class PLogImpl {
         logsConfig?.let {
 
             ConfigWriter.saveToXML(it)
-                    .doOnNext {
-
-                        //Perform operations on Initializing.
-                        doOnInit(true)
-
-                    }.subscribe()
+                    .subscribeBy(
+                            onNext = {
+                                //Perform operations on Initializing.
+                                doOnInit(true)
+                            },
+                            onError = {
+                                it.printStackTrace()
+                            },
+                            onComplete = {}
+                    )
         }
     }
 
@@ -224,12 +233,13 @@ open class PLogImpl {
         return FilterUtils.listFiles(outputPath, arrayListOf())
     }
 
-    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel): Pair<Boolean, String> {
+    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel, printNow: Boolean = true): Pair<Boolean, String> {
 
         val logData = PLog.printFormattedLogs(className, functionName, info, type.level)
 
         if (logData.isNotEmpty()) {
-            Log.i(PLog.TAG, logData)
+            if (printNow)
+                Log.i(PLog.TAG, logData)
         }
 
         if (logsConfig != null) {

@@ -57,10 +57,14 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, level)
+        val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
         if (logsConfig.first) {
 
             val data = formatErrorMessage(info, throwable = throwable)
+
+            if (data.isNotEmpty()) {
+                Log.i(PLog.TAG, data)
+            }
 
             //Write Log and export if an 'Error'
             writeAndExportLog(data, level)
@@ -79,10 +83,14 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, "", level)
+        val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
         if (logsConfig.first) {
 
             val data = formatErrorMessage("", throwable = throwable)
+
+            if (data.isNotEmpty()) {
+                Log.i(PLog.TAG, data)
+            }
 
             //Write Log and export if an 'Error'
             writeAndExportLog(data, level)
@@ -101,10 +109,14 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, level)
+        val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
         if (logsConfig.first) {
 
             val data = formatErrorMessage(info, exception = exception)
+
+            if (data.isNotEmpty()) {
+                Log.i(PLog.TAG, data)
+            }
 
             //Write Log and export if an 'Error'
             writeAndExportLog(data, level)
@@ -123,10 +135,14 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, "", level)
+        val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
         if (logsConfig.first) {
 
             val data = formatErrorMessage("", exception = exception)
+
+            if (data.isNotEmpty()) {
+                Log.i(PLog.TAG, data)
+            }
 
             //Write Log and export if an 'Error'
             writeAndExportLog(data, level)
