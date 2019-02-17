@@ -171,6 +171,11 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 Change Log
 ----------
 
+###### Version: 0.22
+- Added functionality to write logs in background thread.
+- Fixed zip issues.
+- Fixed issues with data formatting on decryption of text files.
+
 ###### Version: 0.21
 - Removed **'context'** parameter in logs configuration
 - Added **'exportFormatted'** parameter in logs configuration to enable **'HTML formatted Logs in case of exceptions'**
