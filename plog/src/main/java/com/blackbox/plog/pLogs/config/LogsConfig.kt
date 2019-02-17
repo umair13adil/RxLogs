@@ -90,7 +90,7 @@ data class LogsConfig(
 
             //Reload configurations from XML file
             PLog.getLogsConfigFromXML()?.let {
-                PLogImpl.logsConfig = it
+                PLogImpl.saveConfig(it)
             }
 
         } else
@@ -125,6 +125,7 @@ data class LogsConfig(
         if (encryptionEnabled && enabled) {
             val key = checkIfKeyValid(encryptionKey)
             secretKey = generateKey(key)
+            PLogImpl.getConfig()?.secretKey = secretKey
         }
     }
 

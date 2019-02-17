@@ -12,7 +12,7 @@ internal fun doOnInit(saveToFile: Boolean = false) {
     if (PLog.isLogsConfigSet()) {
 
         //Do Initial tasks
-        PLogImpl.logsConfig?.doOnSetup(saveToFile)
+        PLogImpl.getConfig()?.doOnSetup(saveToFile)
 
         //Create LogTypes for types Enabled
         createLogTypes()
@@ -22,7 +22,7 @@ internal fun doOnInit(saveToFile: Boolean = false) {
 
             //Overwrite with XML data, Send Event to notify that XML is loaded
             PLog.getLogsConfigFromXML()?.let {
-                PLogImpl.logsConfig = it
+                PLogImpl.saveConfig(it)
 
                 //Send Event
                 PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
@@ -40,7 +40,7 @@ private fun createLogTypes() {
 
     val map = hashMapOf<String, DataLogger>()
 
-    for (logType in PLogImpl.logsConfig?.logTypesEnabled!!) {
+    for (logType in PLogImpl.getConfig()?.logTypesEnabled!!) {
         val logger = DataLogger(logFileName = logType)
         map[logType] = logger
     }

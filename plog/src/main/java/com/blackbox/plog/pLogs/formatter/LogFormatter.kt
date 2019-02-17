@@ -59,16 +59,16 @@ object LogFormatter {
 
         var t = formatCurly(data)
 
-        PLogImpl.logsConfig?.let {
+        PLogImpl.getConfig()?.let {
 
             t = when (it.formatType) {
                 FormatType.FORMAT_CURLY -> formatCurly(data)
 
                 FormatType.FORMAT_SQUARE -> formatSquare(data)
 
-                FormatType.FORMAT_CSV -> formatCSV(data, PLogImpl.logsConfig?.csvDelimiter!!)
+                FormatType.FORMAT_CSV -> formatCSV(data, PLogImpl.getConfig()?.csvDelimiter!!)
 
-                FormatType.FORMAT_CUSTOM -> formatCustom(data, PLogImpl.logsConfig?.customFormatOpen!!, PLogImpl.logsConfig?.customFormatClose!!)
+                FormatType.FORMAT_CUSTOM -> formatCustom(data, PLogImpl.getConfig()?.customFormatOpen!!, PLogImpl.getConfig()?.customFormatClose!!)
             }
         }
 

@@ -4,6 +4,8 @@ package com.blackbox.plog.pLogs
  * Created by Umair Adil on 12/04/2017.
  */
 
+import android.os.AsyncTask
+import android.os.Handler
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
@@ -25,6 +27,8 @@ object PLog : PLogImpl() {
         setLogBus(RxBus())
     }
 
+    val handler = Handler()
+
     /**
      * Log this.
      *
@@ -35,12 +39,15 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String, info: String) {
 
-        val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
+            if (logsConfig.first) {
 
-            //Write Log and export if an 'Error'
-            writeAndExportLog(logsConfig.second, LogLevel.INFO)
+                val save = SaveAsync(logsConfig.second, LogLevel.INFO)
+                save.execute()
+            }
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -54,12 +61,15 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String, functionName: String, info: String) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
+            if (logsConfig.first) {
 
-            //Write Log and export if an 'Error'
-            writeAndExportLog(logsConfig.second, LogLevel.INFO)
+                val save = SaveAsync(logsConfig.second, LogLevel.INFO)
+                save.execute()
+            }
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -74,12 +84,15 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String, functionName: String, info: String, level: LogLevel) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, level)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, info, level)
 
-            //Write Log and export if an 'Error'
-            writeAndExportLog(logsConfig.second, level)
+            if (logsConfig.first) {
+                val save = SaveAsync(logsConfig.second, level)
+                save.execute()
+            }
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -94,18 +107,17 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
+            if (logsConfig.first) {
 
-            val data = formatErrorMessage(info, throwable = throwable)
+                val data = formatErrorMessage(info, throwable = throwable)
 
-            if (data.isNotEmpty()) {
-                Log.i(PLog.TAG, data)
+                val save = SaveAsync(data, level)
+                save.execute()
             }
-
-            //Write Log and export if an 'Error'
-            writeAndExportLog(data, level)
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -120,18 +132,17 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
+            if (logsConfig.first) {
 
-            val data = formatErrorMessage("", throwable = throwable)
+                val data = formatErrorMessage("", throwable = throwable)
 
-            if (data.isNotEmpty()) {
-                Log.i(PLog.TAG, data)
+                val save = SaveAsync(data, level)
+                save.execute()
             }
-
-            //Write Log and export if an 'Error'
-            writeAndExportLog(data, level)
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -146,18 +157,17 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
+            if (logsConfig.first) {
 
-            val data = formatErrorMessage(info, exception = exception)
+                val data = formatErrorMessage(info, exception = exception)
 
-            if (data.isNotEmpty()) {
-                Log.i(PLog.TAG, data)
+                val save = SaveAsync(data, level)
+                save.execute()
             }
-
-            //Write Log and export if an 'Error'
-            writeAndExportLog(data, level)
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -172,18 +182,17 @@ object PLog : PLogImpl() {
      */
     fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
-        val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
-        if (logsConfig.first) {
+        val runnable = Runnable {
+            val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
+            if (logsConfig.first) {
 
-            val data = formatErrorMessage("", exception = exception)
+                val data = formatErrorMessage("", exception = exception)
 
-            if (data.isNotEmpty()) {
-                Log.i(PLog.TAG, data)
+                val save = SaveAsync(data, level)
+                save.execute()
             }
-
-            //Write Log and export if an 'Error'
-            writeAndExportLog(data, level)
         }
+        handler.postDelayed(runnable, 500)
     }
 
     /**
@@ -195,7 +204,7 @@ object PLog : PLogImpl() {
      */
     fun exportDataLogsForName(name: String, exportDecrypted: Boolean = false): Observable<String> {
 
-        logsConfig?.let {
+        PLogImpl.getConfig()?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory)
             return DataLogsExporter.getDataLogs(name, path, outputPath, exportDecrypted)
@@ -213,7 +222,7 @@ object PLog : PLogImpl() {
      */
     fun exportAllDataLogs(exportDecrypted: Boolean = false): Observable<String> {
 
-        logsConfig?.let {
+        PLogImpl.getConfig()?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory, isForAll = true)
             return DataLogsExporter.getDataLogs("", path, outputPath, exportDecrypted)
@@ -231,7 +240,7 @@ object PLog : PLogImpl() {
      */
     fun printDataLogsForName(name: String, printDecrypted: Boolean = false): Observable<String> {
 
-        logsConfig?.let {
+        PLogImpl.getConfig()?.let {
 
             val path = getLogsSavedPaths(it.nameForEventDirectory)
             return DataLogsExporter.printLogsForName(name, path, printDecrypted)
@@ -258,7 +267,7 @@ object PLog : PLogImpl() {
             if (PLog.logTypes.containsKey(type))
                 return PLog.logTypes.get(type)
 
-            if (logsConfig?.isDebuggable!!)
+            if (PLogImpl.getConfig()?.isDebuggable!!)
                 Log.e(TAG, "No log type defined for provided type '$type'")
 
             return null
@@ -307,4 +316,25 @@ object PLog : PLogImpl() {
     fun clearExportedLogs() {
         File(outputPath).deleteRecursively()
     }
+
+    private class SaveAsync(var dataToWrite: String, var logLevel: LogLevel) : AsyncTask<String, String, Boolean>() {
+
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+        }
+
+        override fun doInBackground(vararg p0: String?): Boolean {
+
+            if (PLogImpl.getConfig()?.isDebuggable!!) {
+
+                if (dataToWrite.isNotEmpty())
+                    Log.i(TAG, dataToWrite)
+            }
+
+            writeAndExportLog(dataToWrite, logLevel)
+
+            return true
+        }
+    }
 }
+

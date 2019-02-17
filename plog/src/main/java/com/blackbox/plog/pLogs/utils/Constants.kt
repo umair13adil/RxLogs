@@ -6,7 +6,7 @@ import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
 //XML Save Path
-val XML_PATH = getLogPath(PLogImpl.logsConfig)
+val XML_PATH = getLogPath(PLogImpl.getConfig())
 const val CONFIG_FILE_NAME = "config.xml"
 
 const val LOG_FOLDER = "Logs"

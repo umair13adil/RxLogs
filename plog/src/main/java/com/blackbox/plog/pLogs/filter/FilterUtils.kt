@@ -23,7 +23,7 @@ object FilterUtils {
 
     fun prepareOutputFile(outputPath: String) {
 
-        if (PLogImpl.logsConfig?.autoDeleteZipOnExport!!)
+        if (PLogImpl.getConfig()?.autoDeleteZipOnExport!!)
             File(outputPath).deleteRecursively() //Delete all previous Exports
 
         //Create export directory if it doesn't already exists
@@ -36,7 +36,7 @@ object FilterUtils {
         for (i in files.indices) {
             val fileHour = extractHour(files[i].name)
 
-            if (PLogImpl.logsConfig?.isDebuggable!!)
+            if (PLogImpl.getConfig()?.isDebuggable!!)
                 Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
             if (fileHour == lastHour) {
@@ -94,7 +94,7 @@ object FilterUtils {
             while (entries.hasMoreElements()) {
                 val entry = entries.nextElement()
 
-                if (PLogImpl.logsConfig?.isDebuggable!!)
+                if (PLogImpl.getConfig()?.isDebuggable!!)
                     Log.i(FileFilter.TAG, entry.name)
             }
         } catch (e: ZipException) { }

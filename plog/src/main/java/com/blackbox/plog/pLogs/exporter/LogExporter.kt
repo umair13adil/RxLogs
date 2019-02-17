@@ -15,6 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by umair on 04/01/2018.
@@ -26,7 +27,7 @@ object LogExporter {
 
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
-    private var zipName = PLogImpl.logsConfig?.zipFileName
+    private var zipName = PLogImpl.getConfig()?.zipFileName
 
     /*
      * Will filter & export log files to zip package.
@@ -73,21 +74,24 @@ object LogExporter {
                 }
 
                 for (f in files.second) {
-                    emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                    emitter.onNext("File: ${f.name} Start..\n")
+                    if (!emitter.isDisposed) {
+                        emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
+                        emitter.onNext("File: ${f.name} Start..\n")
 
-                    if (PLogImpl.logsConfig?.encryptionEnabled!! && printDecrypted) {
-                        emitter.onNext(readFileDecrypted(f.absolutePath))
-                    } else {
-                        f.forEachLine {
-                            emitter.onNext(it)
+                        if (PLogImpl.getConfig()?.encryptionEnabled!! && printDecrypted) {
+                            emitter.onNext(readFileDecrypted(f.absolutePath))
+                        } else {
+                            f.forEachLine {
+                                emitter.onNext(it)
+                            }
                         }
-                    }
 
-                    emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
+                        emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
+                    }
                 }
 
-                emitter.onComplete()
+                if (!emitter.isDisposed)
+                    emitter.onComplete()
             } else {
 
                 if (!emitter.isDisposed) {
@@ -101,16 +105,16 @@ object LogExporter {
         //First entry is Zip Name
         this.zipName = files.first
 
-        if (PLogImpl.logsConfig?.zipFilesOnly!!) {
+        val filesToSend = files.second //List of filtered files
 
-            val filesToSend = files.second //List of filtered files
+        if (PLogImpl.getConfig()?.zipFilesOnly!!) {
 
             if (filesToSend.isEmpty()) {
                 if (!emitter.isDisposed)
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (PLogImpl.logsConfig?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.getConfig()?.encryptionEnabled!! && exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend)
             } else {
                 zipFilesOnly(emitter, filesToSend)
@@ -118,8 +122,8 @@ object LogExporter {
 
         } else {
 
-            if (PLogImpl.logsConfig?.encryptionEnabled!! && exportDecrypted) {
-                decryptFirstThenZip(emitter, exportedPath = "")
+            if (PLogImpl.getConfig()?.encryptionEnabled!! && exportDecrypted) {
+                decryptFirstThenZip(emitter,filesToSend = filesToSend, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)
             }
@@ -130,12 +134,14 @@ object LogExporter {
         decryptSaveFiles(filesToSend, exportPath, zipName!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.logsConfig?.isDebuggable!!)
+                            if (PLogImpl.getConfig()?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
-                            emitter.onNext(it)
+                            if (!emitter.isDisposed)
+                                emitter.onNext(it)
                         },
                         onError = {
                             if (!emitter.isDisposed)
@@ -151,12 +157,14 @@ object LogExporter {
         zip(filesToSend, exportPath + zipName)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.logsConfig?.isDebuggable!!)
+                            if (PLogImpl.getConfig()?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
-                            emitter.onNext(exportPath + zipName)
+                            if (!emitter.isDisposed)
+                                emitter.onNext(exportPath + zipName)
                         },
                         onError = {
                             if (!emitter.isDisposed)
@@ -172,12 +180,14 @@ object LogExporter {
         zipAll(directory, exportPath + zipName)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
-                            if (PLogImpl.logsConfig?.isDebuggable!!)
+                            if (PLogImpl.getConfig()?.isDebuggable!!)
                                 Log.i(PLog.TAG, "Output Zip: $zipName")
 
-                            emitter.onNext(exportPath + zipName)
+                            if (!emitter.isDisposed)
+                                emitter.onNext(exportPath + zipName)
                         },
                         onError = {
                             if (!emitter.isDisposed)

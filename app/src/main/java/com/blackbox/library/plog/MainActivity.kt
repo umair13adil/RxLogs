@@ -16,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,6 +39,13 @@ class MainActivity : AppCompatActivity() {
 
         //If permission granted
         setupLoggerControls()
+    }
+
+
+    private fun forceLog() {
+        for (i in 1..500) {
+            PLog.logThis(TAG, "force log", "Value: " + i, LogLevel.INFO)
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -74,6 +82,8 @@ class MainActivity : AppCompatActivity() {
             } else {
                 PLog.logThis(TAG, "editTextData", editText.text.toString(), LogLevel.INFO)
             }
+
+            //forceLog()
         }
 
         //Will Log to custom data logs, in Log File name & path provided in Builder
@@ -108,13 +118,17 @@ class MainActivity : AppCompatActivity() {
         //Will export PLogs
         export_plogs.setOnClickListener {
 
-            PLog.exportLogsForType(ExportType.ALL, false)
+            PLog.exportLogsForType(ExportType.TODAY, exportDecrypted = true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
+                    .debounce(500, TimeUnit.MILLISECONDS)
                     .subscribeBy(
                             onNext = {
                                 PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
-                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onError = {
                                 it.printStackTrace()
@@ -131,10 +145,14 @@ class MainActivity : AppCompatActivity() {
             PLog.exportAllDataLogs()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
+                    .debounce(500, TimeUnit.MILLISECONDS)
                     .subscribeBy(
                             onNext = {
                                 PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
-                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onError = {
                                 it.printStackTrace()
@@ -148,7 +166,7 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in PLogs
         print_plogs.setOnClickListener {
 
-            PLog.printLogsForType(ExportType.ALL)
+            PLog.printLogsForType(ExportType.TODAY, printDecrypted = true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -166,7 +184,7 @@ class MainActivity : AppCompatActivity() {
         //Will print logged data in DataLogs
         print_data_logs.setOnClickListener {
 
-            PLog.printDataLogsForName(LogType.Location.type)
+            PLog.printDataLogsForName(LogType.Location.type, printDecrypted = true)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(

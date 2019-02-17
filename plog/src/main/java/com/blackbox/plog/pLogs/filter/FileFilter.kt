@@ -21,7 +21,7 @@ internal object FileFilter {
      */
     fun getFilesForToday(folderPath: String): Pair<List<File>, String> {
 
-        val path = folderPath + DateControl.instance.today
+        val path = folderPath
         val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
         File(folderPath).copyRecursively(File(tempOutputPath), true)
@@ -49,7 +49,7 @@ internal object FileFilter {
                     if (file.isDirectory) {
                         val day = FilterUtils.extractDay(file.name)
 
-                        if (PLogImpl.logsConfig?.isDebuggable!!)
+                        if (PLogImpl.getConfig()?.isDebuggable!!)
                             Log.i(FileFilter.TAG, "Files between dates: $lastDay & $today,Date File Present: $day")
 
                         if (lastDay < today) {
@@ -77,7 +77,7 @@ internal object FileFilter {
         val lisOfFiles = arrayListOf<File>()
         val listOfDates = DateTimeUtils.getDatesBetween()
 
-        if (PLogImpl.logsConfig?.isDebuggable!!)
+        if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(FileFilter.TAG, "Files between dates: ${listOfDates.first()} & ${listOfDates.last()}")
 
         for (date in listOfDates) {
@@ -85,11 +85,7 @@ internal object FileFilter {
             val dateDirectory = File(folderPath + File.separator + date)
 
             if (dateDirectory.isDirectory) {
-                val files = dateDirectory.listFiles()
-
-                for (file in files) {
-                    lisOfFiles.addAll(getFilesForToday(file.path).first)
-                }
+                lisOfFiles.addAll(getFilesForToday(dateDirectory.path).first)
             }
         }
 
@@ -112,7 +108,7 @@ internal object FileFilter {
             for (i in files.indices) {
                 val fileHour = FilterUtils.extractHour(files[i].name)
 
-                if (PLogImpl.logsConfig?.isDebuggable!!)
+                if (PLogImpl.getConfig()?.isDebuggable!!)
                     Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
                 if (fileHour == lastHour) {
@@ -135,7 +131,7 @@ internal object FileFilter {
         //Copy Files to temp folder
         File(folderPath).copyRecursively(File(tempOutputPath), true)
 
-        return if (PLogImpl.logsConfig?.zipFilesOnly!!) {
+        return if (PLogImpl.getConfig()?.zipFilesOnly!!) {
             Pair(lisOfFiles, tempOutputPath)
         } else {
             Pair(lisOfFiles, tempOutputPath)

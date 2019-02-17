@@ -35,24 +35,42 @@ fun zip(filesToSend: List<File>, outputPath: String): Observable<Boolean> {
 
         } catch (e: Exception) {
             e.printStackTrace()
+
+            if (!it.isDisposed) {
+                it.onError(e)
+                it.onComplete()
+            }
         }
 
-        it.onNext(true)
-        it.onComplete()
+        if (!it.isDisposed) {
+            it.onNext(true)
+            it.onComplete()
+        }
     }
 }
 
 fun zipAll(directory: String, zipFile: String): Observable<Boolean> {
+
     val sourceFile = File(directory)
 
     return Observable.create {
         val emitter = it
 
-        ZipOutputStream(BufferedOutputStream(FileOutputStream(zipFile))).use {
-            it.use {
-                zipFiles(it, sourceFile, "")
+        try {
+            ZipOutputStream(BufferedOutputStream(FileOutputStream(zipFile))).use {
+                it.use {
+                    zipDirectories(it, sourceFile, "")
 
-                emitter.onNext(true)
+                    if (!emitter.isDisposed) {
+                        emitter.onNext(true)
+                        emitter.onComplete()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+
+            if (!emitter.isDisposed) {
+                emitter.onError(e)
                 emitter.onComplete()
             }
         }
@@ -60,40 +78,48 @@ fun zipAll(directory: String, zipFile: String): Observable<Boolean> {
     }
 }
 
+private fun zipDirectories(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: String) {
+    try {
+        val listOfDirectory = arrayListOf<String>()
+
+        for (f in sourceFile.listFiles()) {
+
+            if (f.isDirectory) {
+                listOfDirectory.add(f.path)
+            }
+        }
+
+        listOfDirectory.forEach {
+
+            val path = it + File.separator
+
+            if (PLogImpl.getConfig()?.isDebuggable!!)
+                Log.i(PLog.TAG, "Adding directory: $path")
+
+
+            //Call recursively to add files within this directory
+            zipFiles(zipOut, File(it), File(it).name)
+        }
+    } catch (e: Exception) {
+
+    }
+}
+
+
 private fun zipFiles(zipOut: ZipOutputStream, sourceFile: File, parentDirPath: String) {
 
     for (f in sourceFile.listFiles()) {
 
-        if (f.isDirectory) {
+        if (!f.name.contains(".zip")) { //If folder contains a file with extension ".zip", skip it
 
-            val path = f.name + File.separator
+            val path = parentDirPath + File.separator + f.name
 
-            try {
-                zipOut.putNextEntry(createZipEntry(path, f))
-            } catch (e: ZipException) {
-                if (PLogImpl.logsConfig?.isDebuggable!!) {
-                    Log.e(TAG, e.message)
-                }
-            }
+            //Write file to zip
+            writeToZip(f, zipOut, createZipEntry(path, f))
 
-            if (PLogImpl.logsConfig?.isDebuggable!!)
-                Log.i(PLog.TAG, "Adding directory: $path")
-
-            //Call recursively to add files within this directory
-            zipFiles(zipOut, f, f.name)
         } else {
-
-            if (!f.name.contains(".zip")) { //If folder contains a file with extension ".zip", skip it
-
-                val path = parentDirPath + File.separator + f.name
-
-                //Write file to zip
-                writeToZip(f, zipOut, createZipEntry(path, f))
-
-            } else {
-                zipOut.closeEntry()
-                zipOut.close()
-            }
+            zipOut.closeEntry()
+            zipOut.close()
         }
     }
 }
@@ -117,12 +143,12 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
             try {
                 zos.putNextEntry(zipEntry)
             } catch (e: ZipException) {
-                if (PLogImpl.logsConfig?.isDebuggable!!) {
+                if (PLogImpl.getConfig()?.isDebuggable!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLogImpl.logsConfig?.isDebuggable!!)
+            if (PLogImpl.getConfig()?.isDebuggable!!)
                 Log.i(PLog.TAG, "Adding file: ${f.path}")
 
 
@@ -135,7 +161,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 try {
                     zos.write(data, 0, readBytes)
                 } catch (e: ZipException) {
-                    if (PLogImpl.logsConfig?.isDebuggable!!) {
+                    if (PLogImpl.getConfig()?.isDebuggable!!) {
                         Log.e(TAG, e.message)
                     }
                 }
@@ -144,3 +170,11 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
     }
 }
 
+private fun getParentDirectory(path: String): String {
+    val file = File(path)
+    return getFileNameFromPath(file.parent)
+}
+
+private fun getFileNameFromPath(path: String): String {
+    return path.substring(path.lastIndexOf("/") + 1)
+}

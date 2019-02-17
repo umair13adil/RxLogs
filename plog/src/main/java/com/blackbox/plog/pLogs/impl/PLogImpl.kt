@@ -15,9 +15,7 @@ import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.DateTimeUtils
-import com.blackbox.plog.utils.RxBus
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.*
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.subscribeBy
@@ -44,7 +42,7 @@ open class PLogImpl {
      */
     fun isLogsConfigSet(): Boolean {
 
-        logsConfig?.let {
+        getConfig()?.let {
             return true
         }
 
@@ -61,10 +59,10 @@ open class PLogImpl {
      * @return the output path
      */
     internal val outputPath: String
-        get() = getExportPath(logsConfig)
+        get() = getExportPath(getConfig())
 
     internal val exportTempPath: String
-        get() = getTempExportPath(logsConfig)
+        get() = getTempExportPath(getConfig())
 
     /**
      * Gets Logs path.
@@ -74,7 +72,7 @@ open class PLogImpl {
      * @return the save path
      */
     internal val logPath: String
-        get() = getLogPath(logsConfig)
+        get() = getLogPath(getConfig())
 
     /*
      * This will set logs configuration.
@@ -86,7 +84,7 @@ open class PLogImpl {
         //Create 'Save' Path
         createDirIfNotExists(config.savePath)
 
-        logsConfig = config
+        PLogImpl.saveConfig(config)
 
         if (saveToFile) {
             //Only save if parameter value 'true'
@@ -94,7 +92,7 @@ open class PLogImpl {
             //Copy logs & zip delete data from saved XML configuration if it exists
             copyDataFromSavedConfig()
 
-            logsConfig?.let {
+            getConfig()?.let {
 
                 ConfigWriter.saveToXML(it)
                         .subscribeBy(
@@ -120,12 +118,12 @@ open class PLogImpl {
      */
     fun forceWriteLogsConfig(config: LogsConfig) {
 
-        logsConfig = config
+        PLogImpl.saveConfig(config)
 
         //Copy logs & zip delete data from saved XML configuration if it exists
         copyDataFromSavedConfig()
 
-        logsConfig?.let {
+        getConfig()?.let {
 
             ConfigWriter.saveToXML(it)
                     .subscribeBy(
@@ -148,8 +146,8 @@ open class PLogImpl {
             PLog.getLogsConfigFromXML()?.let { xmlConfig ->
 
                 //Save previous saved dates
-                logsConfig?.logsDeleteDate = xmlConfig.logsDeleteDate
-                logsConfig?.zipDeleteDate = xmlConfig.zipDeleteDate
+                getConfig()?.logsDeleteDate = xmlConfig.logsDeleteDate
+                getConfig()?.zipDeleteDate = xmlConfig.zipDeleteDate
             }
         }
     }
@@ -198,23 +196,30 @@ open class PLogImpl {
             val emitter = it
             PLog.getLogBus()
                     .toObservable()
-                    .doOnError {
+                    .subscribeBy(
+                            onNext = {
+                                if (it is LogEvents) {
+                                    if (!emitter.isDisposed)
+                                        emitter.onNext(it)
+                                }
+                            },
+                            onError = { error ->
 
-                        if (logsConfig?.isDebuggable!!)
-                            Log.e(TAG, "Error '${it.message}'")
+                                getConfig()?.let {
+                                    if (it.isDebuggable)
+                                        Log.e(TAG, "Error '${error.message}'")
+                                }
+                            },
+                            onComplete = {
 
-                    }.subscribe {
-
-                        if (it is LogEvents) {
-                            emitter.onNext(it)
-                        }
-                    }
+                            }
+                    )
         }
     }
 
     internal fun getFormattedTimeStamp(): String {
 
-        logsConfig?.let {
+        getConfig()?.let {
             return DateTimeUtils.getTimeFormatted(it.timeStampFormat)
         }
 
@@ -229,15 +234,10 @@ open class PLogImpl {
 
         val logData = PLog.printFormattedLogs(className, functionName, info, type.level)
 
-        if (logData.isNotEmpty()) {
-            if (printNow)
-                Log.i(PLog.TAG, logData)
-        }
-
-        if (logsConfig != null) {
+        if (getConfig() != null) {
 
             //Do nothing if logs are disabled
-            if (!logsConfig?.enabled!!)
+            if (!getConfig()?.enabled!!)
                 return Pair(false, logData)
 
             //Do nothing if log level type is disabled
@@ -253,7 +253,7 @@ open class PLogImpl {
 
     internal fun writeAndExportLog(data: String, type: LogLevel) {
 
-        if (logsConfig?.encryptionEnabled!!) {
+        if (getConfig()?.encryptionEnabled!!) {
             LogWriter.writeEncryptedLogs(data)
         } else {
             LogWriter.writeSimpleLogs(data)
@@ -278,6 +278,24 @@ open class PLogImpl {
     }
 
     companion object {
-        internal var logsConfig: LogsConfig? = null
+        private var logsConfig: LogsConfig? = null
+
+        internal fun getConfig():LogsConfig?{
+            return logsConfig
+        }
+
+        internal fun saveConfig(config: LogsConfig){
+
+            //Set up encryption Key
+            getConfig()?.encryptionEnabled?.let {
+                getConfig()?.encryptionKey?.let {
+                    val key = checkIfKeyValid(it)
+                    config.secretKey = generateKey(key)
+                }
+            }
+
+            //Set Logs Configuration
+            logsConfig = config
+        }
     }
 }

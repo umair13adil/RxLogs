@@ -1,9 +1,17 @@
 package com.blackbox.plog.pLogs.exporter
 
+import android.util.Log
+import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
+import com.blackbox.plog.pLogs.events.LogEvents
+import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.toBytes
 import com.blackbox.plog.utils.zip
+import com.blackbox.plog.utils.zipAll
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -13,48 +21,120 @@ import java.util.concurrent.TimeUnit
 
 fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName: String): Observable<String> {
 
-    return Observable.create {
-        val emitter = it
+    val exportFilesOnly = PLogImpl.getConfig()?.zipFilesOnly!!
+
+    return Observable.create { emitter ->
 
         val tempPath = exportPath + File.separator + "temp"
 
         val decryptedPath = File(tempPath)
-        if (!decryptedPath.exists())
-            decryptedPath.mkdirs()
+        decryptedPath.mkdirs()
 
         for (f in filesToSend) {
             val decrypted = readFileDecrypted(f.absolutePath)
-            createNewFile(f.name, decrypted, tempPath)
+
+            if (exportFilesOnly) {
+                createNewFile(f.name, decrypted, tempPath)
+            } else {
+                val directoryName = getParentDirectory(f.path)
+                val fileName = getFileNameFromPath(f.path)
+
+                val directory = File(tempPath, directoryName)
+                directory.mkdirs()
+
+                createNewFile(fileName, decrypted, directory.path)
+            }
         }
 
         val outputDirectory = File(tempPath)
-        val decryptedFiles = outputDirectory.listFiles().toList()
+        val outputPath = exportPath + exportFileName
 
-        if (decryptedFiles.isNotEmpty()) {
+        if (exportFilesOnly) {
+            val decryptedFiles = outputDirectory.listFiles().toList()
+            if (decryptedFiles.isNotEmpty()) {
 
-            zip(decryptedFiles, exportPath + exportFileName)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .delay(5000, TimeUnit.MILLISECONDS) //Add delay to make sure files are decrypted
-                    .subscribeBy(
-                            onNext = {
-                                emitter.onNext(exportFileName)
-                                File(tempPath).deleteRecursively() //delete temp file after zip is completed
-                            },
-                            onError = {
-                                if (!emitter.isDisposed)
-                                    emitter.onError(it)
-                            },
-                            onComplete = { }
-                    )
+                if (!File(outputPath).exists())
+                    zipFilesOnly(decryptedFiles, outputPath, exportFileName, tempPath, emitter)
+            }
+        } else {
+            if (!File(outputPath).exists())
+                zipFilesAndFolder(outputPath, exportFileName, tempPath, emitter)
         }
     }
 }
 
+private fun zipFilesOnly(decryptedFiles: List<File>, outputPath: String, exportFileName: String, tempPath: String, emitter: ObservableEmitter<String>) {
+    zip(decryptedFiles, outputPath)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .delay(5000, TimeUnit.MILLISECONDS) //Add delay to make sure files are decrypted
+            .subscribeBy(
+                    onNext = {
+                        if (!emitter.isDisposed)
+                            emitter.onNext(exportFileName)
+
+                        File(tempPath).deleteRecursively() //delete temp file after zip is completed
+                    },
+                    onError = {
+                        if (!emitter.isDisposed)
+                            emitter.onError(it)
+                    },
+                    onComplete = { }
+            )
+}
+
+private fun zipFilesAndFolder(outputPath: String, exportFileName: String, tempPath: String, emitter: ObservableEmitter<String>) {
+
+    zipAll(tempPath, outputPath)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                    onNext = {
+
+                        if (!emitter.isDisposed)
+                            emitter.onNext(outputPath)
+                    },
+                    onError = {
+                        if (!emitter.isDisposed)
+                            emitter.onError(it)
+                    },
+                    onComplete = {
+                        doOnZipComplete(outputPath)
+                    }
+            )
+}
+
+private fun doOnZipComplete(path: String) {
+    PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
+
+    //Clear all copied files
+    FilterUtils.deleteFilesExceptZip()
+}
+
 private fun createNewFile(name: String, data: String, path: String) {
-    val filePath = path + File.separator + name
-    val out = FileOutputStream(filePath)
-    out.write(data.toBytes())
-    out.flush()
-    out.close()
+    try {
+        val file = File(path, name)
+        file.createNewFile()
+
+        if (file.exists()) {
+            val out = FileOutputStream(file.path)
+            out.write(data.toBytes())
+            out.flush()
+            out.close()
+        } else {
+            if (PLogImpl.getConfig()?.isDebuggable!!)
+                Log.i(PLog.TAG, "createNewFile: ${file.path} doesnt exists!")
+        }
+    } catch (e: Exception) {
+
+    }
+}
+
+private fun getParentDirectory(path: String): String {
+    val file = File(path)
+    return getFileNameFromPath(file.parent)
+}
+
+private fun getFileNameFromPath(path: String): String {
+    return path.substring(path.lastIndexOf("/") + 1)
 }

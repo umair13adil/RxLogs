@@ -11,39 +11,56 @@ import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_PLOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import java.io.File
 
 
 private var currentNameOfDirectory = ""
 
-fun writeToFile(path: String, data: String) {
-    try {
-        val file = File(path)
-        if (file.exists()) {
-            file.printWriter().use { out ->
-                out.println(data)
+fun writeToFile(path: String, data: String): Flowable<Boolean> {
+    return Flowable.create({ emitter ->
+        try {
+            val file = File(path)
+            if (file.exists()) {
+                file.printWriter().use { out ->
+                    out.println(data)
+                }
+            } else {
+                file.createNewFile()
             }
-        } else {
-            file.createNewFile()
+
+            if (!emitter.isCancelled)
+                emitter.onNext(true)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (!emitter.isCancelled)
+                emitter.onError(e)
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
+    }, BackpressureStrategy.LATEST)
 }
 
-fun appendToFile(path: String, data: String) {
-    try {
-        val file = File(path)
+fun appendToFile(path: String, data: String): Flowable<Boolean> {
+    return Flowable.create({ emitter ->
+        try {
+            val file = File(path)
 
-        if (file.exists()) {
-            file.appendText(data, Charsets.UTF_8)
-        } else {
-            file.createNewFile()
+            if (file.exists()) {
+                file.appendText(data, Charsets.UTF_8)
+            } else {
+                file.createNewFile()
+            }
+
+            if (!emitter.isCancelled)
+                emitter.onNext(true)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (!emitter.isCancelled)
+                emitter.onError(e)
         }
-
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
+    }, BackpressureStrategy.LATEST)
 }
 
 fun checkFileExists(path: String, isPLog: Boolean = true): File {
@@ -79,7 +96,7 @@ private fun saveFileEvent(file: File, isPLog: Boolean = true) {
         PART_FILE_CREATED_DATALOG = false
     }
 
-    if (PLogImpl.logsConfig?.debugFileOperations!!)
+    if (PLogImpl.getConfig()?.debugFileOperations!!)
         Log.i(PLog.TAG, "New file created: ${file.path}")
 }
 
@@ -93,7 +110,7 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
     createDirIfNotExists(rootFolderPath)
 
-    when (PLogImpl.logsConfig?.directoryStructure!!) {
+    when (PLogImpl.getConfig()?.directoryStructure!!) {
 
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today
@@ -101,13 +118,13 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
             val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                folderPath + File.separator + hourlyFileName + PLogImpl.logsConfig?.logFileExtension!!
+                folderPath + File.separator + hourlyFileName + PLogImpl.getConfig()?.logFileExtension!!
             } else {
                 if (isPLog) {
-                    folderPath + File.separator + hourlyFileName + fileName + PLogImpl.logsConfig?.logFileExtension!!
+                    folderPath + File.separator + hourlyFileName + fileName + PLogImpl.getConfig()?.logFileExtension!!
                 } else {
                     //Otherwise it's DataLogger file.
-                    folderPath + File.separator + fileName + PLogImpl.logsConfig?.logFileExtension!!
+                    folderPath + File.separator + fileName + PLogImpl.getConfig()?.logFileExtension!!
                 }
             }
         }
@@ -117,7 +134,7 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
             val parentPath = rootFolderPath + DateControl.instance.today
             createDirIfNotExists(parentPath)
 
-            val nameForEventDirectory = PLogImpl.logsConfig?.nameForEventDirectory!!
+            val nameForEventDirectory = PLogImpl.getConfig()?.nameForEventDirectory!!
 
             val folderPath = parentPath + File.separator + nameForEventDirectory
 
@@ -130,13 +147,13 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
             val hourlyFileName = currentNameOfDirectory + "_" + DateControl.instance.hour //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                folderPath + File.separator + hourlyFileName + PLogImpl.logsConfig?.logFileExtension!!
+                folderPath + File.separator + hourlyFileName + PLogImpl.getConfig()?.logFileExtension!!
             } else {
                 if (isPLog) {
-                    folderPath + File.separator + hourlyFileName + fileName + PLogImpl.logsConfig?.logFileExtension!!
+                    folderPath + File.separator + hourlyFileName + fileName + PLogImpl.getConfig()?.logFileExtension!!
                 } else {
                     //Otherwise it's DataLogger file.
-                    folderPath + File.separator + fileName + PLogImpl.logsConfig?.logFileExtension!!
+                    folderPath + File.separator + fileName + PLogImpl.getConfig()?.logFileExtension!!
                 }
             }
         }
@@ -144,10 +161,10 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
         DirectoryStructure.SINGLE_FILE_FOR_DAY -> {
             val todayPath = DateControl.instance.today
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
-                rootFolderPath + File.separator + todayPath + PLogImpl.logsConfig?.logFileExtension!!
+                rootFolderPath + File.separator + todayPath + PLogImpl.getConfig()?.logFileExtension!!
             } else {
                 //Otherwise it's DataLogger file.
-                rootFolderPath + File.separator + fileName + PLogImpl.logsConfig?.logFileExtension!!
+                rootFolderPath + File.separator + fileName + PLogImpl.getConfig()?.logFileExtension!!
             }
         }
     }
@@ -162,7 +179,7 @@ fun getLogsSavedPaths(nameForEventDirectory: String = "", isForAll: Boolean = fa
     val rootFolderName = LOG_FOLDER
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
 
-    when (PLogImpl.logsConfig?.directoryStructure!!) {
+    when (PLogImpl.getConfig()?.directoryStructure!!) {
 
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today

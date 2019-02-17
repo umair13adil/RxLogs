@@ -12,7 +12,7 @@ object DataLogsFilter {
     val enabledTypes: List<String>
 
     init {
-        enabledTypes = PLogImpl.logsConfig?.logTypesEnabled!!
+        enabledTypes = PLogImpl.getConfig()?.logTypesEnabled!!
     }
 
     fun getFilesForLogName(logsPath: String, logFileName: String): List<File> {
@@ -20,7 +20,7 @@ object DataLogsFilter {
         val listOfFiles = arrayListOf<File>()
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
-        if (PLogImpl.logsConfig?.isDebuggable!!)
+        if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {
@@ -51,7 +51,7 @@ object DataLogsFilter {
         val listOfFiles = arrayListOf<File>()
         val files = FilterUtils.listFiles(logsPath, arrayListOf())
 
-        if (PLogImpl.logsConfig?.isDebuggable!!)
+        if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.TAG, "Found files: ${files.size}")
 
         if (files.isNotEmpty()) {

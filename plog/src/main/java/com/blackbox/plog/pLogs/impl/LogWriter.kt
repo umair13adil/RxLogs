@@ -4,6 +4,9 @@ import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.*
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import java.io.File
 
 object LogWriter {
@@ -13,7 +16,7 @@ object LogWriter {
      */
     fun writeEncryptedLogs(logFormatted: String) {
 
-        if (PLogImpl.logsConfig?.secretKey == null)
+        if (PLogImpl.getConfig()?.secretKey == null)
             return
 
         val shouldLog: Pair<Boolean, String>
@@ -28,7 +31,17 @@ object LogWriter {
         }
 
         if (shouldLog.first) {
-            appendToFileEncrypted(logFormatted, PLogImpl.logsConfig?.secretKey!!, shouldLog.second)
+            appendToFileEncrypted(logFormatted, PLogImpl.getConfig()?.secretKey!!, shouldLog.second)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy(
+                            onNext = {
+
+                            },
+                            onError = {
+                                it.printStackTrace()
+                            }
+                    )
         }
     }
 
@@ -51,6 +64,16 @@ object LogWriter {
         if (shouldLog.first) {
 
             appendToFile(shouldLog.second, logFormatted)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy(
+                            onNext = {
+
+                            },
+                            onError = {
+                                it.printStackTrace()
+                            }
+                    )
         }
     }
 
@@ -62,7 +85,7 @@ object LogWriter {
 
         if (file.length() > 0) {
             val length = file.length()
-            val maxLength = PLogImpl.logsConfig?.singleLogFileSize!! * (1024 * 1024)
+            val maxLength = PLogImpl.getConfig()?.singleLogFileSize!! * (1024 * 1024)
 
             if (length > maxLength) {
 
@@ -71,9 +94,9 @@ object LogWriter {
                 else
                     PART_FILE_CREATED_DATALOG = true
 
-                if (!PLogImpl.logsConfig?.forceWriteLogs!!) {
+                if (!PLogImpl.getConfig()?.forceWriteLogs!!) {
 
-                    if (PLogImpl.logsConfig?.debugFileOperations!!)
+                    if (PLogImpl.getConfig()?.debugFileOperations!!)
                         Log.i(PLog.TAG, "File size exceeded!")
 
                     return Pair(false, path)
@@ -83,7 +106,7 @@ object LogWriter {
                 }
             } else {
 
-                if (PLogImpl.logsConfig?.debugFileOperations!!)
+                if (PLogImpl.getConfig()?.debugFileOperations!!)
                     Log.i(PLog.TAG, "File Length: ${Utils.bytesToReadable(length.toInt())} < ${Utils.bytesToReadable(maxLength)}")
             }
         }
