@@ -6,7 +6,6 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
 import io.reactivex.Observable
@@ -79,7 +78,7 @@ object LogExporter {
                         emitter.onNext("File: ${f.name} Start..\n")
 
                         if (PLogImpl.getConfig()?.encryptionEnabled!! && printDecrypted) {
-                            emitter.onNext(readFileDecrypted(f.absolutePath))
+                            emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
                         } else {
                             f.forEachLine {
                                 emitter.onNext(it)
@@ -203,7 +202,7 @@ object LogExporter {
         PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
         //Print zip entries
-        FilterUtils.readZipEntries(exportPath + zipName)
+        //FilterUtils.readZipEntries(exportPath + zipName)
 
         //Clear all copied files
         FilterUtils.deleteFilesExceptZip()

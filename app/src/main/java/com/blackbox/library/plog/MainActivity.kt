@@ -6,45 +6,198 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
+import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
-    val TAG: String = MainActivity::class.java.simpleName
-    var PERMISSION_CODE = 9234
-    var ENCRYPTION_KEY = "23233526436245232364264262343243"
-    var encryptLogs = false
+    private val TAG: String = MainActivity::class.java.simpleName
+    private var PERMISSION_CODE = 9234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //Check read write permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        //Initialize FakeIt
+        Fakeit.initWithLocale(Locale.ENGLISH)
 
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_CODE)
-            return
-        }
+        //Check read write permissions
+        checkPermissions()
 
         //If permission granted
         setupLoggerControls()
+
+        //Write Fake Data to Logs
+        for (i in 0..100) {
+            PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
+        }
     }
 
+    private fun setupLoggerControls() {
 
-    private fun forceLog() {
-        for (i in 1..500) {
-            PLog.logThis(TAG, "force log", "Value: " + i, LogLevel.INFO)
+        //Log edit Text events as soon as they are entered
+        listenForInputText()
+
+        //This will get 'DataLogger' object for predefined type in ConfigFile.
+        val locationsLog = PLog.getLoggerFor(LogType.Location.type)
+        val notificationsLog = PLog.getLoggerFor(LogType.Notification.type)
+        val booksLogs = PLog.getLoggerFor("Books")
+
+        //Will log to PLogs
+        log_plog_event.setOnClickListener {
+
+            //This will take care of putting logged data to current time & date's file
+            PLog.logThis(TAG, "buttonOnClick", "Quote: " + Fakeit.harryPotter().quote(), LogLevel.INFO)
+        }
+
+        //Will Log to custom data logs, in Log File name & path provided in Builder
+        log_data_log_event.setOnClickListener {
+
+            val dataToLog = "Book: " + Fakeit.book().title() + "\n"
+            booksLogs?.appendToFile("Book: $dataToLog")
+
+
+            val locationToLog = "Location: " + Fakeit.address().streetAddress() + "\n"
+            locationsLog?.appendToFile(locationToLog)
+
+
+            val notificationToLog = "Food: " + Fakeit.food().spice() + "\n"
+            notificationsLog?.appendToFile(notificationToLog)
+        }
+
+        //Will delete all Logs
+        delete.setOnClickListener {
+            clearLogs()
+        }
+
+        //Will export PLogs
+        export_plogs.setOnClickListener {
+            exportPLogs()
+        }
+
+        //Will Export custom data log
+        export_data_logs.setOnClickListener {
+            exportDataLogs()
+        }
+
+
+        //Will print logged data in PLogs
+        print_plogs.setOnClickListener {
+            printPLogs()
+        }
+
+        //Will print logged data in DataLogs
+        print_data_logs.setOnClickListener {
+            printDataLogs()
+        }
+
+        print_error.setOnClickListener {
+            printException()
+        }
+    }
+
+    private fun clearLogs() {
+
+        //Will clear All PLogs
+        PLog.clearLogs()
+
+        Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun exportPLogs() {
+        PLog.exportLogsForType(ExportType.TODAY, exportDecrypted = true)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
+                .subscribeBy(
+                        onNext = {
+                            PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
+
+                            runOnUiThread {
+                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onError = {
+                            it.printStackTrace()
+                            PLog.logThis(TAG, "exportPLogs", "PLog Error: " + it.message, LogLevel.ERROR)
+                        },
+                        onComplete = { }
+                )
+    }
+
+    private fun exportDataLogs() {
+        PLog.exportAllDataLogs()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
+                .subscribeBy(
+                        onNext = {
+                            PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
+
+                            runOnUiThread {
+                                Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onError = {
+                            it.printStackTrace()
+                            PLog.logThis(TAG, "exportDataLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
+                        },
+                        onComplete = { }
+                )
+    }
+
+    private fun printPLogs() {
+        PLog.printLogsForType(ExportType.TODAY, printDecrypted = true)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                        onNext = {
+                            Log.i("PLog", it)
+                        },
+                        onError = {
+                            it.printStackTrace()
+                            PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, LogLevel.ERROR)
+                        },
+                        onComplete = { }
+                )
+    }
+
+    private fun printDataLogs() {
+        PLog.printDataLogsForName(LogType.Location.type, printDecrypted = true)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                        onNext = {
+                            Log.i("DataLog", it)
+                        },
+                        onError = {
+                            it.printStackTrace()
+                            PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
+                        },
+                        onComplete = { }
+                )
+    }
+
+    private fun printException() {
+        val time = System.currentTimeMillis()
+
+        if (time.toInt() % 2 == 0) {
+            PLog.logThis(TAG, "reportError", info = "Some Info", exception = Exception("This is an Exception!"), level = LogLevel.ERROR)
+        } else {
+            PLog.logThis(TAG, "reportError", Throwable("This is an severe Throwable!"), LogLevel.SEVERE)
         }
     }
 
@@ -67,150 +220,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupLoggerControls() {
+    private fun checkPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-        //This will get 'DataLogger' object for predefined type in ConfigFile.
-        val locationsLog = PLog.getLoggerFor(LogType.Location.type)
-        val notificationsLog = PLog.getLoggerFor(LogType.Notification.type)
-        val deliveriesLog = PLog.getLoggerFor("Deliveries")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_CODE)
+            return
+        }
+    }
 
-        //Will log to PLogs
-        log_plog_event.setOnClickListener {
+    private fun listenForInputText() {
+        editText?.addTextChangedListener(object : TextWatcher {
 
-            if (editText.text.isEmpty()) {
-                PLog.logThis(TAG, "buttonOnClick", "Log: " + Math.random(), LogLevel.INFO)
-            } else {
-                PLog.logThis(TAG, "editTextData", editText.text.toString(), LogLevel.INFO)
+            override fun afterTextChanged(p0: Editable?) {
+                PLog.logThis(TAG, "afterTextChanged", p0.toString(), LogLevel.INFO)
             }
 
-            //forceLog()
-        }
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
-        //Will Log to custom data logs, in Log File name & path provided in Builder
-        log_data_log_event.setOnClickListener {
-
-            var dataToLog = ""
-
-            if (editText.text.isEmpty()) {
-                dataToLog = "Log: " + Math.random() + "\n"
-
-                locationsLog?.appendToFile(dataToLog)
-                notificationsLog?.appendToFile(dataToLog)
-                deliveriesLog?.appendToFile("Deliveries: $dataToLog")
-            } else {
-                dataToLog = editText.text.toString() + "\n"
-
-                locationsLog?.appendToFile(dataToLog)
-                notificationsLog?.appendToFile(dataToLog)
-                deliveriesLog?.appendToFile("Deliveries: $dataToLog")
             }
-        }
 
-        //Will delete all Logs
-        delete.setOnClickListener {
-
-            //Will clear All PLogs
-            PLog.clearLogs()
-
-            Toast.makeText(this@MainActivity, "Logs Cleared!", Toast.LENGTH_SHORT).show()
-        }
-
-        //Will export PLogs
-        export_plogs.setOnClickListener {
-
-            PLog.exportLogsForType(ExportType.TODAY, exportDecrypted = true)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .debounce(500, TimeUnit.MILLISECONDS)
-                    .subscribeBy(
-                            onNext = {
-                                PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
-
-                                runOnUiThread {
-                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onError = {
-                                it.printStackTrace()
-                                PLog.logThis(TAG, "exportPLogs", "PLog Error: " + it.message, LogLevel.ERROR)
-                            },
-                            onComplete = { }
-                    )
-        }
-
-
-        //Will Export custom data log
-        export_data_logs.setOnClickListener {
-
-            PLog.exportAllDataLogs()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .debounce(500, TimeUnit.MILLISECONDS)
-                    .subscribeBy(
-                            onNext = {
-                                PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
-
-                                runOnUiThread {
-                                    Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onError = {
-                                it.printStackTrace()
-                                PLog.logThis(TAG, "exportDataLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
-                            },
-                            onComplete = { }
-                    )
-        }
-
-
-        //Will print logged data in PLogs
-        print_plogs.setOnClickListener {
-
-            PLog.printLogsForType(ExportType.TODAY, printDecrypted = true)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-                                Log.i("PLog", it)
-                            },
-                            onError = {
-                                it.printStackTrace()
-                                PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, LogLevel.ERROR)
-                            },
-                            onComplete = { }
-                    )
-        }
-
-        //Will print logged data in DataLogs
-        print_data_logs.setOnClickListener {
-
-            PLog.printDataLogsForName(LogType.Location.type, printDecrypted = true)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-                                Log.i("DataLog", it)
-                            },
-                            onError = {
-                                it.printStackTrace()
-                                PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
-                            },
-                            onComplete = { }
-                    )
-        }
-
-        switch1.setOnCheckedChangeListener { compoundButton, b ->
-            encryptLogs = b
-        }
-
-        print_error.setOnClickListener {
-            val time = System.currentTimeMillis()
-
-            if (time.toInt() % 2 == 0) {
-                PLog.logThis(TAG, "reportError", info = "Some Info", exception = Exception("This is an Exception!"), level = LogLevel.ERROR)
-            } else {
-                PLog.logThis(TAG, "reportError", Throwable("This is an severe Throwable!"), LogLevel.SEVERE)
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                PLog.logThis(TAG, "onTextChanged", p0.toString(), LogLevel.INFO)
             }
-        }
+        })
     }
 }

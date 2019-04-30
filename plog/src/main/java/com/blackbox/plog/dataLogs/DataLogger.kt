@@ -2,15 +2,6 @@ package com.blackbox.plog.dataLogs
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.events.EventTypes
-import com.blackbox.plog.pLogs.events.LogEvents
-import com.blackbox.plog.pLogs.impl.LogWriter
-import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.pLogs.operations.Triggers
-import com.blackbox.plog.pLogs.utils.CURRENT_PART_FILE_PATH_DATALOG
-import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
-import com.blackbox.plog.utils.*
-import java.io.File
 
 /**
  * Created by umair on 04/01/2018.
@@ -38,7 +29,7 @@ class DataLogger(var logFileName: String = "log") {
                 val save = SaveDataLogsAsync(logFileName, dataToWrite, true)
                 save.execute()
             }
-            PLog.handler.postDelayed(runnable, 500)
+            PLog.handler.post(runnable)
         } else {
             Log.i(PLog.TAG, dataToWrite)
         }
@@ -63,7 +54,7 @@ class DataLogger(var logFileName: String = "log") {
                 val save = SaveDataLogsAsync(logFileName, dataToWrite, false)
                 save.execute()
             }
-            PLog.handler.postDelayed(runnable, 500)
+            PLog.handler.post(runnable)
         } else {
             Log.i(PLog.TAG, dataToWrite)
         }

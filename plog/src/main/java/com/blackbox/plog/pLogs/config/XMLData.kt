@@ -81,7 +81,6 @@ internal fun dataToWrite(dom: Document, logsConfig: LogsConfig, rootEle: Element
     //Encryption Enabled
     val encEnabledElement = dom.createElement(ENCRYPTION_ENABLED_TAG)
     encEnabledElement.setAttribute(VALUE_ATTR, logsConfig.encryptionEnabled.toString())
-    encEnabledElement.setAttribute(ENCRYPTION_KEY_ATTR, logsConfig.encryptionKey)
     rootEle.appendChild(encEnabledElement)
 
     //Log file size MAX

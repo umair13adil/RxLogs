@@ -3,21 +3,32 @@ package com.blackbox.plog.pLogs.impl
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.*
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
+import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.appendToFile
+import com.blackbox.plog.utils.checkFileExists
+import com.blackbox.plog.utils.setupFilePaths
 import java.io.File
+import javax.crypto.SecretKey
 
 object LogWriter {
+
+    private val TAG = "LogWriter"
+
+    var secretKey: SecretKey? = null
+
+    init {
+        secretKey = PLogImpl.getConfig()?.secretKey
+    }
 
     /*
      * Write AES encrypted String logs.
      */
     fun writeEncryptedLogs(logFormatted: String) {
 
-        if (PLogImpl.getConfig()?.secretKey == null)
+        if (secretKey == null){
+            Log.e("writeEncryptedLogs","No Key provided!")
             return
+        }
 
         val shouldLog: Pair<Boolean, String>
 
@@ -31,17 +42,9 @@ object LogWriter {
         }
 
         if (shouldLog.first) {
-            appendToFileEncrypted(logFormatted, PLogImpl.getConfig()?.secretKey!!, shouldLog.second)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-
-                            },
-                            onError = {
-                                it.printStackTrace()
-                            }
-                    )
+            secretKey?.let {
+                PLogImpl.encrypter.appendToFileEncrypted(logFormatted, it, shouldLog.second)
+            }
         }
     }
 
@@ -64,16 +67,6 @@ object LogWriter {
         if (shouldLog.first) {
 
             appendToFile(shouldLog.second, logFormatted)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeBy(
-                            onNext = {
-
-                            },
-                            onError = {
-                                it.printStackTrace()
-                            }
-                    )
         }
     }
 

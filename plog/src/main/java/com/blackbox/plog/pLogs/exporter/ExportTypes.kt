@@ -103,7 +103,7 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
 private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportType): String {
 
     if (PLogImpl.getConfig()?.attachTimeStamp!!)
-        timeStamp = PLog.getFormattedTimeStamp() + "_" + exportType.type
+        timeStamp = PLog.getTimeStampForOutputFile() + "_" + exportType.type
 
     if (PLogImpl.getConfig()?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"

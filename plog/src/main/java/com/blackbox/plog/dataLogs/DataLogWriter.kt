@@ -45,29 +45,9 @@ object DataLogWriter {
 
                     if (shouldLog.first) {
                         if (overwrite)
-                            writeToFileEncrypted(data, secretKey, shouldLog.second)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribeBy(
-                                            onNext = {
-
-                                            },
-                                            onError = {
-                                                it.printStackTrace()
-                                            }
-                                    )
+                            PLogImpl.encrypter.writeToFileEncrypted(data, secretKey, shouldLog.second)
                         else
-                            appendToFileEncrypted(data, secretKey, shouldLog.second)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribeBy(
-                                            onNext = {
-
-                                            },
-                                            onError = {
-                                                it.printStackTrace()
-                                            }
-                                    )
+                            PLogImpl.encrypter.appendToFileEncrypted(data, secretKey, shouldLog.second)
                     }
                 }
 
@@ -76,28 +56,8 @@ object DataLogWriter {
                 if (shouldLog.first) {
                     if (overwrite)
                         writeToFile(shouldLog.second, data)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribeBy(
-                                        onNext = {
-
-                                        },
-                                        onError = {
-                                            it.printStackTrace()
-                                        }
-                                )
                     else
                         appendToFile(shouldLog.second, data)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribeBy(
-                                        onNext = {
-
-                                        },
-                                        onError = {
-                                            it.printStackTrace()
-                                        }
-                                )
                 }
             }
 

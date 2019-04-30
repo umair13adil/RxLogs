@@ -11,56 +11,38 @@ import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_PLOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import java.io.File
 
 
 private var currentNameOfDirectory = ""
 
-fun writeToFile(path: String, data: String): Flowable<Boolean> {
-    return Flowable.create({ emitter ->
-        try {
-            val file = File(path)
-            if (file.exists()) {
-                file.printWriter().use { out ->
-                    out.println(data)
-                }
-            } else {
-                file.createNewFile()
+fun writeToFile(path: String, data: String) {
+    try {
+        val file = File(path)
+        if (file.exists()) {
+            file.printWriter().use { out ->
+                out.println(data)
             }
-
-            if (!emitter.isCancelled)
-                emitter.onNext(true)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            if (!emitter.isCancelled)
-                emitter.onError(e)
+        } else {
+            file.createNewFile()
         }
-    }, BackpressureStrategy.LATEST)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
-fun appendToFile(path: String, data: String): Flowable<Boolean> {
-    return Flowable.create({ emitter ->
-        try {
-            val file = File(path)
+fun appendToFile(path: String, data: String) {
+    try {
+        val file = File(path)
 
-            if (file.exists()) {
-                file.appendText(data, Charsets.UTF_8)
-            } else {
-                file.createNewFile()
-            }
-
-            if (!emitter.isCancelled)
-                emitter.onNext(true)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            if (!emitter.isCancelled)
-                emitter.onError(e)
+        if (file.exists()) {
+            file.appendText(data, Charsets.UTF_8)
+        } else {
+            file.createNewFile()
         }
-    }, BackpressureStrategy.LATEST)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun checkFileExists(path: String, isPLog: Boolean = true): File {

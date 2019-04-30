@@ -6,8 +6,6 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.utils.readFileDecrypted
-import com.blackbox.plog.utils.toBytes
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
 import io.reactivex.Observable
@@ -31,7 +29,7 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
         decryptedPath.mkdirs()
 
         for (f in filesToSend) {
-            val decrypted = readFileDecrypted(f.absolutePath)
+            val decrypted = PLogImpl.encrypter.readFileDecrypted(f.absolutePath)
 
             if (exportFilesOnly) {
                 createNewFile(f.name, decrypted, tempPath)
@@ -117,10 +115,11 @@ private fun createNewFile(name: String, data: String, path: String) {
         file.createNewFile()
 
         if (file.exists()) {
-            val out = FileOutputStream(file.path)
-            out.write(data.toBytes())
-            out.flush()
-            out.close()
+
+            FileOutputStream(file.path).use {out->
+                out.write(data.toBytes())
+            }
+
         } else {
             if (PLogImpl.getConfig()?.isDebuggable!!)
                 Log.i(PLog.TAG, "createNewFile: ${file.path} doesnt exists!")
@@ -137,4 +136,12 @@ private fun getParentDirectory(path: String): String {
 
 private fun getFileNameFromPath(path: String): String {
     return path.substring(path.lastIndexOf("/") + 1)
+}
+
+/*
+     * This will convert string to byte array.
+     */
+@Synchronized
+fun String.toBytes(): ByteArray {
+    return this.toByteArray(Charsets.UTF_8)
 }

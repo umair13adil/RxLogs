@@ -9,7 +9,6 @@ import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.utils.readFileDecrypted
 import com.blackbox.plog.utils.zip
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -134,7 +133,7 @@ object DataLogsExporter {
 
                         if (PLogImpl.getConfig()?.encryptionEnabled!! && printDecrypted) {
                             if (!emitter.isDisposed)
-                                emitter.onNext(readFileDecrypted(f.absolutePath))
+                                emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
                         } else {
                             f.forEachLine {
                                 if (!emitter.isDisposed)
@@ -184,7 +183,7 @@ object DataLogsExporter {
         PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
         //Print zip entries
-        FilterUtils.readZipEntries(exportPath + exportFileName)
+        //FilterUtils.readZipEntries(exportPath + exportFileName)
 
         //Clear all copied files
         FilterUtils.deleteFilesExceptZip()
@@ -195,7 +194,7 @@ object DataLogsExporter {
         var noOfFiles = ""
 
         if (PLogImpl.getConfig()?.attachTimeStamp!!)
-            timeStamp = PLog.getFormattedTimeStamp() + "_" + ExportType.TODAY.type
+            timeStamp = PLog.getTimeStampForOutputFile() + "_" + ExportType.TODAY.type
 
         if (PLogImpl.getConfig()?.attachNoOfFiles!!)
             noOfFiles = "_[${files.size}]"

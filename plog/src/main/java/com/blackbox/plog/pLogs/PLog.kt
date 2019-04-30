@@ -11,6 +11,7 @@ import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
+import com.blackbox.plog.pLogs.impl.AutoExportHelper
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
@@ -42,12 +43,10 @@ object PLog : PLogImpl() {
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
             if (logsConfig.first) {
-
-                val save = SaveAsync(logsConfig.second, LogLevel.INFO)
-                save.execute()
+                writeLogsAsync(logsConfig.second, LogLevel.INFO)
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -65,11 +64,11 @@ object PLog : PLogImpl() {
             val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
             if (logsConfig.first) {
 
-                val save = SaveAsync(logsConfig.second, LogLevel.INFO)
-                save.execute()
+                writeLogsAsync(logsConfig.second, LogLevel.INFO)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -88,11 +87,11 @@ object PLog : PLogImpl() {
             val logsConfig = isLogsConfigValid(className, functionName, info, level)
 
             if (logsConfig.first) {
-                val save = SaveAsync(logsConfig.second, level)
-                save.execute()
+                writeLogsAsync(logsConfig.second, level)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -113,11 +112,11 @@ object PLog : PLogImpl() {
 
                 val data = formatErrorMessage(info, throwable = throwable)
 
-                val save = SaveAsync(data, level)
-                save.execute()
+                writeLogsAsync(data, level)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -138,11 +137,11 @@ object PLog : PLogImpl() {
 
                 val data = formatErrorMessage("", throwable = throwable)
 
-                val save = SaveAsync(data, level)
-                save.execute()
+                writeLogsAsync(data, level)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -163,11 +162,11 @@ object PLog : PLogImpl() {
 
                 val data = formatErrorMessage(info, exception = exception)
 
-                val save = SaveAsync(data, level)
-                save.execute()
+                writeLogsAsync(data, level)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -188,11 +187,11 @@ object PLog : PLogImpl() {
 
                 val data = formatErrorMessage("", exception = exception)
 
-                val save = SaveAsync(data, level)
-                save.execute()
+                writeLogsAsync(data, level)
+
             }
         }
-        handler.postDelayed(runnable, 500)
+        handler.post(runnable)
     }
 
     /**
@@ -267,9 +266,6 @@ object PLog : PLogImpl() {
             if (PLog.logTypes.containsKey(type))
                 return PLog.logTypes.get(type)
 
-            if (PLogImpl.getConfig()?.isDebuggable!!)
-                Log.e(TAG, "No log type defined for provided type '$type'")
-
             return null
         } else {
             return null
@@ -317,24 +313,28 @@ object PLog : PLogImpl() {
         File(outputPath).deleteRecursively()
     }
 
+    private fun writeLogsAsync(dataToWrite: String, logLevel: LogLevel) {
+        SaveAsync(dataToWrite, logLevel).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+    }
+
     private class SaveAsync(var dataToWrite: String, var logLevel: LogLevel) : AsyncTask<String, String, Boolean>() {
 
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
-        }
 
-        override fun doInBackground(vararg p0: String?): Boolean {
-
-            if (PLogImpl.getConfig()?.isDebuggable!!) {
+            if (getConfig()?.isDebuggable!!) {
 
                 if (dataToWrite.isNotEmpty())
                     Log.i(TAG, dataToWrite)
             }
 
-            writeAndExportLog(dataToWrite, logLevel)
+            //Check if log level is of Error
+            AutoExportHelper.autoExportError(dataToWrite, logLevel)
+        }
 
+        override fun doInBackground(vararg p0: String?): Boolean {
+            writeAndExportLog(dataToWrite, logLevel)
             return true
         }
     }
 }
-

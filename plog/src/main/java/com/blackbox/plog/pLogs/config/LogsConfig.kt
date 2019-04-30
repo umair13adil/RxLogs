@@ -10,8 +10,6 @@ import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
-import com.blackbox.plog.utils.checkIfKeyValid
-import com.blackbox.plog.utils.generateKey
 import io.reactivex.Observable
 import java.io.File
 import javax.crypto.SecretKey
@@ -66,9 +64,6 @@ data class LogsConfig(
 
     fun doOnSetup(saveToFile: Boolean = false) {
 
-        //Initializes Encryption Key
-        setupEncryption()
-
         //Validate Configurations
         validateConfigurations(saveToFile)
 
@@ -115,18 +110,6 @@ data class LogsConfig(
      */
     fun setEventNameForDirectory(name: String) {
         nameForEventDirectory = name
-    }
-
-    /*
-     * Validate & setup encryption.
-     */
-    private fun setupEncryption() {
-
-        if (encryptionEnabled && enabled) {
-            val key = checkIfKeyValid(encryptionKey)
-            secretKey = generateKey(key)
-            PLogImpl.getConfig()?.secretKey = secretKey
-        }
     }
 
     /*

@@ -217,13 +217,17 @@ open class PLogImpl {
         }
     }
 
-    internal fun getFormattedTimeStamp(): String {
+    private fun getFormattedTimeStamp(): String {
 
         getConfig()?.let {
             return DateTimeUtils.getTimeFormatted(it.timeStampFormat)
         }
 
         return DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_READABLE)
+    }
+
+    internal fun getTimeStampForOutputFile(): String {
+        return DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_FULL_JOINED)
     }
 
     fun getListOfExportedFiles(): List<File> {
@@ -258,9 +262,6 @@ open class PLogImpl {
         } else {
             LogWriter.writeSimpleLogs(data)
         }
-
-        //Check if log level is of Error
-        AutoExportHelper.autoExportError(data, type)
     }
 
     internal fun formatErrorMessage(info: String, throwable: Throwable? = null, exception: Exception? = null): String {
@@ -279,18 +280,21 @@ open class PLogImpl {
 
     companion object {
         private var logsConfig: LogsConfig? = null
+        val encrypter by lazy { Encrypter() }
 
-        internal fun getConfig():LogsConfig?{
+        internal fun getConfig(): LogsConfig? {
             return logsConfig
         }
 
-        internal fun saveConfig(config: LogsConfig){
+        internal fun saveConfig(config: LogsConfig) {
 
             //Set up encryption Key
             getConfig()?.encryptionEnabled?.let {
                 getConfig()?.encryptionKey?.let {
-                    val key = checkIfKeyValid(it)
-                    config.secretKey = generateKey(key)
+                    if (it.isNotEmpty()) {
+                        val key = encrypter.checkIfKeyValid(it)
+                        config.secretKey = encrypter.generateKey(key)
+                    }
                 }
             }
 

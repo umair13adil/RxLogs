@@ -105,7 +105,6 @@ object ConfigReader {
 
                             ENCRYPTION_ENABLED_TAG -> {
                                 logsConfig.encryptionEnabled = readAttribute(attributes, VALUE_ATTR).toBoolean()
-                                logsConfig.encryptionKey = readAttribute(attributes, ENCRYPTION_KEY_ATTR)
                             }
 
                             LOG_FILE_SIZE_TAG -> {
