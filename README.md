@@ -78,7 +78,7 @@ allprojects {
 
 ```groovy
 dependencies {
-   implementation 'com.github.umair13adil:RxLogs:{latest_version}'
+   implementation 'com.github.umair13adil:RxLogs:0.23'
 }
 ```
     
@@ -171,7 +171,7 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 Change Log
 ----------
 
-###### Version: 0.22
+###### Version: 0.23
 - Added functionality to write logs in background thread.
 - Fixed zip issues.
 - Fixed issues with data formatting on decryption of text files.
