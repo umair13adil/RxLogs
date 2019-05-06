@@ -43,7 +43,7 @@ class DateControl {
     val hour: String
         get() {
             val currentTime = Date(System.currentTimeMillis())
-            val sdf = SimpleDateFormat("kk", Locale.ENGLISH)
+            val sdf = SimpleDateFormat("HH", Locale.ENGLISH)
             return sdf.format(currentTime)
         }
 

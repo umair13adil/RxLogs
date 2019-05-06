@@ -314,7 +314,15 @@ object PLog : PLogImpl() {
     }
 
     private fun writeLogsAsync(dataToWrite: String, logLevel: LogLevel) {
-        SaveAsync(dataToWrite, logLevel).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        try {
+            SaveAsync(dataToWrite, logLevel).execute()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, Utils.getStackTrace(e))
+
+            //Write directly
+            writeAndExportLog(dataToWrite, logLevel)
+        }
     }
 
     private class SaveAsync(var dataToWrite: String, var logLevel: LogLevel) : AsyncTask<String, String, Boolean>() {

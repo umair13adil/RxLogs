@@ -2,6 +2,7 @@ package com.blackbox.plog.dataLogs
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.utils.Utils
 
 /**
  * Created by umair on 04/01/2018.
@@ -26,8 +27,7 @@ class DataLogger(var logFileName: String = "log") {
 
         if (PLog.isLogsConfigSet()) {
             val runnable = Runnable {
-                val save = SaveDataLogsAsync(logFileName, dataToWrite, true)
-                save.execute()
+                writeLogsAsync(logFileName, dataToWrite, true)
             }
             PLog.handler.post(runnable)
         } else {
@@ -51,12 +51,24 @@ class DataLogger(var logFileName: String = "log") {
 
         if (PLog.isLogsConfigSet()) {
             val runnable = Runnable {
-                val save = SaveDataLogsAsync(logFileName, dataToWrite, false)
-                save.execute()
+                writeLogsAsync(logFileName, dataToWrite, false)
             }
             PLog.handler.post(runnable)
         } else {
             Log.i(PLog.TAG, dataToWrite)
+        }
+    }
+
+    private fun writeLogsAsync(fileName: String, dataToWrite: String, shouldOverWrite: Boolean) {
+        try {
+            val save = SaveDataLogsAsync(fileName, dataToWrite, shouldOverWrite)
+            save.execute()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(PLog.TAG, Utils.getStackTrace(e))
+
+            //Write Directly
+            writeLogsAsync(fileName, dataToWrite, shouldOverWrite)
         }
     }
 }
