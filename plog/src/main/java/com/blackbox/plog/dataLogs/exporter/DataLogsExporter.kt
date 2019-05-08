@@ -43,7 +43,7 @@ object DataLogsExporter {
                 }
 
                 //First entry is Zip Name
-                this.exportFileName = files.first
+                this.exportFileName += files.first
                 this.exportPath = exportPath
 
                 //Get list of all copied files from output directory

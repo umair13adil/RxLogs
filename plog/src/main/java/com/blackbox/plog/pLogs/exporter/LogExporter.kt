@@ -102,7 +102,7 @@ object LogExporter {
 
     private fun compressPackage(emitter: ObservableEmitter<String>, exportDecrypted: Boolean) {
         //First entry is Zip Name
-        this.zipName = files.first
+        this.zipName += files.first
 
         val filesToSend = files.second //List of filtered files
 
