@@ -20,13 +20,17 @@ import java.util.concurrent.TimeUnit
  * Created by umair on 04/01/2018.
  */
 
+/**
+ * Created by umair on 04/01/2018.
+ */
+
 object LogExporter {
 
     private val TAG = LogExporter::class.java.simpleName
 
     private lateinit var files: Triple<String, List<File>, String>
     private val exportPath = PLog.outputPath
-    private var zipName = PLogImpl.getConfig()?.zipFileName
+    private var zipName = ""
 
     /*
      * Will filter & export log files to zip package.
@@ -101,8 +105,9 @@ object LogExporter {
     }
 
     private fun compressPackage(emitter: ObservableEmitter<String>, exportDecrypted: Boolean) {
+
         //First entry is Zip Name
-        this.zipName += files.first
+        this.zipName = files.first
 
         val filesToSend = files.second //List of filtered files
 

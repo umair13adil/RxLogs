@@ -12,9 +12,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 26
+        versionCode 27
         versionName "1.0.0"
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -29,6 +28,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -41,6 +44,21 @@ dependencies {
     //RxJav2
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation  'io.reactivex.rxjava2:rxkotlin:2.2.0'
+
+    //Tests
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'androidx.test:core:1.1.0'
+    testImplementation 'org.mockito:mockito-core:2.23.4'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    testImplementation "com.google.truth:truth:0.44"
+    testImplementation('org.powermock:powermock-mockito-release-full:1.6.1') {
+        exclude module: 'hamcrest-core'
+        exclude module: 'objenesis'
+    }
+    testImplementation 'org.powermock:powermock-api-mockito2:1.7.0RC4'
+    testImplementation 'org.robolectric:robolectric:3.8'
+    testImplementation 'org.robolectric:shadows-multidex:3.3.2'
+    testImplementation 'org.robolectric:shadows-support-v4:3.3.2'
 }
 repositories {
     mavenCentral()

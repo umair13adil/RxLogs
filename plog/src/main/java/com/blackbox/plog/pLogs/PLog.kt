@@ -16,6 +16,7 @@ import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.RxBus
+import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.getLogsSavedPaths
 import io.reactivex.Observable
 import java.io.File

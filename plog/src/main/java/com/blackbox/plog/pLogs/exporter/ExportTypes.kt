@@ -109,7 +109,8 @@ private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportTy
         noOfFiles = "_[${files.first.size}]"
 
     val preName = PLogImpl.getConfig()?.exportFileNamePreFix!!
+    val zName = PLogImpl.getConfig()?.zipFileName!!
     val postName = PLogImpl.getConfig()?.exportFileNamePostFix!!
 
-    return "$preName$timeStamp$noOfFiles$postName.zip"
+    return "$preName$zName$timeStamp$noOfFiles$postName.zip"
 }

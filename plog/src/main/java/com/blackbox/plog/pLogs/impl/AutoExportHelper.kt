@@ -4,8 +4,10 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.LogExporter
+import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
+import com.blackbox.plog.utils.DateTimeUtils
 
 object AutoExportHelper {
 
@@ -47,7 +49,8 @@ object AutoExportHelper {
             if (PLog.isLogsConfigSet()) {
                 if (PLog.logTypes.containsKey(LogType.Errors.type)) {
                     val errorLog = PLog.getLoggerFor(LogType.Errors.type)
-                    errorLog?.appendToFile(data)
+                    val timeStamp = "\n[${DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_READABLE)}]\n"
+                    errorLog?.appendToFile("\n" + data + timeStamp)
                 }
             }
         }
