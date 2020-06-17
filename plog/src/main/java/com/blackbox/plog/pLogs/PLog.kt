@@ -29,7 +29,7 @@ object PLog : PLogImpl() {
         setLogBus(RxBus())
     }
 
-    val handler = Handler()
+    internal val handler = Handler()
 
     /**
      * Log this.

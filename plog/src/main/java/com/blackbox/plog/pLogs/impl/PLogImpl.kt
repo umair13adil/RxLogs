@@ -280,7 +280,7 @@ open class PLogImpl {
 
     companion object {
         private var logsConfig: LogsConfig? = null
-        val encrypter by lazy { Encrypter() }
+        internal val encrypter by lazy { Encrypter() }
 
         internal fun getConfig(): LogsConfig? {
             return logsConfig

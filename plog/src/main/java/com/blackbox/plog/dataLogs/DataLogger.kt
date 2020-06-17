@@ -7,9 +7,9 @@ import com.blackbox.plog.utils.Utils
 /**
  * Created by umair on 04/01/2018.
  */
-class DataLogger(var logFileName: String = "log") {
+class DataLogger(private var logFileName: String = "log") {
 
-    val TAG = "DataLogger"
+    private val TAG = "DataLogger"
 
     /**
      * Overwrite to file.
