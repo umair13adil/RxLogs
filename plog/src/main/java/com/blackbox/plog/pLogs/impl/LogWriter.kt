@@ -16,6 +16,7 @@ object LogWriter {
 
     var secretKey: SecretKey? = null
 
+
     init {
         secretKey = PLogImpl.getConfig()?.secretKey
     }

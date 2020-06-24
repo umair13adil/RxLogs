@@ -2,6 +2,8 @@ package com.blackbox.plog.pLogs.impl
 
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
+import com.blackbox.plog.elk.ELKLog
+import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.ConfigReader
 import com.blackbox.plog.pLogs.config.ConfigWriter
@@ -17,6 +19,7 @@ import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.*
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.subscribeBy
 import java.io.File
@@ -182,9 +185,16 @@ open class PLogImpl {
     }
 
     internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String): String {
-        val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
-        return LogFormatter.getFormatType(logData)
+        return if (!PLogMetaInfoProvider.elkStackSupported) {
+            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
+            LogFormatter.getFormatType(logData)
+        } else {
+            val elkLog = ELKLog(tag = className, subTag = functionName, logMessage = text, timeStamp = getFormattedTimeStamp(), severity = type)
+            val logData = PLogMetaInfoProvider.metaInfo
+            logData.elkLog = elkLog
+            gson.toJson(logData)
+        }
     }
 
     /*
@@ -281,6 +291,7 @@ open class PLogImpl {
     companion object {
         private var logsConfig: LogsConfig? = null
         internal val encrypter by lazy { Encrypter() }
+        internal val gson = Gson()
 
         internal fun getConfig(): LogsConfig? {
             return logsConfig

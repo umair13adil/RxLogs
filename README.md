@@ -35,6 +35,7 @@ Features
 17. Logger events Subscription
 18. Advanced Automation for deleting logs automatically
 19. Exports HTML formatted exceptions
+20. ELK Stack Supported See more about it [here](https://www.elastic.co/what-is/elk-stack).
 
 Prerequisites
 -------------
@@ -163,6 +164,47 @@ _______________________________________________
     PLog.logThis(TAG, "reportError", info = "Some Info", throwable = Throwable("This is an Exception!"), level =  LogLevel.SEVERE)
 ```
 
+#### ELK Elastic Stack Support
+_______________________________________________
+
+To configure set this flag to true:
+
+```kotlin
+    PLogMetaInfoProvider.elkStackSupported = true
+```
+
+Send additional Meta info for better filtering at LogStash dashboard. This has to be set once on application start.
+
+```kotlin
+
+    PLogMetaInfoProvider.setMetaInfo(MetaInfo(
+                appId = BuildConfig.APPLICATION_ID,
+                appName = getString(R.string.app_name),
+                appVersion = BuildConfig.VERSION_NAME,
+
+                /**Environment**/
+                deviceId = "1",
+                environmentId = BuildConfig.FLAVOR,
+                environmentName = BuildConfig.BUILD_TYPE,
+                geoLocation = "",
+                organizationId = "",
+                language = "",
+
+                /**User**/
+                userId = "1",
+                userName = "Umair",
+                userEmail = "m.umair.adil@gmail.com",
+
+                /**Device**/
+                deviceSerial = "",
+                deviceBrand = Build.BRAND,
+                deviceName = Build.DEVICE,
+                deviceManufacturer = Build.MANUFACTURER,
+                deviceModel = Build.MODEL,
+                deviceSdkInt = android.os.Build.VERSION.SDK_INT.toString()
+        ))
+```
+
 Wiki
 --------
 
@@ -170,6 +212,8 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 
 Change Log
 ----------
+###### Version: 1.0.2
+- Added ELK Logstash JSON logging support
 
 ###### Version: 0.23
 - Added functionality to write logs in background thread.

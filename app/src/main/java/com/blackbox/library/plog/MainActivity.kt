@@ -2,6 +2,7 @@ package com.blackbox.library.plog
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -10,6 +11,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
+import com.blackbox.plog.elk.MetaInfo
+import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -30,6 +33,35 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //Set MetaInfo for ELK Logs
+        PLogMetaInfoProvider.elkStackSupported = true
+        PLogMetaInfoProvider.setMetaInfo(MetaInfo(
+                appId = BuildConfig.APPLICATION_ID,
+                appName = getString(R.string.app_name),
+                appVersion = BuildConfig.VERSION_NAME,
+
+                /**Environment**/
+                deviceId = "1",
+                environmentId = BuildConfig.FLAVOR,
+                environmentName = BuildConfig.BUILD_TYPE,
+                geoLocation = "",
+                organizationId = "",
+                language = "",
+
+                /**User**/
+                userId = "1",
+                userName = "Umair",
+                userEmail = "m.umair.adil@gmail.com",
+
+                /**Device**/
+                deviceSerial = "",
+                deviceBrand = Build.BRAND,
+                deviceName = Build.DEVICE,
+                deviceManufacturer = Build.MANUFACTURER,
+                deviceModel = Build.MODEL,
+                deviceSdkInt = android.os.Build.VERSION.SDK_INT.toString()
+        ))
 
         //Initialize FakeIt
         Fakeit.initWithLocale(Locale.ENGLISH)
