@@ -187,13 +187,13 @@ open class PLogImpl {
         return File(XML_PATH, CONFIG_FILE_NAME).delete()
     }
 
-    internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String): String {
+    internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String, exception: Exception? = null, throwable: Throwable? = null): String {
         val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
         return if (!PLogMetaInfoProvider.elkStackSupported) {
             LogFormatter.getFormatType(logData)
         } else {
-            ECSMapper.getECSMappedLogString(logData)
+            ECSMapper.getECSMappedLogString(logData, exception, throwable)
         }
     }
 
@@ -244,9 +244,9 @@ open class PLogImpl {
         return FilterUtils.listFiles(outputPath, arrayListOf())
     }
 
-    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel, printNow: Boolean = true): Pair<Boolean, String> {
+    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel, exception: Exception? = null, throwable: Throwable? = null): Pair<Boolean, String> {
 
-        val logData = PLog.printFormattedLogs(className, functionName, info, type.level)
+        val logData = PLog.printFormattedLogs(className, functionName, info, type.level, exception, throwable)
 
         if (getConfig() != null) {
 

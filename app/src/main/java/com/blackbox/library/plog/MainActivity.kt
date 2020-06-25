@@ -42,24 +42,11 @@ class MainActivity : AppCompatActivity() {
                 appVersion = BuildConfig.VERSION_NAME,
 
                 /**Environment**/
-
-                /**Environment**/
-
-                /**Environment**/
-
-                /**Environment**/
                 deviceId = "1",
                 environmentId = BuildConfig.FLAVOR,
                 environmentName = BuildConfig.BUILD_TYPE,
-                geoLocation = "",
                 organizationId = "",
                 language = "",
-
-                /**User**/
-
-                /**User**/
-
-                /**User**/
 
                 /**User**/
                 userId = "1",
@@ -67,18 +54,16 @@ class MainActivity : AppCompatActivity() {
                 userEmail = "m.umair.adil@gmail.com",
 
                 /**Device**/
-
-                /**Device**/
-
-                /**Device**/
-
-                /**Device**/
                 deviceSerial = "",
                 deviceBrand = Build.BRAND,
                 deviceName = Build.DEVICE,
                 deviceManufacturer = Build.MANUFACTURER,
                 deviceModel = Build.MODEL,
-                deviceSdkInt = Build.VERSION.SDK_INT.toString()
+                deviceSdkInt = Build.VERSION.SDK_INT.toString(),
+
+                /**Location**/
+                latitude = 0.0,
+                longitude = 0.0
         ))
 
         //Initialize FakeIt

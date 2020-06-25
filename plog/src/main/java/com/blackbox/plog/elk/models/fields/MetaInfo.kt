@@ -28,5 +28,8 @@ data class MetaInfo(
 
         /**Location**/
         var latitude: Double = 0.0,
-        var longitude: Double = 0.0
+        var longitude: Double = 0.0,
+
+        /**Labels**/
+        var labels: HashMap<String, String> = hashMapOf<String, String>()
 )

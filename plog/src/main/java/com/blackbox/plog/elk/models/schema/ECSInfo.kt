@@ -1,9 +1,6 @@
 package com.blackbox.plog.elk.models.schema
 
-import com.blackbox.plog.elk.models.fields.Geo
-import com.blackbox.plog.elk.models.fields.Host
-import com.blackbox.plog.elk.models.fields.Organization
-import com.blackbox.plog.elk.models.fields.User
+import com.blackbox.plog.elk.models.fields.*
 import com.google.gson.annotations.SerializedName
 
 data class ECSInfo(
@@ -16,5 +13,6 @@ data class ECSInfo(
         @SerializedName("geo") val geo: Geo,
         @SerializedName("host") val host: Host,
         @SerializedName("organization") val organization: Organization,
-        @SerializedName("user") val user: User
+        @SerializedName("user") val user: User,
+        @SerializedName("app") val app: App
 )

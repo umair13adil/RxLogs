@@ -16,5 +16,6 @@ data class ECSError(
         @SerializedName("geo") val geo: Geo,
         @SerializedName("host") val host: Host,
         @SerializedName("organization") val organization: Organization,
-        @SerializedName("user") val user: User
+        @SerializedName("user") val user: User,
+        @SerializedName("app") val app: App
 )

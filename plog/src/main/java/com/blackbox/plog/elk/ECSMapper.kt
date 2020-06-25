@@ -17,16 +17,16 @@ object ECSMapper {
     private const val LOG_LEVEL_DEBUG = "DEBUG"
     private const val LOG_LEVEL_ERROR = "ERROR"
 
-    fun getECSMappedLogString(log: LogData): String {
+    fun getECSMappedLogString(log: LogData, exception: Exception? = null, throwable: Throwable? = null): String {
         return when (log.logType) {
             LogLevel.INFO.level -> {
                 mapForInfoLog(log)
             }
             LogLevel.WARNING.level -> {
-                mapForInfoLog(log)
+                mapForInfoDebug(log)
             }
             LogLevel.ERROR.level, LogLevel.SEVERE.level -> {
-                mapForInfoLog(log)
+                mapForInfoError(log, exception, throwable)
             }
             else -> {
                 Log.e(TAG, "Unable to map for ECS schema.")
@@ -36,9 +36,6 @@ object ECSMapper {
     }
 
     private fun mapForInfoLog(logData: LogData): String {
-        val metaInfo = PLogMetaInfoProvider.metaInfo
-        val metaInfoJson = PLogImpl.gson.toJson(metaInfo).toString()
-
         val ecs = ECSInfo(log_level = LOG_LEVEL_INFO,
                 labels = createLabelsMap(),
                 message = logData.logText!!,
@@ -48,16 +45,14 @@ object ECSMapper {
                 geo = getGeo(),
                 host = getHost(),
                 organization = getOrganization(),
-                user = getUser()
+                user = getUser(),
+                app = getApp()
         )
         return PLogImpl.gson.toJson(ecs).toString()
     }
 
     private fun mapForInfoDebug(logData: LogData): String {
-        val metaInfo = PLogMetaInfoProvider.metaInfo
-        val metaInfoJson = PLogImpl.gson.toJson(metaInfo).toString()
-
-        val ecs = ECSDebug(log_level = LOG_LEVEL_INFO,
+        val ecs = ECSDebug(log_level = LOG_LEVEL_DEBUG,
                 labels = createLabelsMap(),
                 message = logData.logText!!,
                 service_name = logData.className!!,
@@ -68,13 +63,38 @@ object ECSMapper {
                 geo = getGeo(),
                 host = getHost(),
                 organization = getOrganization(),
-                user = getUser()
+                user = getUser(),
+                app = getApp()
         )
         return PLogImpl.gson.toJson(ecs).toString()
     }
 
-    private fun mapForInfoError(logData: LogData): String {
-        val ecs = ECSError(log_level = LOG_LEVEL_INFO,
+    private fun mapForInfoError(logData: LogData, exception: Exception? = null, throwable: Throwable? = null): String {
+
+        val stackTrace = arrayListOf<String>()
+        var errorMessage = ""
+
+        exception?.let {
+            it.stackTrace.forEach {
+                stackTrace.add(it.toString())
+            }
+
+            it.message?.let {
+                errorMessage = it
+            }
+        }
+
+        throwable?.let {
+            it.stackTrace.forEach {
+                stackTrace.add(it.toString())
+            }
+
+            it.message?.let {
+                errorMessage = it
+            }
+        }
+
+        val ecs = ECSError(log_level = LOG_LEVEL_ERROR,
                 labels = createLabelsMap(),
                 message = logData.logText!!,
                 process_thread_name = logData.functionName!!,
@@ -83,27 +103,32 @@ object ECSMapper {
                         file_line = 0,
                         function = logData.functionName!!,
                         file_name = logData.className!!),
-                error_type = "",
-                error_message = "",
-                error_stack_trace = arrayListOf(),
+                error_type = LOG_LEVEL_ERROR,
+                error_message = errorMessage,
+                error_stack_trace = stackTrace,
                 geo = getGeo(),
                 host = getHost(),
                 organization = getOrganization(),
-                user = getUser()
+                user = getUser(),
+                app = getApp()
         )
         return PLogImpl.gson.toJson(ecs).toString()
     }
 
     private fun createLabelsMap(): String {
         val metaInfo = PLogMetaInfoProvider.metaInfo
-
-        val map = HashMap<String, String>()
-        map["appId"] = metaInfo.appId
-        map["appName"] = metaInfo.appName
-        map["appVersion"] = metaInfo.appVersion
-        map["language"] = metaInfo.language
-
+        val map = metaInfo.labels
         return PLogImpl.gson.toJson(map).toString()
+    }
+
+    private fun getApp(): App {
+        val metaInfo = PLogMetaInfoProvider.metaInfo
+        return App(
+                id = metaInfo.appId,
+                name = metaInfo.appName,
+                version = metaInfo.appVersion,
+                language = metaInfo.language
+        )
     }
 
     private fun getGeo(): Geo {

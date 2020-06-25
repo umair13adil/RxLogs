@@ -105,7 +105,7 @@ object PLog : PLogImpl() {
     fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
         val runnable = Runnable {
-            val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
+            val logsConfig = isLogsConfigValid(className, functionName, info, level, throwable = throwable)
             if (logsConfig.first) {
 
                 val data = formatErrorMessage(info, throwable = throwable)
@@ -130,7 +130,7 @@ object PLog : PLogImpl() {
     fun logThis(className: String = "", functionName: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
 
         val runnable = Runnable {
-            val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
+            val logsConfig = isLogsConfigValid(className, functionName, "", level, throwable = throwable)
             if (logsConfig.first) {
 
                 val data = formatErrorMessage("", throwable = throwable)
@@ -155,7 +155,7 @@ object PLog : PLogImpl() {
     fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
         val runnable = Runnable {
-            val logsConfig = isLogsConfigValid(className, functionName, info, level, printNow = false)
+            val logsConfig = isLogsConfigValid(className, functionName, info, level, exception = exception)
             if (logsConfig.first) {
 
                 val data = formatErrorMessage(info, exception = exception)
@@ -180,7 +180,7 @@ object PLog : PLogImpl() {
     fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
 
         val runnable = Runnable {
-            val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
+            val logsConfig = isLogsConfigValid(className, functionName, "", level, exception = exception)
             if (logsConfig.first) {
                 val data = formatErrorMessage("", exception = exception)
                 writeLogsAsync(data, level)

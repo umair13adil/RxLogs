@@ -2,11 +2,12 @@ package com.blackbox.plog.dataLogs
 
 import android.os.AsyncTask
 import android.util.Log
-import com.blackbox.plog.elk.models.ELKLog
+import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.utils.DateTimeUtils
 
@@ -23,10 +24,8 @@ class SaveDataLogsAsync(var logFileName: String, var dataToWrite: String, var ov
     override fun doInBackground(vararg p0: String?): Boolean {
 
         if (PLogMetaInfoProvider.elkStackSupported) {
-            val elkLog = ELKLog(tag = logFileName, subTag = "DATA_LOG", logMessage = dataToWrite, timeStamp = DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_READABLE), severity = LogLevel.INFO.level)
-            val logData = PLogMetaInfoProvider.metaInfo
-            logData.elkLog = elkLog
-            dataToWrite = PLogImpl.gson.toJson(logData)
+            val logData = LogData(className = logFileName, functionName = "DATA_LOG", logText = dataToWrite, logTime = DateTimeUtils.getTimeFormatted(TimeStampFormat.TIME_FORMAT_READABLE), logType = LogLevel.INFO.level)
+            dataToWrite = ECSMapper.getECSMappedLogString(logData)
         }
 
         if (PLogImpl.getConfig()?.isDebuggable!!) {
