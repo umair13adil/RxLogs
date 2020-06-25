@@ -64,9 +64,7 @@ object PLog : PLogImpl() {
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
             if (logsConfig.first) {
-
                 writeLogsAsync(logsConfig.second, LogLevel.INFO)
-
             }
         }
         handler.post(runnable)
@@ -89,7 +87,6 @@ object PLog : PLogImpl() {
 
             if (logsConfig.first) {
                 writeLogsAsync(logsConfig.second, level)
-
             }
         }
         handler.post(runnable)
@@ -185,11 +182,8 @@ object PLog : PLogImpl() {
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, printNow = false)
             if (logsConfig.first) {
-
                 val data = formatErrorMessage("", exception = exception)
-
                 writeLogsAsync(data, level)
-
             }
         }
         handler.post(runnable)

@@ -1,4 +1,4 @@
-package com.blackbox.plog.elk
+package com.blackbox.plog.elk.models.fields
 
 data class MetaInfo(
         /**App**/
@@ -10,7 +10,6 @@ data class MetaInfo(
         var deviceId: String = "",
         var environmentId: String = "",
         var environmentName: String = "",
-        var geoLocation: String = "",
         var organizationId: String = "",
         var language: String = "",
 
@@ -27,6 +26,7 @@ data class MetaInfo(
         var deviceModel: String = "",
         var deviceSdkInt: String = "",
 
-        /**Log**/
-        internal var elkLog: ELKLog? = null
+        /**Location**/
+        var latitude: Double = 0.0,
+        var longitude: Double = 0.0
 )

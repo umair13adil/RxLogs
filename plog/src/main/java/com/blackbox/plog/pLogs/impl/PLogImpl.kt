@@ -2,7 +2,7 @@ package com.blackbox.plog.pLogs.impl
 
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
-import com.blackbox.plog.elk.ELKLog
+import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.ConfigReader
@@ -17,7 +17,10 @@ import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.*
+import com.blackbox.plog.utils.DateTimeUtils
+import com.blackbox.plog.utils.Encrypter
+import com.blackbox.plog.utils.RxBus
+import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import com.google.gson.Gson
 import io.reactivex.Observable
@@ -185,15 +188,12 @@ open class PLogImpl {
     }
 
     internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String): String {
+        val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
         return if (!PLogMetaInfoProvider.elkStackSupported) {
-            val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
             LogFormatter.getFormatType(logData)
         } else {
-            val elkLog = ELKLog(tag = className, subTag = functionName, logMessage = text, timeStamp = getFormattedTimeStamp(), severity = type)
-            val logData = PLogMetaInfoProvider.metaInfo
-            logData.elkLog = elkLog
-            gson.toJson(logData)
+            ECSMapper.getECSMappedLogString(logData)
         }
     }
 

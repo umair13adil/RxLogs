@@ -2,13 +2,11 @@ package com.blackbox.plog.dataLogs
 
 import android.os.AsyncTask
 import android.util.Log
-import com.blackbox.plog.elk.ELKLog
+import com.blackbox.plog.elk.models.ELKLog
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.formatter.LogFormatter
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.utils.DateTimeUtils
 

@@ -11,7 +11,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
-import com.blackbox.plog.elk.MetaInfo
+import com.blackbox.plog.elk.models.fields.MetaInfo
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
@@ -42,6 +42,12 @@ class MainActivity : AppCompatActivity() {
                 appVersion = BuildConfig.VERSION_NAME,
 
                 /**Environment**/
+
+                /**Environment**/
+
+                /**Environment**/
+
+                /**Environment**/
                 deviceId = "1",
                 environmentId = BuildConfig.FLAVOR,
                 environmentName = BuildConfig.BUILD_TYPE,
@@ -50,9 +56,21 @@ class MainActivity : AppCompatActivity() {
                 language = "",
 
                 /**User**/
+
+                /**User**/
+
+                /**User**/
+
+                /**User**/
                 userId = "1",
                 userName = "Umair",
                 userEmail = "m.umair.adil@gmail.com",
+
+                /**Device**/
+
+                /**Device**/
+
+                /**Device**/
 
                 /**Device**/
                 deviceSerial = "",
@@ -60,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                 deviceName = Build.DEVICE,
                 deviceManufacturer = Build.MANUFACTURER,
                 deviceModel = Build.MODEL,
-                deviceSdkInt = android.os.Build.VERSION.SDK_INT.toString()
+                deviceSdkInt = Build.VERSION.SDK_INT.toString()
         ))
 
         //Initialize FakeIt

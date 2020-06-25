@@ -1,5 +1,7 @@
 package com.blackbox.plog.elk
 
+import com.blackbox.plog.elk.models.fields.MetaInfo
+
 object PLogMetaInfoProvider {
 
     var elkStackSupported: Boolean = false
