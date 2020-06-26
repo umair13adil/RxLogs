@@ -1,6 +1,7 @@
 package com.blackbox.library.plog
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -11,8 +12,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
-import com.blackbox.plog.elk.models.fields.MetaInfo
 import com.blackbox.plog.elk.PLogMetaInfoProvider
+import com.blackbox.plog.elk.models.fields.MetaInfo
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -81,6 +82,10 @@ class MainActivity : AppCompatActivity() {
         //Write Fake Data to Logs
         for (i in 0..100) {
             PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
+        }
+
+        run_test.setOnClickListener {
+            startActivity(Intent(this, HourlyLogsTest::class.java))
         }
     }
 
@@ -259,6 +264,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
