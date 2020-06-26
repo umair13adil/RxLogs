@@ -23,12 +23,6 @@ import java.io.File
 
 object PLog : PLogImpl() {
 
-    init {
-
-        //Setup RxBus for notifications.
-        setLogBus(RxBus())
-    }
-
     internal val handler = Handler()
 
     /**
@@ -313,7 +307,7 @@ object PLog : PLogImpl() {
             SaveAsync(dataToWrite, logLevel).execute()
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, Utils.getStackTrace(e))
+            Log.e(DEBUG_TAG, Utils.getStackTrace(e))
 
             //Write directly
             writeAndExportLog(dataToWrite, logLevel)

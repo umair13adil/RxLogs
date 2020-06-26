@@ -6,6 +6,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
 import io.reactivex.Observable
@@ -53,6 +54,10 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
 
                 if (!File(outputPath).exists())
                     zipFilesOnly(decryptedFiles, outputPath, exportFileName, tempPath, emitter)
+                else{
+                    if (PLogImpl.getConfig()?.debugFileOperations!!)
+                        Log.i(PLog.DEBUG_TAG, "decryptSaveFiles: Unable to zip, $outputPath doesnt exists!")
+                }
             }
         } else {
             if (!File(outputPath).exists())
@@ -76,6 +81,9 @@ private fun zipFilesOnly(decryptedFiles: List<File>, outputPath: String, exportF
                     onError = {
                         if (!emitter.isDisposed)
                             emitter.onError(it)
+
+                        if (PLogImpl.getConfig()?.debugFileOperations!!)
+                            Log.i(PLog.DEBUG_TAG, "zipFilesOnly: Unable to zip, ${it.message}")
                     },
                     onComplete = { }
             )
@@ -95,6 +103,9 @@ private fun zipFilesAndFolder(outputPath: String, exportFileName: String, tempPa
                     onError = {
                         if (!emitter.isDisposed)
                             emitter.onError(it)
+
+                        if (PLogImpl.getConfig()?.debugFileOperations!!)
+                            Log.i(PLog.DEBUG_TAG, "zipFilesAndFolder: Unable to zip, ${it.message}")
                     },
                     onComplete = {
                         doOnZipComplete(outputPath)
@@ -103,7 +114,7 @@ private fun zipFilesAndFolder(outputPath: String, exportFileName: String, tempPa
 }
 
 private fun doOnZipComplete(path: String) {
-    PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
+    RxBus.send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
     //Clear all copied files
     FilterUtils.deleteFilesExceptZip()
@@ -114,18 +125,21 @@ private fun createNewFile(name: String, data: String, path: String) {
         val file = File(path, name)
         file.createNewFile()
 
+        RxBus.send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
+
         if (file.exists()) {
 
-            FileOutputStream(file.path).use {out->
+            FileOutputStream(file.path).use { out ->
                 out.write(data.toBytes())
             }
 
         } else {
-            if (PLogImpl.getConfig()?.isDebuggable!!)
-                Log.i(PLog.TAG, "createNewFile: ${file.path} doesnt exists!")
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "createNewFile: ${file.path} doesnt exists!")
         }
     } catch (e: Exception) {
-
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
+            Log.i(PLog.DEBUG_TAG, "createNewFile: Unable to create new file. ${e.message}")
     }
 }
 

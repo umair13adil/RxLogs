@@ -70,7 +70,7 @@ object DataLogWriter {
 
         if (autoExportTypes.contains(type)) {
             if (Triggers.shouldExportLogs()) {
-                PLog.getLogBus().send(LogEvents(EventTypes.LOG_TYPE_EXPORTED, data))
+                RxBus.send(LogEvents(EventTypes.LOG_TYPE_EXPORTED, data))
             }
         }
     }

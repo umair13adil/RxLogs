@@ -93,8 +93,8 @@ private fun zipDirectories(zipOut: ZipOutputStream, sourceFile: File, parentDirP
 
             val path = it + File.separator
 
-            if (PLogImpl.getConfig()?.isDebuggable!!)
-                Log.i(PLog.TAG, "Adding directory: $path")
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "Adding directory: $path")
 
 
             //Call recursively to add files within this directory
@@ -143,13 +143,13 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
             try {
                 zos.putNextEntry(zipEntry)
             } catch (e: ZipException) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogImpl.getConfig()?.debugFileOperations!!) {
                     Log.e(TAG, e.message)
                 }
             }
 
-            if (PLogImpl.getConfig()?.isDebuggable!!)
-                Log.i(PLog.TAG, "Adding file: ${f.path}")
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "Adding file: ${f.path}")
 
 
             while (true) {
@@ -161,7 +161,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 try {
                     zos.write(data, 0, readBytes)
                 } catch (e: ZipException) {
-                    if (PLogImpl.getConfig()?.isDebuggable!!) {
+                    if (PLogImpl.getConfig()?.debugFileOperations!!) {
                         Log.e(TAG, e.message)
                     }
                 }

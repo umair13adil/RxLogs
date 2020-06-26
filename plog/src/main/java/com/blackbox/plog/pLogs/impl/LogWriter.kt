@@ -3,10 +3,7 @@ package com.blackbox.plog.pLogs.impl
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.Utils
-import com.blackbox.plog.utils.appendToFile
-import com.blackbox.plog.utils.checkFileExists
-import com.blackbox.plog.utils.setupFilePaths
+import com.blackbox.plog.utils.*
 import java.io.File
 import javax.crypto.SecretKey
 
@@ -59,15 +56,17 @@ object LogWriter {
         val path = setupFilePaths()
         val f = checkFileExists(path)
 
-        if (!PART_FILE_CREATED_PLOG) {
-            shouldLog = shouldWriteLog(f)
+        shouldLog = if (!PART_FILE_CREATED_PLOG) {
+            shouldWriteLog(f)
         } else {
-            shouldLog = shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
+            shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
         }
 
         if (shouldLog.first) {
-
             appendToFile(shouldLog.second, logFormatted)
+        }else{
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "writeSimpleLogs: Unable to write log file.")
         }
     }
 
@@ -91,7 +90,7 @@ object LogWriter {
                 if (!PLogImpl.getConfig()?.forceWriteLogs!!) {
 
                     if (PLogImpl.getConfig()?.debugFileOperations!!)
-                        Log.i(PLog.TAG, "File size exceeded!")
+                        Log.i(PLog.DEBUG_TAG, "File size exceeded!")
 
                     return Pair(false, path)
                 } else {
@@ -123,6 +122,10 @@ object LogWriter {
      * This will create a new part file for existing parent file.
      */
     private fun createPartFile(file: File, isPLog: Boolean = true, logFileName: String = ""): String {
+
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
+            Log.i(PLog.DEBUG_TAG, "createPartFile: Creating part file..")
+
         var path = ""
         val name = file.name.substringBeforeLast(".")
 
@@ -134,10 +137,10 @@ object LogWriter {
 
                 var newFileName = ""
 
-                if (isPLog) {
-                    newFileName = "$PART_FILE_PREFIX$newValue"
+                newFileName = if (isPLog) {
+                    "$PART_FILE_PREFIX$newValue"
                 } else {
-                    newFileName = "$logFileName$PART_FILE_PREFIX$newValue"
+                    "$logFileName$PART_FILE_PREFIX$newValue"
                 }
 
                 path = setupFilePaths(fileName = newFileName, isPLog = isPLog)
@@ -152,10 +155,10 @@ object LogWriter {
         } else {
             var newFileName = ""
 
-            if (isPLog) {
-                newFileName = "${PART_FILE_PREFIX}2"
+            newFileName = if (isPLog) {
+                "${PART_FILE_PREFIX}2"
             } else {
-                newFileName = "$logFileName${PART_FILE_PREFIX}2"
+                "$logFileName${PART_FILE_PREFIX}2"
             }
 
             path = setupFilePaths(fileName = newFileName, isPLog = isPLog)

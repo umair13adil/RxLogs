@@ -9,6 +9,7 @@ import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.decryptSaveFiles
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.zip
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -65,7 +66,7 @@ object DataLogsExporter {
                             .subscribeBy(
                                     onNext = {
                                         if (PLogImpl.getConfig()?.isDebuggable!!)
-                                            Log.i(PLog.TAG, "Output Zip: ${exportFileName}")
+                                            Log.i(PLog.DEBUG_TAG, "Output Zip: ${exportFileName}")
 
                                         if (!emitter.isDisposed)
                                             emitter.onNext(it)
@@ -75,7 +76,7 @@ object DataLogsExporter {
                                             emitter.onError(it)
                                     },
                                     onComplete = {
-                                        PLog.getLogBus().send(LogEvents(EventTypes.DATA_LOGS_EXPORTED))
+                                        RxBus.send(LogEvents(EventTypes.DATA_LOGS_EXPORTED))
                                     }
                             )
                 } else {
@@ -85,7 +86,7 @@ object DataLogsExporter {
                             .subscribeBy(
                                     onNext = {
                                         if (PLogImpl.getConfig()?.isDebuggable!!)
-                                            Log.i(PLog.TAG, "Output Zip: $exportPath${exportFileName}")
+                                            Log.i(PLog.DEBUG_TAG, "Output Zip: $exportPath${exportFileName}")
 
                                         if (!emitter.isDisposed)
                                             emitter.onNext(exportPath + exportFileName)
@@ -180,7 +181,7 @@ object DataLogsExporter {
     }
 
     private fun doOnZipComplete() {
-        PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
+        RxBus.send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
         //Print zip entries
         //FilterUtils.readZipEntries(exportPath + exportFileName)

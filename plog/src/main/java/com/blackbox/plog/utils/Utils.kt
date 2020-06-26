@@ -1,6 +1,9 @@
 package com.blackbox.plog.utils
 
 import android.content.Context
+import android.util.Log
+import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 import java.io.IOException
 import java.io.PrintWriter
@@ -14,6 +17,10 @@ object Utils {
     fun createDirIfNotExists(path: String): Boolean {
         val file = File(path)
         if (!file.exists()) {
+
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
+
             return file.mkdirs()
         }
         return false

@@ -9,6 +9,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.DateTimeUtils
+import com.blackbox.plog.utils.RxBus
 import java.util.*
 
 object Triggers {
@@ -37,7 +38,7 @@ object Triggers {
             if (Math.abs(elapsedHours) >= 1) {
 
                 if (PLogImpl.getConfig()?.isDebuggable!!)
-                    Log.i(PLog.TAG, "An hour has passed, sending event!")
+                    Log.i(PLog.DEBUG_TAG, "An hour has passed, sending event!")
             }
         } catch (e: Exception) {
             //e.printStackTrace();
@@ -68,7 +69,7 @@ object Triggers {
                 val info = "No last delete date found!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
                 updateLogsDeleteDate()
             }
@@ -84,12 +85,12 @@ object Triggers {
                 val info = "Logs were found and are cleared."
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
                 //Clear Logs
                 PLog.clearLogs()
 
-                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_LOGS, info))
+                RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
 
                 updateLogsDeleteDate()
 
@@ -97,7 +98,7 @@ object Triggers {
             }
 
             if (logsConfig.isDebuggable)
-                Log.i(PLog.TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.DEBUG_TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -116,12 +117,12 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
                 //Clear Logs
                 PLog.clearLogs()
 
-                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_LOGS, info))
+                RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
 
                 updateLogsDeleteDate()
             }
@@ -165,12 +166,12 @@ object Triggers {
                 val info = "Log Zip files were found and are cleared."
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
                 //Clear exported logs
                 PLog.clearExportedLogs()
 
-                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_EXPORTED_FILES, info))
+                RxBus.send(LogEvents(EventTypes.DELETE_EXPORTED_FILES, info))
 
                 updateZipDeleteDate()
 
@@ -178,7 +179,7 @@ object Triggers {
             }
 
             if (logsConfig.isDebuggable)
-                Log.i(PLog.TAG, "Last Zip delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.DEBUG_TAG, "Last Zip delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -197,12 +198,12 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
                 //Clear exported logs
                 PLog.clearExportedLogs()
 
-                PLog.getLogBus().send(LogEvents(EventTypes.DELETE_EXPORTED_FILES, info))
+                RxBus.send(LogEvents(EventTypes.DELETE_EXPORTED_FILES, info))
 
                 updateZipDeleteDate()
             }
@@ -249,7 +250,7 @@ object Triggers {
                 return true
 
             if (logsConfig.isDebuggable)
-                Log.i(PLog.TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+                Log.i(PLog.DEBUG_TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
 
             //milliseconds
             val different = Date().time - savedTime
@@ -268,9 +269,9 @@ object Triggers {
                 val info = "$elapsedDays days has passed!"
 
                 if (logsConfig.isDebuggable)
-                    Log.i(PLog.TAG, info)
+                    Log.i(PLog.DEBUG_TAG, info)
 
-                PLog.getLogBus().send(LogEvents(EventTypes.AUTO_EXPORT_PERIOD_COMPLETED, info))
+                RxBus.send(LogEvents(EventTypes.AUTO_EXPORT_PERIOD_COMPLETED, info))
 
                 clearExportStartDate()
 
@@ -288,7 +289,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLogImpl.getConfig()?.isDebuggable!!)
-            Log.i(PLog.TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.DEBUG_TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", LOGS_DELETE_DATE_TAG)
     }
@@ -297,7 +298,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLogImpl.getConfig()?.isDebuggable!!)
-            Log.i(PLog.TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.DEBUG_TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", ZIP_DELETE_DATE_TAG)
     }
@@ -306,7 +307,7 @@ object Triggers {
         val time = System.currentTimeMillis()
 
         if (PLogImpl.getConfig()?.isDebuggable!!)
-            Log.i(PLog.TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
+            Log.i(PLog.DEBUG_TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
         PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", EXPORT_START_DATE_TAG)
     }
@@ -314,7 +315,7 @@ object Triggers {
     private fun clearExportStartDate() {
 
         if (PLogImpl.getConfig()?.isDebuggable!!)
-            Log.i(PLog.TAG, "Clear export start date!")
+            Log.i(PLog.DEBUG_TAG, "Clear export start date!")
 
         PLogImpl.getConfig()?.updateDateForTAG("", EXPORT_START_DATE_TAG)
     }

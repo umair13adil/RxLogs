@@ -5,6 +5,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.utils.RxBus
 
 internal fun doOnInit(saveToFile: Boolean = false) {
 
@@ -25,7 +26,7 @@ internal fun doOnInit(saveToFile: Boolean = false) {
                 PLogImpl.saveConfig(it)
 
                 //Send Event
-                PLog.getLogBus().send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
+                RxBus.send(LogEvents(EventTypes.LOGS_CONFIG_FOUND))
             }
                     ?: throw Exception("Unable to read local XML file. Are read storage permissions enabled?")
         }

@@ -8,6 +8,7 @@ import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.utils.DateTimeUtils
+import com.blackbox.plog.utils.RxBus
 
 object AutoExportHelper {
 
@@ -17,14 +18,14 @@ object AutoExportHelper {
             if (PLogImpl.getConfig()?.autoExportErrors!!) {
 
                 //Send event to notify error is reported
-                PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
+                RxBus.send(LogEvents(EventTypes.NEW_ERROR_REPORTED, data))
 
                 //Send formatted error message
                 PLogImpl.getConfig()?.autoExportErrors?.let {
                     val formatted = LogExporter.formatErrorMessage(data)
 
                     //Send event to notify error is reported
-                    PLog.getLogBus().send(LogEvents(EventTypes.NEW_ERROR_REPORTED_FORMATTED, formatted))
+                    RxBus.send(LogEvents(EventTypes.NEW_ERROR_REPORTED_FORMATTED, formatted))
                 }
             }
         }
@@ -33,14 +34,14 @@ object AutoExportHelper {
             if (PLogImpl.getConfig()?.autoExportErrors!!) {
 
                 //Send event to notify severe error is reported
-                PLog.getLogBus().send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED, data))
+                RxBus.send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED, data))
 
                 //Send formatted error message
                 PLogImpl.getConfig()?.autoExportErrors?.let {
                     val formatted = LogExporter.formatErrorMessage(data)
 
                     //Send event to notify error is reported
-                    PLog.getLogBus().send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED_FORMATTED, formatted))
+                    RxBus.send(LogEvents(EventTypes.SEVERE_ERROR_REPORTED_FORMATTED, formatted))
                 }
             }
         }

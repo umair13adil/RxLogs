@@ -49,7 +49,7 @@ internal object FileFilter {
                     if (file.isDirectory) {
                         val day = FilterUtils.extractDay(file.name)
 
-                        if (PLogImpl.getConfig()?.isDebuggable!!)
+                        if (PLogImpl.getConfig()?.debugFileOperations!!)
                             Log.i(FileFilter.TAG, "Files between dates: $lastDay & $today,Date File Present: $day")
 
                         if (lastDay < today) {
@@ -77,7 +77,7 @@ internal object FileFilter {
         val lisOfFiles = arrayListOf<File>()
         val listOfDates = DateTimeUtils.getDatesBetween()
 
-        if (PLogImpl.getConfig()?.isDebuggable!!)
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
             Log.i(FileFilter.TAG, "Files between dates: ${listOfDates.first()} & ${listOfDates.last()}")
 
         for (date in listOfDates) {
@@ -108,7 +108,7 @@ internal object FileFilter {
             for (i in files.indices) {
                 val fileHour = FilterUtils.extractHour(files[i].name)
 
-                if (PLogImpl.getConfig()?.isDebuggable!!)
+                if (PLogImpl.getConfig()?.debugFileOperations!!)
                     Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
                 if (fileHour == lastHour) {

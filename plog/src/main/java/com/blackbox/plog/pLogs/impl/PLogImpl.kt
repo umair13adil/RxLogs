@@ -1,6 +1,5 @@
 package com.blackbox.plog.pLogs.impl
 
-import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
@@ -24,25 +23,16 @@ import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import com.google.gson.Gson
 import io.reactivex.Observable
-import io.reactivex.exceptions.OnErrorNotImplementedException
 import io.reactivex.rxkotlin.subscribeBy
 import java.io.File
+
 
 open class PLogImpl {
 
     internal val TAG = "PLogger"
-
-    private lateinit var bus: RxBus
+    internal val DEBUG_TAG = "PLogger_DEBUG"
 
     internal var logTypes = hashMapOf<String, DataLogger>()
-
-    internal fun getLogBus(): RxBus {
-        return bus
-    }
-
-    internal fun setLogBus(listener: RxBus) {
-        bus = listener
-    }
 
     /*
      * Check if logs configuration file is set.
@@ -202,33 +192,7 @@ open class PLogImpl {
      * This will return observable to subscribe to logger events.
      */
     internal fun getLogEvents(): Observable<LogEvents> {
-
-        return Observable.create { emitter ->
-            PLog.getLogBus()
-                    .toObservable()
-                    .subscribeBy(
-                            onNext = {
-                                try {
-                                    if (it is LogEvents) {
-                                        if (!emitter.isDisposed)
-                                            emitter.onNext(it)
-                                    }
-                                } catch (e: OnErrorNotImplementedException) {
-                                    e.printStackTrace()
-                                }
-                            },
-                            onError = { error ->
-
-                                getConfig()?.let {
-                                    if (it.isDebuggable)
-                                        Log.e(TAG, "Error '${error.message}'")
-                                }
-                            },
-                            onComplete = {
-
-                            }
-                    )
-        }
+        return RxBus.listen(LogEvents::class.java)
     }
 
     private fun getFormattedTimeStamp(): String {

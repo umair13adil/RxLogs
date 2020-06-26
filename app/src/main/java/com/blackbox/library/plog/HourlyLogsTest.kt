@@ -12,6 +12,9 @@ import com.blackbox.plog.tests.PLogTestHelper
 import com.blackbox.plog.utils.DateTimeUtils
 import com.google.gson.GsonBuilder
 import com.mooveit.library.Fakeit
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_hourly_logs_test.*
 import java.util.*
 
@@ -46,35 +49,29 @@ class HourlyLogsTest : AppCompatActivity() {
 
         runTimers()
 
-        MainApplication.logsConfig.also { it ->
+        MainApplication.logsConfig?.getLogEventsListener()
+                ?.subscribeOn(Schedulers.io())
+                ?.observeOn(AndroidSchedulers.mainThread())
+                ?.subscribeBy(
+                        onNext = {
+                            when (it.event) {
+                                EventTypes.NEW_EVENT_LOG_FILE_CREATED -> {
+                                    PLog.logThis(TAG, "getLogEventsListener", "New log file created: " + it.data, LogLevel.INFO)
 
-            //Subscribe to Events listener
-            it?.getLogEventsListener()
-                    ?.doOnError{
-                        it.printStackTrace()
-                    }
-                    ?.doOnNext {
-
-                        when (it.event) {
-                            EventTypes.NEW_EVENT_LOG_FILE_CREATED -> {
-                                PLog.logThis(TAG, "getLogEventsListener", "New log file created: " + it.data, LogLevel.INFO)
-
-                                events?.text = "New log file created: " + it.data
+                                    events?.text = "New log file created: " + it.data
+                                }
+                                EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
+                                    PLog.logThis(TAG, "getLogEventsListener", "New directory created: " + it.data, LogLevel.INFO)
+                                }
+                                else -> {
+                                }
                             }
-                            EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
-                                PLog.logThis(TAG, "getLogEventsListener", "New directory created: " + it.data, LogLevel.INFO)
-                            }
-                            else -> {
-                            }
+                        },
+                        onError = {
+                            it.printStackTrace()
                         }
-                    }?.subscribe({ result ->
-                        // updating view
-                    }, { throwable ->
-                        throwable.printStackTrace()
-                    })
-        }
+                )
     }
-
 
     private fun changeTime() {
         c.add(Calendar.HOUR_OF_DAY, 1)

@@ -6,6 +6,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
 import io.reactivex.Observable
@@ -135,14 +136,14 @@ object LogExporter {
     }
 
     private fun decryptFirstThenZip(emitter: ObservableEmitter<String>, filesToSend: List<File> = arrayListOf<File>(), exportedPath: String = "") {
-        decryptSaveFiles(filesToSend, exportPath, zipName!!)
+        decryptSaveFiles(filesToSend, exportPath, zipName)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)
-                                Log.i(PLog.TAG, "Output Zip: $zipName")
+                                Log.i(PLog.DEBUG_TAG, "Output Zip: $zipName")
 
                             if (!emitter.isDisposed)
                                 emitter.onNext(it)
@@ -152,7 +153,7 @@ object LogExporter {
                                 emitter.onError(it)
                         },
                         onComplete = {
-                            PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
+                            RxBus.send(LogEvents(EventTypes.PLOGS_EXPORTED))
                         }
                 )
     }
@@ -165,7 +166,7 @@ object LogExporter {
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)
-                                Log.i(PLog.TAG, "Output Zip: $zipName")
+                                Log.i(PLog.DEBUG_TAG, "Output Zip: $zipName")
 
                             if (!emitter.isDisposed)
                                 emitter.onNext(exportPath + zipName)
@@ -188,7 +189,7 @@ object LogExporter {
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)
-                                Log.i(PLog.TAG, "Output Zip: $zipName")
+                                Log.i(PLog.DEBUG_TAG, "Output Zip: $zipName")
 
                             if (!emitter.isDisposed)
                                 emitter.onNext(exportPath + zipName)
@@ -204,7 +205,7 @@ object LogExporter {
     }
 
     private fun doOnZipComplete() {
-        PLog.getLogBus().send(LogEvents(EventTypes.PLOGS_EXPORTED))
+        RxBus.send(LogEvents(EventTypes.PLOGS_EXPORTED))
 
         //Print zip entries
         //FilterUtils.readZipEntries(exportPath + zipName)

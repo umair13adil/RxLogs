@@ -25,10 +25,17 @@ fun writeToFile(path: String, data: String) {
                 out.println(data)
             }
         } else {
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "writeToFile: File doesn't exist, creating a new file..")
+
             file.createNewFile()
+            RxBus.send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
         }
     } catch (e: Exception) {
         e.printStackTrace()
+
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
+            Log.i(PLog.DEBUG_TAG, "writeToFile: Unable to write to file.. ${e.message}")
     }
 }
 
@@ -39,10 +46,18 @@ fun appendToFile(path: String, data: String) {
         if (file.exists()) {
             file.appendText(data, Charsets.UTF_8)
         } else {
+
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "appendToFile: File doesn't exist, creating a new file..")
+
             file.createNewFile()
+            RxBus.send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
         }
     } catch (e: Exception) {
         e.printStackTrace()
+
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
+            Log.i(PLog.DEBUG_TAG, "appendToFile: Unable to append to file.. ${e.message}")
     }
 }
 
@@ -59,12 +74,18 @@ fun checkFileExists(path: String, isPLog: Boolean = true): File {
 
     try {
         if (!file.exists()) {
+            if (PLogImpl.getConfig()?.debugFileOperations!!)
+                Log.i(PLog.DEBUG_TAG, "checkFileExists: File doesn't exist. Creating file.")
+
             file.createNewFile()
             saveFileEvent(file, isPLog)
         }
     } catch (e: Exception) {
         e.printStackTrace()
         saveFileEvent(file, isPLog)
+
+        if (PLogImpl.getConfig()?.debugFileOperations!!)
+            Log.i(PLog.DEBUG_TAG, "checkFileExists: ${e.message}")
     }
 
     return file
@@ -72,10 +93,8 @@ fun checkFileExists(path: String, isPLog: Boolean = true): File {
 
 private fun saveFileEvent(file: File, isPLog: Boolean = true) {
 
-    PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
-
     if (PLogImpl.getConfig()?.debugFileOperations!!)
-        Log.i(PLog.TAG, "saveFileEvent: New file created: ${file.path}")
+        Log.i(PLog.DEBUG_TAG, "saveFileEvent: New file created: ${file.path}")
 
     //Check if file created if part file
     if (isPLog && !file.name.contains(PART_FILE_PREFIX)) {
@@ -84,8 +103,10 @@ private fun saveFileEvent(file: File, isPLog: Boolean = true) {
         PART_FILE_CREATED_DATALOG = false
     }
 
+    RxBus.send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
+
     if (PLogImpl.getConfig()?.debugFileOperations!!)
-        Log.i(PLog.TAG, "New file created: ${file.path}")
+        Log.i(PLog.DEBUG_TAG, "New file created: ${file.path}")
 }
 
 /*
@@ -201,6 +222,6 @@ fun getLogsSavedPaths(nameForEventDirectory: String = "", isForAll: Boolean = fa
  */
 private fun isDirectoryChanged(name: String) {
     if (name.isNotEmpty() && currentNameOfDirectory.isNotEmpty() && name != currentNameOfDirectory) {
-        PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_DIRECTORY_CREATED, name))
+        RxBus.send(LogEvents(EventTypes.NEW_EVENT_DIRECTORY_CREATED, name))
     }
 }

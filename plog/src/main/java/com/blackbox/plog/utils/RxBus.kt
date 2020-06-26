@@ -3,16 +3,15 @@ package com.blackbox.plog.utils
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 
-class RxBus {
+object RxBus {
 
-    private val bus = PublishSubject.create<Any>()
+    private val publisher = PublishSubject.create<Any>()
 
-    fun send(o: Any) {
-        bus.onNext(o)
+    fun send(event: Any) {
+        publisher.onNext(event)
     }
 
-    fun toObservable(): Observable<Any> {
-        return bus
-    }
-
+    // Listen should return an Observable and not the publisher
+    // Using ofType we filter only events that match that class type
+    fun <T> listen(eventType: Class<T>): Observable<T> = publisher.ofType(eventType)
 }
