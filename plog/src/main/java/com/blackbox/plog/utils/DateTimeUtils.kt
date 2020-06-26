@@ -18,10 +18,13 @@ object DateTimeUtils {
         return f1.format(date)
     }
 
-    internal fun dateToLong(time: String): Long {
-        val f1 = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
-        val date = f1.parse(time)
-        return date.time
+    fun getHourlyFolderName(currentTimeLong:Long): String {
+        val currentTime = Date(currentTimeLong)
+        val sdf1 = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
+        val day = sdf1.format(currentTime)
+        val sdf2 = SimpleDateFormat("HH", Locale.ENGLISH)
+        val hour = sdf2.format(currentTime)
+        return "$day$hour"
     }
 
     fun getTimeFormatted(timestampFormat: String?): String {

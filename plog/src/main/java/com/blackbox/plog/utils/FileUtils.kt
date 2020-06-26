@@ -10,6 +10,7 @@ import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_PLOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
+import com.blackbox.plog.tests.PLogTestHelper
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import java.io.File
 
@@ -78,6 +79,9 @@ private fun saveFileEvent(file: File, isPLog: Boolean = true) {
         PART_FILE_CREATED_DATALOG = false
     }
 
+    if (file != null)
+        PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
+
     if (PLogImpl.getConfig()?.debugFileOperations!!)
         Log.i(PLog.TAG, "New file created: ${file.path}")
 }
@@ -97,7 +101,12 @@ fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
         DirectoryStructure.FOR_DATE -> {
             val folderPath = rootFolderPath + DateControl.instance.today
             createDirIfNotExists(folderPath)
-            val hourlyFileName = DateControl.instance.today + DateControl.instance.hour //Name of File
+
+            val hourlyFileName = if (PLogTestHelper.isTestingHourlyLogs) {
+                PLogTestHelper.hourlyLogFileName
+            } else {
+                DateControl.instance.today + DateControl.instance.hour
+            } //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file
                 folderPath + File.separator + hourlyFileName + PLogImpl.getConfig()?.logFileExtension!!

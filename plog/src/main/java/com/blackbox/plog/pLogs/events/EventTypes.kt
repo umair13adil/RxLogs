@@ -14,6 +14,7 @@ enum class EventTypes(var data: String) {
     SEVERE_ERROR_REPORTED("11"),
     NEW_ERROR_REPORTED_FORMATTED("12"),
     SEVERE_ERROR_REPORTED_FORMATTED("13"),
+    NEW_EVENT_LOG_FILE_CREATED("14")
 
 }
 

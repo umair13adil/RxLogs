@@ -18,6 +18,10 @@ import java.io.File
 
 class MainApplication : Application() {
 
+    companion object{
+        var logsConfig : LogsConfig?=null
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -39,7 +43,7 @@ class MainApplication : Application() {
     private fun setUpPLogger() {
         val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
 
-        val logsConfig = LogsConfig(
+        logsConfig = LogsConfig(
                 logLevelsEnabled = arrayListOf(LogLevel.ERROR, LogLevel.SEVERE, LogLevel.INFO, LogLevel.WARNING),
                 logTypesEnabled = arrayListOf(LogType.Notification.type, LogType.Location.type, LogType.Navigation.type, LogType.Errors.type, "Deliveries"),
                 formatType = FormatType.FORMAT_CURLY,
@@ -119,7 +123,7 @@ class MainApplication : Application() {
                     .subscribe()
         }
 
-        PLog.applyConfigurations(logsConfig, saveToFile = true)
+        PLog.applyConfigurations(logsConfig!!, saveToFile = true)
     }
 
 }

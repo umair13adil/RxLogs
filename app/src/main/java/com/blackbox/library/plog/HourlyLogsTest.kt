@@ -6,8 +6,11 @@ import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.models.LogLevel
+import com.blackbox.plog.tests.PLogTestHelper
 import com.blackbox.plog.utils.DateTimeUtils
+import com.google.gson.GsonBuilder
 import com.mooveit.library.Fakeit
 import kotlinx.android.synthetic.main.activity_hourly_logs_test.*
 import java.util.*
@@ -19,7 +22,7 @@ class HourlyLogsTest : AppCompatActivity() {
     private val c: Calendar = Calendar.getInstance()
 
     private var logsPrinted = 0
-    private var currentTime = 0L
+    private var currentTime = ""
 
     private val mIntervalTime = 5000
     private val mIntervalLog = 500
@@ -27,10 +30,12 @@ class HourlyLogsTest : AppCompatActivity() {
     private var mHandlerTime: Handler? = null
     private var mHandlerLog: Handler? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hourly_logs_test)
 
+        PLogTestHelper.isTestingHourlyLogs = true
         PLogMetaInfoProvider.elkStackSupported = false
 
         //Initialize FakeIt
@@ -40,13 +45,38 @@ class HourlyLogsTest : AppCompatActivity() {
         mHandlerLog = Handler()
 
         runTimers()
+
+        MainApplication.logsConfig.also { it ->
+
+            //Subscribe to Events listener
+            it?.getLogEventsListener()
+                    ?.doOnNext {
+
+                        when (it.event) {
+                            EventTypes.NEW_EVENT_LOG_FILE_CREATED -> {
+                                PLog.logThis(TAG, "getLogEventsListener", "New log file created: " + it.data, LogLevel.INFO)
+
+                                events?.text = "New log file created: " + it.data
+                            }
+                            EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
+                                PLog.logThis(TAG, "getLogEventsListener", "New directory created: " + it.data, LogLevel.INFO)
+                            }
+                            else -> {
+                            }
+                        }
+                    }?.doOnError {
+
+                    }
+                    ?.subscribe()
+        }
     }
 
 
     private fun changeTime() {
         c.add(Calendar.HOUR_OF_DAY, 1)
-        currentTime = c.time.time
-        PLog.logThis(TAG, "changeTime", "Time changed: ${DateTimeUtils.getFullDateTimeStringCompressed(currentTime)}")
+        currentTime = DateTimeUtils.getHourlyFolderName(c.time.time)
+        PLogTestHelper.hourlyLogFileName = currentTime
+        PLog.logThis(TAG, "changeTime", "Time changed: $currentTime")
     }
 
     @SuppressLint("SetTextI18n")
@@ -54,7 +84,7 @@ class HourlyLogsTest : AppCompatActivity() {
         PLog.logThis(TAG, Fakeit.ancient().titan(), Fakeit.friends().quote(), LogLevel.INFO)
         logsPrinted++
 
-        status.text = "Logs Printed: $logsPrinted\nCurrent Time: ${DateTimeUtils.getFullDateTimeStringCompressed(currentTime)}"
+        status?.text = "Logs Printed: $logsPrinted\nCurrent Time: $currentTime"
     }
 
     private var timeRunner: Runnable = object : Runnable {

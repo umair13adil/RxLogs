@@ -24,6 +24,7 @@ import com.blackbox.plog.utils.Utils
 import com.blackbox.plog.utils.Utils.createDirIfNotExists
 import com.google.gson.Gson
 import io.reactivex.Observable
+import io.reactivex.exceptions.OnErrorNotImplementedException
 import io.reactivex.rxkotlin.subscribeBy
 import java.io.File
 
@@ -208,9 +209,13 @@ open class PLogImpl {
                     .toObservable()
                     .subscribeBy(
                             onNext = {
-                                if (it is LogEvents) {
-                                    if (!emitter.isDisposed)
-                                        emitter.onNext(it)
+                                try {
+                                    if (it is LogEvents) {
+                                        if (!emitter.isDisposed)
+                                            emitter.onNext(it)
+                                    }
+                                } catch (e: OnErrorNotImplementedException) {
+                                    e.printStackTrace()
                                 }
                             },
                             onError = { error ->
