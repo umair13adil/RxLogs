@@ -24,8 +24,8 @@ class HourlyLogsTest : AppCompatActivity() {
     private var logsPrinted = 0
     private var currentTime = ""
 
-    private val mIntervalTime = 5000
-    private val mIntervalLog = 500
+    private val mIntervalTime = 15000
+    private val mIntervalLog = 100
 
     private var mHandlerTime: Handler? = null
     private var mHandlerLog: Handler? = null
@@ -50,6 +50,9 @@ class HourlyLogsTest : AppCompatActivity() {
 
             //Subscribe to Events listener
             it?.getLogEventsListener()
+                    ?.doOnError{
+                        it.printStackTrace()
+                    }
                     ?.doOnNext {
 
                         when (it.event) {
@@ -64,10 +67,11 @@ class HourlyLogsTest : AppCompatActivity() {
                             else -> {
                             }
                         }
-                    }?.doOnError {
-
-                    }
-                    ?.subscribe()
+                    }?.subscribe({ result ->
+                        // updating view
+                    }, { throwable ->
+                        throwable.printStackTrace()
+                    })
         }
     }
 

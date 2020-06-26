@@ -72,15 +72,17 @@ fun checkFileExists(path: String, isPLog: Boolean = true): File {
 
 private fun saveFileEvent(file: File, isPLog: Boolean = true) {
 
+    PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
+
+    if (PLogImpl.getConfig()?.debugFileOperations!!)
+        Log.i(PLog.TAG, "saveFileEvent: New file created: ${file.path}")
+
     //Check if file created if part file
     if (isPLog && !file.name.contains(PART_FILE_PREFIX)) {
         PART_FILE_CREATED_PLOG = false
     } else if (!isPLog && !file.name.contains(PART_FILE_PREFIX)) {
         PART_FILE_CREATED_DATALOG = false
     }
-
-    if (file != null)
-        PLog.getLogBus().send(LogEvents(EventTypes.NEW_EVENT_LOG_FILE_CREATED, file.name))
 
     if (PLogImpl.getConfig()?.debugFileOperations!!)
         Log.i(PLog.TAG, "New file created: ${file.path}")

@@ -203,8 +203,7 @@ open class PLogImpl {
      */
     internal fun getLogEvents(): Observable<LogEvents> {
 
-        return Observable.create { it ->
-            val emitter = it
+        return Observable.create { emitter ->
             PLog.getLogBus()
                     .toObservable()
                     .subscribeBy(

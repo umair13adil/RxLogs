@@ -36,10 +36,10 @@ object LogWriter {
         val path = setupFilePaths()
         val f = checkFileExists(path)
 
-        if (!PART_FILE_CREATED_PLOG) {
-            shouldLog = shouldWriteLog(f)
+        shouldLog = if (!PART_FILE_CREATED_PLOG) {
+            shouldWriteLog(f)
         } else {
-            shouldLog = shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
+            shouldWriteLog(File(CURRENT_PART_FILE_PATH_PLOG))
         }
 
         if (shouldLog.first) {
@@ -98,11 +98,11 @@ object LogWriter {
                     //Create part file
                     createPartFile(file, isPLog, logFileName)
                 }
-            } else {
+            } /*else {
 
                 if (PLogImpl.getConfig()?.debugFileOperations!!)
                     Log.i(PLog.TAG, "File Length: ${Utils.bytesToReadable(length.toInt())} < ${Utils.bytesToReadable(maxLength)}")
-            }
+            }*/
         }
 
         //TODO update no of files created in config XML for easy access

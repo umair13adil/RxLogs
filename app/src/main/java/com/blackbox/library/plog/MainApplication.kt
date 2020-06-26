@@ -13,13 +13,16 @@ import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.AppExceptionHandler
 import com.google.gson.GsonBuilder
+import kotlinx.android.synthetic.main.activity_hourly_logs_test.*
 import java.io.File
 
 
 class MainApplication : Application() {
 
-    companion object{
-        var logsConfig : LogsConfig?=null
+    private val TAG = "MainApplication"
+
+    companion object {
+        var logsConfig: LogsConfig? = null
     }
 
     override fun onCreate() {
@@ -65,7 +68,7 @@ class MainApplication : Application() {
                 autoExportLogTypes = arrayListOf(),
                 autoExportLogTypesPeriod = 3,
                 isDebuggable = true,
-                debugFileOperations = false,
+                debugFileOperations = true,
                 logFileExtension = LogExtension.LOG,
                 attachTimeStamp = true,
                 attachNoOfFiles = true,
@@ -79,20 +82,23 @@ class MainApplication : Application() {
 
             //Subscribe to Events listener
             it.getLogEventsListener()
+                    .doOnError {
+                        it.printStackTrace()
+                    }
                     .doOnNext {
 
                         when (it.event) {
                             EventTypes.NEW_ERROR_REPORTED -> {
-                                PLog.logThis("PLogger", "event", it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", it.data, LogLevel.INFO)
                             }
                             EventTypes.SEVERE_ERROR_REPORTED -> {
-                                PLog.logThis("PLogger", "Severe Error: ", it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", it.data, LogLevel.INFO)
                             }
                             EventTypes.NEW_ERROR_REPORTED_FORMATTED -> {
-                                PLog.logThis("PLogger", "formatted", it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", it.data, LogLevel.INFO)
                             }
                             EventTypes.SEVERE_ERROR_REPORTED_FORMATTED -> {
-                                PLog.logThis("PLogger", "formatted", it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", it.data, LogLevel.INFO)
                             }
                             EventTypes.PLOGS_EXPORTED -> {
                             }
@@ -101,26 +107,33 @@ class MainApplication : Application() {
                             EventTypes.LOGS_CONFIG_FOUND -> {
                                 PLog.getLogsConfigFromXML()?.let { config ->
                                     val gson = GsonBuilder().setPrettyPrinting().create()
-                                    PLog.logThis("PLogger", "event", gson.toJson(config).toString(), LogLevel.INFO)
+                                    PLog.logThis(TAG, "getLogEventsListener", gson.toJson(config).toString(), LogLevel.INFO)
                                 }
                             }
+                            EventTypes.NEW_EVENT_LOG_FILE_CREATED -> {
+                                PLog.logThis(TAG, "getLogEventsListener", "New log file created: " + it.data, LogLevel.INFO)
+                            }
                             EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
-                                PLog.logThis("PLogger", "event", "New directory created: " + it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", "New directory created: " + it.data, LogLevel.INFO)
                             }
                             EventTypes.LOG_TYPE_EXPORTED -> {
-                                PLog.logThis("PLogger", "event", "Log Type: " + it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", "Log Type: " + it.data, LogLevel.INFO)
                             }
                             EventTypes.DELETE_LOGS -> {
-                                PLog.logThis("PLogger", "event", "DELETE_LOGS: " + it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", "DELETE_LOGS: " + it.data, LogLevel.INFO)
                             }
                             EventTypes.DELETE_EXPORTED_FILES -> {
-                                PLog.logThis("PLogger", "event", "DELETE_EXPORTED_FILES: " + it.data, LogLevel.INFO)
+                                PLog.logThis(TAG, "getLogEventsListener", "DELETE_EXPORTED_FILES: " + it.data, LogLevel.INFO)
                             }
                             else -> {
                             }
                         }
                     }
-                    .subscribe()
+                    .subscribe({ result ->
+                        // updating view
+                    }, { throwable ->
+                        throwable.printStackTrace()
+                    })
         }
 
         PLog.applyConfigurations(logsConfig!!, saveToFile = true)
