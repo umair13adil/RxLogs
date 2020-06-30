@@ -36,6 +36,7 @@ Features
 18. Advanced Automation for deleting logs automatically
 19. Exports HTML formatted exceptions
 20. ELK Stack Supported See more about it [here](https://www.elastic.co/what-is/elk-stack).
+21. MQTT Support
 
 Prerequisites
 -------------
@@ -43,8 +44,14 @@ Prerequisites
 Logging is done on storage directory so it's very important to add these permissions to your project's manifest file first.
 
 ```xml
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <!--Required for MQTT logging-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!--Required for local storage logging-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 ```
 
 **Check for Runtime permissions:**

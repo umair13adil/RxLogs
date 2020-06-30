@@ -3,6 +3,8 @@ package com.blackbox.plog.pLogs.impl
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
+import com.blackbox.plog.mqtt.MQTTSender
+import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.ConfigReader
 import com.blackbox.plog.pLogs.config.ConfigWriter
@@ -225,6 +227,11 @@ open class PLogImpl {
             //Do nothing if log level type is disabled
             if (!isLogLevelEnabled(type))
                 return Pair(false, logData)
+
+            //Publish to MQTT
+            if(PLogMQTTProvider.mqttEnabled){
+                MQTTSender.publishMessage(logData)
+            }
 
         } else {
             return Pair(false, logData)

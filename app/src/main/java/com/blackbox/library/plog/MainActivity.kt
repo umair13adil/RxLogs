@@ -14,6 +14,7 @@ import android.util.Log
 import android.widget.Toast
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.elk.models.fields.MetaInfo
+import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -69,6 +70,14 @@ class MainActivity : AppCompatActivity() {
                 /**Labels**/
                 labels = hashMapOf(Pair("env", "dev"))
         ))
+
+
+
+        PLogMQTTProvider.initMQTTClient(this,
+                topic = "",
+                url = "",
+                certificateInputSteam = resources.openRawResource(R.raw.test_mqtt_ca)
+        )
 
         //Initialize FakeIt
         Fakeit.initWithLocale(Locale.ENGLISH)

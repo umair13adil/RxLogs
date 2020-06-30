@@ -4,6 +4,8 @@ import android.os.AsyncTask
 import android.util.Log
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
+import com.blackbox.plog.mqtt.MQTTSender
+import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import com.blackbox.plog.pLogs.impl.PLogImpl
@@ -34,7 +36,14 @@ class SaveDataLogsAsync(var logFileName: String, var dataToWrite: String, var ov
                 Log.i(PLog.TAG, dataToWrite)
         }
 
-        DataLogWriter.writeDataLog(logFileName, dataToWrite, overwrite)
+        //Publish to MQTT
+        if (PLogMQTTProvider.mqttEnabled) {
+            MQTTSender.publishMessage(dataToWrite)
+        }
+
+        //Only write to local storage if this flag is set 'true'
+        if (PLogMQTTProvider.writeLogsToLocalStorage)
+            DataLogWriter.writeDataLog(logFileName, dataToWrite, overwrite)
 
         return true
     }

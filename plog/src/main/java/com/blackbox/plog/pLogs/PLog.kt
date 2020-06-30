@@ -9,6 +9,7 @@ import android.os.Handler
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
+import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.impl.AutoExportHelper
@@ -303,14 +304,18 @@ object PLog : PLogImpl() {
     }
 
     private fun writeLogsAsync(dataToWrite: String, logLevel: LogLevel) {
-        try {
-            SaveAsync(dataToWrite, logLevel).execute()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(DEBUG_TAG, Utils.getStackTrace(e))
+        //Only write to local storage if this flag is set 'true'
+        if (PLogMQTTProvider.writeLogsToLocalStorage) {
 
-            //Write directly
-            writeAndExportLog(dataToWrite, logLevel)
+            try {
+                SaveAsync(dataToWrite, logLevel).execute()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(DEBUG_TAG, Utils.getStackTrace(e))
+
+                //Write directly
+                writeAndExportLog(dataToWrite, logLevel)
+            }
         }
     }
 
