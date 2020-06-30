@@ -19,6 +19,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
+import com.mooveit.library.BuildConfig
 import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 
                 /**Environment**/
                 deviceId = "12",
-                environmentId = BuildConfig.FLAVOR,
+                environmentId = BuildConfig.APPLICATION_ID,
                 environmentName = BuildConfig.BUILD_TYPE,
                 organizationId = "9778",
 
@@ -71,12 +72,12 @@ class MainActivity : AppCompatActivity() {
                 labels = hashMapOf(Pair("env", "dev"))
         ))
 
-
-
-        PLogMQTTProvider.initMQTTClient(this,
-                topic = "",
-                url = "",
-                certificateInputSteam = resources.openRawResource(R.raw.test_mqtt_ca)
+        //MQTT Setup
+        PLogMQTTProvider.initMQTTClient(applicationContext,
+                topic = "YOUR_TOPIC",
+                brokerUrl = "YOUR_URL", //Without Scheme
+                certificateRes = R.raw.m2mqtt_ca,
+                clientId = "5aa39cef4d544d658ecaf23db701099c"
         )
 
         //Initialize FakeIt

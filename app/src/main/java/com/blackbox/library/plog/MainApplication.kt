@@ -13,7 +13,6 @@ import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.AppExceptionHandler
 import com.google.gson.GsonBuilder
-import kotlinx.android.synthetic.main.activity_hourly_logs_test.*
 import java.io.File
 
 
@@ -44,6 +43,7 @@ class MainApplication : Application() {
     }
 
     private fun setUpPLogger() {
+
         val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
 
         logsConfig = LogsConfig(

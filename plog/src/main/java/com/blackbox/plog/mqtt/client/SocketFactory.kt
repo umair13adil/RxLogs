@@ -1,5 +1,6 @@
 package com.blackbox.plog.mqtt.client
 
+import android.util.Log
 import java.io.IOException
 import java.io.InputStream
 import java.net.InetAddress
@@ -107,7 +108,9 @@ class SocketFactory @JvmOverloads constructor(options: SocketFactoryOptions = So
     init {
         tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
         val kmf = KeyManagerFactory.getInstance("X509")
+
         if (options.hasCaCrt()) {
+            Log.v(this.toString(), "MQTT_CONNECTION_OPTIONS.hasCaCrt(): true")
             val caKeyStore = KeyStore.getInstance(KeyStore.getDefaultType())
             caKeyStore.load(null, null)
             val caCF = CertificateFactory.getInstance("X.509")
@@ -124,6 +127,11 @@ class SocketFactory @JvmOverloads constructor(options: SocketFactoryOptions = So
             val clientKeyStore = KeyStore.getInstance("PKCS12")
             clientKeyStore.load(options.caClientP12InputStream, if (options.hasClientP12Password()) options.caClientP12Password!!.toCharArray() else CharArray(0))
             kmf.init(clientKeyStore, if (options.hasClientP12Password()) options.caClientP12Password!!.toCharArray() else CharArray(0))
+
+            val aliasesClientCert = clientKeyStore.aliases()
+            while (aliasesClientCert.hasMoreElements()) {
+                val o = aliasesClientCert.nextElement()
+            }
         } else {
             kmf.init(null, null)
         }

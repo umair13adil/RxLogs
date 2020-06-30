@@ -2,13 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.blackbox.library.plog">
 
-    <!--Required for MQTT logging-->
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!--Required for local storage logging-->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
@@ -17,7 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".HourlyLogsTest"></activity>
+
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">
@@ -27,6 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <activity
+            android:name=".HourlyLogsTest"
+            android:launchMode="singleTask" />
+
+    </application>
 </manifest>
