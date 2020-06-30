@@ -218,6 +218,29 @@ Send additional Meta info for better filtering at LogStash dashboard. This has t
         ))
 ```
 
+#### Enable MQTT Feature
+_______________________________________________
+
+**Note:** PLogger currently supports SSL connection for MQTT.
+
+#### Step 1: 
+Add certificate in your app's raw resource directory.
+
+##### Step 2: 
+Add following block for initializing MQTT logging.
+
+```kotlin
+        PLogMQTTProvider.initMQTTClient(applicationContext,
+                topic = "YOUR_TOPIC",
+                brokerUrl = "YOUR_URL", //Without Scheme
+                certificateRes = R.raw.m2mqtt_ca,
+                clientId = "5aa39cef4d544d658ecaf23db701099c"
+        )
+```
+
+That's it, MQTT setup is done.
+_______________________________________________
+
 Wiki
 --------
 
@@ -225,6 +248,9 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 
 Change Log
 ----------
+###### Version: 1.0.3
+- Added MQTT Logging support
+
 ###### Version: 1.0.2
 - Added ELK Logstash JSON logging support
 
