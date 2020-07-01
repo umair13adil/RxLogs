@@ -2,9 +2,12 @@ package com.blackbox.plog.mqtt
 
 import android.content.Context
 import android.support.annotation.RawRes
+import android.util.Log
 import com.blackbox.plog.mqtt.client.PahoMqqtClient
+import com.blackbox.plog.pLogs.impl.PLogImpl
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.MqttClient
+import java.io.InputStream
 
 object PLogMQTTProvider {
 
@@ -37,7 +40,8 @@ object PLogMQTTProvider {
                        connectionTimeout: Int = this.connectionTimeout,
                        isCleanSession: Boolean = this.isCleanSession,
                        isAutomaticReconnect: Boolean = this.isAutomaticReconnect,
-                       @RawRes certificateRes: Int) {
+                       @RawRes certificateRes: Int? = null,
+                       certificateStream: InputStream? = null) {
 
         this.mqttEnabled = true
         this.writeLogsToLocalStorage = writeLogsToLocalStorage
@@ -54,6 +58,14 @@ object PLogMQTTProvider {
 
         val baseUrl = "ssl://${brokerUrl}:${port}"
 
-        androidClient = PahoMqqtClient.instance?.getMqttClient(context, baseUrl, MqttClient.generateClientId(), certificateRes)
+        if (certificateRes != null) {
+            androidClient = PahoMqqtClient.instance?.getMqttClient(context, baseUrl, MqttClient.generateClientId(), certificateRes)
+        } else if (certificateStream != null) {
+            androidClient = PahoMqqtClient.instance?.getMqttClient(context, baseUrl, MqttClient.generateClientId(), certificateStream)
+        } else {
+            if (PLogImpl.getConfig()?.isDebuggable!!) {
+                Log.e(TAG, "No certificate provided!")
+            }
+        }
     }
 }

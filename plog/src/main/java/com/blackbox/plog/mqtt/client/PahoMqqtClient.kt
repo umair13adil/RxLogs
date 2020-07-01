@@ -9,6 +9,7 @@ import com.blackbox.plog.utils.Utils
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
 import java.io.IOException
+import java.io.InputStream
 import java.io.UnsupportedEncodingException
 import java.security.KeyManagementException
 import java.security.KeyStoreException
@@ -22,8 +23,7 @@ class PahoMqqtClient {
     private var connectOptions: MqttConnectOptions? = null
     private var isConnected = false
 
-    fun getMqttClient(context: Context, brokerUrl: String?, clientId: String?, @RawRes certFile: Int): MqttAndroidClient {
-
+    private fun setUpClient(context: Context, brokerUrl: String?, clientId: String?) {
         connectOptions = MqttConnectOptions()
         connectOptions?.connectionTimeout = PLogMQTTProvider.connectionTimeout
         connectOptions?.keepAliveInterval = PLogMQTTProvider.keepAliveIntervalSeconds
@@ -51,6 +51,11 @@ class PahoMqqtClient {
                 }
             }
         })
+    }
+
+    fun getMqttClient(context: Context, brokerUrl: String?, clientId: String?, @RawRes certFile: Int): MqttAndroidClient {
+
+        setUpClient(context, brokerUrl, clientId)
 
         val socketFactoryOptions = SocketFactory.SocketFactoryOptions()
         socketFactoryOptions.withCaInputStream(context.resources.openRawResource(certFile))
@@ -70,6 +75,41 @@ class PahoMqqtClient {
         } catch (e: UnrecoverableKeyException) {
             e.printStackTrace()
         }
+
+        connect()
+
+        return mqttAndroidClient!!
+    }
+
+    fun getMqttClient(context: Context, brokerUrl: String?, clientId: String?, certInputStream: InputStream): MqttAndroidClient {
+
+        setUpClient(context, brokerUrl, clientId)
+
+        val socketFactoryOptions = SocketFactory.SocketFactoryOptions()
+        socketFactoryOptions.withCaInputStream(certInputStream)
+
+        try {
+            connectOptions?.socketFactory = SocketFactory(socketFactoryOptions)
+        } catch (e: KeyStoreException) {
+            e.printStackTrace()
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: KeyManagementException) {
+            e.printStackTrace()
+        } catch (e: CertificateException) {
+            e.printStackTrace()
+        } catch (e: UnrecoverableKeyException) {
+            e.printStackTrace()
+        }
+
+        connect()
+
+        return mqttAndroidClient!!
+    }
+
+    private fun connect(){
         try {
             val token = mqttAndroidClient!!.connect(connectOptions)
             token.actionCallback = object : IMqttActionListener {
@@ -98,7 +138,6 @@ class PahoMqqtClient {
                 Log.e(TAG, Utils.getStackTrace(e))
             }
         }
-        return mqttAndroidClient!!
     }
 
     @Throws(MqttException::class)
