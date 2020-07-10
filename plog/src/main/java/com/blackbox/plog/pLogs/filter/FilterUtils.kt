@@ -6,7 +6,7 @@ import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.DateControl
-import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import com.blackbox.plog.utils.PLogUtils.createDirIfNotExists
 import java.io.File
 import java.util.zip.ZipException
 import java.util.zip.ZipFile

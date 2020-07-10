@@ -3,10 +3,7 @@ package com.blackbox.plog.mqtt
 import android.util.Log
 import com.blackbox.plog.mqtt.client.PahoMqqtClient
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.utils.Utils
-import org.eclipse.paho.client.mqttv3.MqttException
-import java.io.UnsupportedEncodingException
-import java.lang.NullPointerException
+import com.blackbox.plog.utils.PLogUtils
 
 object MQTTSender {
 
@@ -20,7 +17,7 @@ object MQTTSender {
                 }
             } catch (e: Exception) {
                 if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.e(TAG, Utils.getStackTrace(e))
+                    Log.e(TAG, PLogUtils.getStackTrace(e))
                 }
             }
         }

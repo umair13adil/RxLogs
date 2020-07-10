@@ -1,8 +1,13 @@
 package com.blackbox.plog.utils
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Environment
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 import java.io.IOException
@@ -12,13 +17,13 @@ import java.io.StringWriter
 /**
  * Created by Umair Adil on 18/11/2016.
  */
-object Utils {
+object PLogUtils {
 
-    fun createDirIfNotExists(path: String): Boolean {
+    internal fun createDirIfNotExists(path: String, config: LogsConfig? = null): Boolean {
         val file = File(path)
         if (!file.exists()) {
 
-            if (PLogImpl.getConfig()?.debugFileOperations!!)
+            if (PLogImpl.getConfig(config = config)?.debugFileOperations!!)
                 Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
 
             return file.mkdirs()
@@ -26,7 +31,7 @@ object Utils {
         return false
     }
 
-    fun getStackTrace(e: Exception?): String {
+    internal fun getStackTrace(e: Exception?): String {
         try {
             val sw = StringWriter()
             val pw = PrintWriter(sw)
@@ -46,7 +51,7 @@ object Utils {
         }
     }
 
-    fun getStackTrace(e: Throwable?): String {
+    internal fun getStackTrace(e: Throwable?): String {
         try {
             val sw = StringWriter()
             val pw = PrintWriter(sw)
@@ -67,7 +72,7 @@ object Utils {
         }
     }
 
-    fun bytesToReadable(b: Int): String {
+    internal fun bytesToReadable(b: Int): String {
 
         var bytes = b
 
@@ -89,7 +94,7 @@ object Utils {
         return ""
     }
 
-    fun readAssetsXML(fileName: String, context: Context): String? {
+    internal fun readAssetsXML(fileName: String, context: Context): String? {
         var xmlString: String? = null
         val am = context.assets
         try {
@@ -103,5 +108,18 @@ object Utils {
         }
 
         return xmlString
+    }
+
+    fun permissionsGranted(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    internal fun createDir(pathName: String?): String {
+        val file = File(Environment.getExternalStorageDirectory().toString() + File.separator + pathName)
+        return if (!file.exists()) {
+            val result = file.mkdirs()
+            file.path
+        } else file.path
     }
 }

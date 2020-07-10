@@ -2,7 +2,7 @@ package com.blackbox.plog.dataLogs
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.PLogUtils
 
 /**
  * Created by umair on 04/01/2018.
@@ -65,7 +65,7 @@ class DataLogger(private var logFileName: String = "log") {
             save.execute()
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(PLog.DEBUG_TAG, Utils.getStackTrace(e))
+            Log.e(PLog.DEBUG_TAG, PLogUtils.getStackTrace(e))
 
             //Write Directly
             writeLogsAsync(fileName, dataToWrite, shouldOverWrite)

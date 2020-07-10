@@ -59,7 +59,7 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
 
     override fun uncaughtException(t: Thread?, e: Throwable) {
 
-        PLog.logThis(TAG, "uncaughtException", info = "Thread: ${t?.name}, ${Utils.getStackTrace(e)}", throwable = e, level = LogLevel.SEVERE)
+        PLog.logThis(TAG, "uncaughtException", info = "Thread: ${t?.name}, ${PLogUtils.getStackTrace(e)}", throwable = e, level = LogLevel.SEVERE)
 
         lastStartedActivity?.let { activity ->
             val isRestarted = activity.intent

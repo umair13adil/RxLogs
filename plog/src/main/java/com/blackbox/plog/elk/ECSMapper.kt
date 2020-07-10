@@ -139,13 +139,13 @@ object ECSMapper {
     private fun getHost(): Host {
         val metaInfo = PLogMetaInfoProvider.metaInfo
         return Host(
-                architecture = "${metaInfo.deviceManufacturer} ${metaInfo.deviceSdkInt}",
+                sdkInt = metaInfo.deviceSdkInt,
                 hostname = metaInfo.deviceModel,
                 id = metaInfo.deviceBrand,
-                ip = "0.0.0.0",
                 mac = metaInfo.deviceSerial,
                 name = metaInfo.deviceName,
-                type = "Android"
+                type = metaInfo.deviceManufacturer,
+                batteryPercent = metaInfo.batteryPercent
         )
     }
 
@@ -154,7 +154,7 @@ object ECSMapper {
         return User(
                 email = metaInfo.userEmail,
                 full_name = metaInfo.userName,
-                hash = metaInfo.deviceId,
+                deviceId = metaInfo.deviceId,
                 id = metaInfo.userId,
                 name = metaInfo.userName
         )
@@ -163,7 +163,8 @@ object ECSMapper {
     private fun getOrganization(): Organization {
         val metaInfo = PLogMetaInfoProvider.metaInfo
         return Organization(
-                id = "${metaInfo.organizationId} / ${metaInfo.environmentId}",
+                id = metaInfo.organizationId,
+                unitId = metaInfo.organizationUnitId,
                 name = metaInfo.environmentName
         )
     }

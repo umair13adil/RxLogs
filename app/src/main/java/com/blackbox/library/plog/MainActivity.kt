@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -19,6 +20,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
+import com.blackbox.plog.utils.PLogUtils
 import com.mooveit.library.BuildConfig
 import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -36,6 +38,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if (PLogUtils.permissionsGranted(this)) {
+            doOnPermissionsSet()
+        }
+
+        //Check read write permissions
+        checkPermissions()
+    }
+
+    private fun doOnPermissionsSet() {
+        MainApplication.setUpPLogger(this)
 
         //Set MetaInfo for ELK Logs
         PLogMetaInfoProvider.elkStackSupported = true
@@ -73,26 +86,32 @@ class MainActivity : AppCompatActivity() {
         ))
 
         //MQTT Setup
-        PLogMQTTProvider.initMQTTClient(applicationContext,
-                topic = "YOUR_TOPIC",
-                brokerUrl = "YOUR_URL", //Without Scheme
+        /*PLogMQTTProvider.initMQTTClient(applicationContext,
+                topic = "",
+                brokerUrl = "", //Without Scheme
                 certificateRes = R.raw.m2mqtt_ca,
                 clientId = "5aa39cef4d544d658ecaf23db701099c"
-        )
+        )*/
 
         //Initialize FakeIt
         Fakeit.initWithLocale(Locale.ENGLISH)
 
-        //Check read write permissions
-        checkPermissions()
-
         //If permission granted
         setupLoggerControls()
 
-        //Write Fake Data to Logs
-        for (i in 0..100) {
-            PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
-        }
+        object : CountDownTimer(5000, 1000) {
+            override fun onFinish() {
+
+            }
+
+            override fun onTick(millisUntilFinished: Long) {
+                //Write Fake Data to Logs
+                for (i in 0..100) {
+                    PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
+                }
+            }
+
+        }.start();
 
         run_test.setOnClickListener {
             startActivity(Intent(this, HourlyLogsTest::class.java))
@@ -263,8 +282,7 @@ class MainActivity : AppCompatActivity() {
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", LogLevel.INFO)
 
-                //If permission granted
-                setupLoggerControls()
+                doOnPermissionsSet()
 
             } else {
                 PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", LogLevel.WARNING)

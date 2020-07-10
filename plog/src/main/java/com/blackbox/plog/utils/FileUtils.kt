@@ -11,13 +11,14 @@ import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_PLOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_PREFIX
 import com.blackbox.plog.tests.PLogTestHelper
-import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import com.blackbox.plog.utils.PLogUtils.createDirIfNotExists
 import java.io.File
 
 
 private var currentNameOfDirectory = ""
 
 fun writeToFile(path: String, data: String) {
+
     try {
         val file = File(path)
         if (file.exists()) {
@@ -33,6 +34,7 @@ fun writeToFile(path: String, data: String) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
+        Log.e(PLog.DEBUG_TAG, e.message)
 
         if (PLogImpl.getConfig()?.debugFileOperations!!)
             Log.i(PLog.DEBUG_TAG, "writeToFile: Unable to write to file.. ${e.message}")
@@ -40,6 +42,7 @@ fun writeToFile(path: String, data: String) {
 }
 
 fun appendToFile(path: String, data: String) {
+
     try {
         val file = File(path)
 
@@ -55,6 +58,7 @@ fun appendToFile(path: String, data: String) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
+        Log.e(PLog.DEBUG_TAG, e.message)
 
         if (PLogImpl.getConfig()?.debugFileOperations!!)
             Log.i(PLog.DEBUG_TAG, "appendToFile: Unable to append to file.. ${e.message}")

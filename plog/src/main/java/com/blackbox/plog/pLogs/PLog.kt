@@ -16,14 +16,15 @@ import com.blackbox.plog.pLogs.impl.AutoExportHelper
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
-import com.blackbox.plog.utils.RxBus
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.PLogUtils
 import com.blackbox.plog.utils.getLogsSavedPaths
 import io.reactivex.Observable
 import java.io.File
 
 object PLog : PLogImpl() {
 
+    internal val TAG = PLogImpl.TAG
+    internal val DEBUG_TAG = PLogImpl.DEBUG_TAG
     internal val handler = Handler()
 
     /**
@@ -304,6 +305,7 @@ object PLog : PLogImpl() {
     }
 
     private fun writeLogsAsync(dataToWrite: String, logLevel: LogLevel) {
+
         //Only write to local storage if this flag is set 'true'
         if (PLogMQTTProvider.writeLogsToLocalStorage) {
 
@@ -311,7 +313,7 @@ object PLog : PLogImpl() {
                 SaveAsync(dataToWrite, logLevel).execute()
             } catch (e: Exception) {
                 e.printStackTrace()
-                Log.e(DEBUG_TAG, Utils.getStackTrace(e))
+                Log.e(DEBUG_TAG, PLogUtils.getStackTrace(e))
 
                 //Write directly
                 writeAndExportLog(dataToWrite, logLevel)

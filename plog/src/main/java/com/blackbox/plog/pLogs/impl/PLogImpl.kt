@@ -1,5 +1,7 @@
 package com.blackbox.plog.pLogs.impl
 
+import android.content.Context
+import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
@@ -21,8 +23,9 @@ import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.Encrypter
 import com.blackbox.plog.utils.RxBus
-import com.blackbox.plog.utils.Utils
-import com.blackbox.plog.utils.Utils.createDirIfNotExists
+import com.blackbox.plog.utils.PLogUtils
+import com.blackbox.plog.utils.PLogUtils.createDirIfNotExists
+import com.blackbox.plog.utils.PLogUtils.permissionsGranted
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.subscribeBy
@@ -30,9 +33,6 @@ import java.io.File
 
 
 open class PLogImpl {
-
-    internal val TAG = "PLogger"
-    internal val DEBUG_TAG = "PLogger_DEBUG"
 
     internal var logTypes = hashMapOf<String, DataLogger>()
 
@@ -78,12 +78,31 @@ open class PLogImpl {
      *
      * @param 'saveToFile' if true, file will be written to storage
      */
-    fun applyConfigurations(config: LogsConfig, saveToFile: Boolean = false) {
+    fun applyConfigurations(config: LogsConfig?, saveToFile: Boolean = false, context: Context) {
+
+        if (config == null) {
+            Log.e(TAG, "applyConfigurations: No configuration provided!")
+            return
+        }
+
+        if (!permissionsGranted(context)) {
+            Log.e(TAG, "applyConfigurations: Unable to setup logs. Permissions not granted.")
+            return
+        }
 
         //Create 'Save' Path
-        createDirIfNotExists(config.savePath)
+        createDirIfNotExists(config.savePath, config = config)
 
-        PLogImpl.saveConfig(config)
+        saveConfig(config)
+
+        if (config.encryptionEnabled) {
+            if (config.encryptionKey.isNotEmpty()) {
+                config.encryptionKey.let {
+                    val key = encrypter.checkIfKeyValid(it)
+                    LogWriter.secretKey = encrypter.generateKey(key)
+                }
+            }
+        }
 
         if (saveToFile) {
             //Only save if parameter value 'true'
@@ -229,7 +248,7 @@ open class PLogImpl {
                 return Pair(false, logData)
 
             //Publish to MQTT
-            if(PLogMQTTProvider.mqttEnabled){
+            if (PLogMQTTProvider.mqttEnabled) {
                 MQTTSender.publishMessage(logData)
             }
 
@@ -241,7 +260,6 @@ open class PLogImpl {
     }
 
     internal fun writeAndExportLog(data: String, type: LogLevel) {
-
         if (getConfig()?.encryptionEnabled!!) {
             LogWriter.writeEncryptedLogs(data)
         } else {
@@ -252,40 +270,64 @@ open class PLogImpl {
     internal fun formatErrorMessage(info: String, throwable: Throwable? = null, exception: Exception? = null): String {
         return if (info.isNotEmpty()) {
             if (throwable != null)
-                "$info, ${Utils.getStackTrace(throwable)}"
+                "$info, ${PLogUtils.getStackTrace(throwable)}"
             else
-                "$info, ${Utils.getStackTrace(exception)}"
+                "$info, ${PLogUtils.getStackTrace(exception)}"
         } else {
             if (throwable != null)
-                Utils.getStackTrace(throwable)
+                PLogUtils.getStackTrace(throwable)
             else
-                Utils.getStackTrace(exception)
+                PLogUtils.getStackTrace(exception)
         }
     }
 
     companion object {
+
+        internal val TAG = "PLogger"
+        internal val DEBUG_TAG = "PLogger_DEBUG"
+
+        @JvmStatic
         private var logsConfig: LogsConfig? = null
+
+        @JvmStatic
         internal val encrypter by lazy { Encrypter() }
+
+        @JvmStatic
         internal val gson = Gson()
 
-        internal fun getConfig(): LogsConfig? {
-            return logsConfig
+        @JvmStatic
+        internal fun getConfig(config: LogsConfig? = null): LogsConfig? {
+            return if (logsConfig != null) {
+                logsConfig
+            } else {
+                if (config != null) {
+                    logsConfig = config
+                } else {
+                    Log.e(TAG, "getConfig: Saved config not found.")
+                }
+                logsConfig
+            }
         }
 
-        internal fun saveConfig(config: LogsConfig) {
+        @JvmStatic
+        internal fun saveConfig(config: LogsConfig?) {
 
-            //Set up encryption Key
-            getConfig()?.encryptionEnabled?.let {
-                getConfig()?.encryptionKey?.let {
-                    if (it.isNotEmpty()) {
-                        val key = encrypter.checkIfKeyValid(it)
-                        config.secretKey = encrypter.generateKey(key)
+            if (config != null) {
+                //Set up encryption Key
+                getConfig()?.encryptionEnabled?.let {
+                    getConfig()?.encryptionKey?.let {
+                        if (it.isNotEmpty()) {
+                            val key = encrypter.checkIfKeyValid(it)
+                            config.secretKey = encrypter.generateKey(key)
+                        }
                     }
                 }
-            }
 
-            //Set Logs Configuration
-            logsConfig = config
+                //Set Logs Configuration
+                logsConfig = config
+            } else {
+                Log.e(TAG, "saveConfig: Configurations not provided.")
+            }
         }
     }
 }

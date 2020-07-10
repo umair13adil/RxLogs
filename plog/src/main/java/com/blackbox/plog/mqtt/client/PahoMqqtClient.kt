@@ -5,7 +5,7 @@ import android.support.annotation.RawRes
 import android.util.Log
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.impl.PLogImpl
-import com.blackbox.plog.utils.Utils
+import com.blackbox.plog.utils.PLogUtils
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
 import java.io.IOException
@@ -41,13 +41,13 @@ class PahoMqqtClient {
 
             override fun connectionLost(cause: Throwable?) {
                 if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "connectionLost : ${Utils.getStackTrace(cause)}")
+                    Log.d(TAG, "connectionLost : ${PLogUtils.getStackTrace(cause)}")
                 }
             }
 
             override fun deliveryComplete(token: IMqttDeliveryToken?) {
                 if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "deliveryComplete : $token")
+                    Log.d(TAG, "deliveryComplete : ${token?.message?.payload}")
                 }
             }
         })
@@ -109,7 +109,7 @@ class PahoMqqtClient {
         return mqttAndroidClient!!
     }
 
-    private fun connect(){
+    private fun connect() {
         try {
             val token = mqttAndroidClient!!.connect(connectOptions)
             token.actionCallback = object : IMqttActionListener {
@@ -127,7 +127,7 @@ class PahoMqqtClient {
                 override fun onFailure(asyncActionToken: IMqttToken, exception: Throwable) {
                     if (PLogImpl.getConfig()?.isDebuggable!!) {
                         Log.d(TAG, "connect : Failure $exception")
-                        Log.e(TAG, Utils.getStackTrace(exception))
+                        Log.e(TAG, PLogUtils.getStackTrace(exception))
                     }
                 }
             }
@@ -135,7 +135,7 @@ class PahoMqqtClient {
             e.printStackTrace()
 
             if (PLogImpl.getConfig()?.isDebuggable!!) {
-                Log.e(TAG, Utils.getStackTrace(e))
+                Log.e(TAG, PLogUtils.getStackTrace(e))
             }
         }
     }
@@ -219,9 +219,12 @@ class PahoMqqtClient {
 
     companion object {
 
-        private const val TAG = "PahoMqttClient"
+        private const val TAG = "PLogger: PahoMqttClient"
+
+        @JvmStatic
         private var pahoMqqtClient: PahoMqqtClient? = null
 
+        @JvmStatic
         val instance: PahoMqqtClient?
             get() {
                 if (pahoMqqtClient == null) pahoMqqtClient = PahoMqqtClient()

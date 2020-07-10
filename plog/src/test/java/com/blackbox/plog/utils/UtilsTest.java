@@ -13,7 +13,7 @@ import org.mockito.MockitoAnnotations;
 public class UtilsTest {
 
     @InjectMocks
-    Utils utils;
+    PLogUtils utils;
 
     @Before
     public void setUp() {

@@ -11,6 +11,7 @@ data class MetaInfo(
         var environmentId: String = "",
         var environmentName: String = "",
         var organizationId: String = "",
+        var organizationUnitId: String = "",
         var language: String = "",
 
         /**User**/
@@ -25,6 +26,7 @@ data class MetaInfo(
         var deviceManufacturer: String = "",
         var deviceModel: String = "",
         var deviceSdkInt: String = "",
+        var batteryPercent: String = "",
 
         /**Location**/
         var latitude: Double = 0.0,

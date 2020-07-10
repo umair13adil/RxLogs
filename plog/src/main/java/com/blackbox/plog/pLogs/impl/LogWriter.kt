@@ -15,7 +15,8 @@ object LogWriter {
 
 
     init {
-        secretKey = PLogImpl.getConfig()?.secretKey
+        if (secretKey == null)
+            secretKey = PLogImpl.getConfig()?.secretKey
     }
 
     /*
@@ -23,8 +24,8 @@ object LogWriter {
      */
     fun writeEncryptedLogs(logFormatted: String) {
 
-        if (secretKey == null){
-            Log.e("writeEncryptedLogs","No Key provided!")
+        if (secretKey == null) {
+            Log.e("writeEncryptedLogs", "No Key provided! Logs will not be written to a file.")
             return
         }
 
@@ -64,7 +65,7 @@ object LogWriter {
 
         if (shouldLog.first) {
             appendToFile(shouldLog.second, logFormatted)
-        }else{
+        } else {
             if (PLogImpl.getConfig()?.debugFileOperations!!)
                 Log.i(PLog.DEBUG_TAG, "writeSimpleLogs: Unable to write log file.")
         }
