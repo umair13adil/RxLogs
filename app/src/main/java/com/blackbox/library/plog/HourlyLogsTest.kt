@@ -3,7 +3,8 @@ package com.blackbox.library.plog
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
@@ -77,7 +78,7 @@ class HourlyLogsTest : AppCompatActivity() {
         c.add(Calendar.HOUR_OF_DAY, 1)
         currentTime = DateTimeUtils.getHourlyFolderName(c.time.time)
         PLogTestHelper.hourlyLogFileName = currentTime
-        PLog.logThis(TAG, "changeTime", "Time changed: $currentTime")
+        Log.i(TAG, "changeTime;Time changed: $currentTime")
     }
 
     @SuppressLint("SetTextI18n")

@@ -37,7 +37,7 @@ object DataLogWriter {
                 LogWriter.shouldWriteLog(File(CURRENT_PART_FILE_PATH_DATALOG), isPLog = false, logFileName = logFileName)
             }
 
-            if (PLogImpl.getConfig()?.encryptionEnabled!!) {
+            if (PLogImpl.isEncryptionEnabled()) {
 
                 PLogImpl.getConfig()?.secretKey?.let {
 

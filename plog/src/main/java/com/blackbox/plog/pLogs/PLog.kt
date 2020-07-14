@@ -9,6 +9,7 @@ import android.os.Handler
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
+import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
@@ -294,6 +295,7 @@ object PLog : PLogImpl() {
         val rootFolderName = LOG_FOLDER
         val rootFolderPath = PLog.logPath + rootFolderName + File.separator
         File(rootFolderPath).deleteRecursively()
+        MQTTSender.clearSummaryValues()
     }
 
     /**

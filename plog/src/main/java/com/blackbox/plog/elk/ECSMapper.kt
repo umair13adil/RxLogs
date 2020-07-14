@@ -127,7 +127,9 @@ object ECSMapper {
                 id = metaInfo.appId,
                 name = metaInfo.appName,
                 version = metaInfo.appVersion,
-                language = metaInfo.language
+                language = metaInfo.language,
+                environmentId = metaInfo.environmentId,
+                environmentName = metaInfo.environmentName
         )
     }
 
@@ -165,7 +167,7 @@ object ECSMapper {
         return Organization(
                 id = metaInfo.organizationId,
                 unitId = metaInfo.organizationUnitId,
-                name = metaInfo.environmentName
+                name = metaInfo.organizationName
         )
     }
 }

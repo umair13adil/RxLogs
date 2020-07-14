@@ -5,19 +5,22 @@ data class MetaInfo(
         var appId: String = "",
         var appName: String = "",
         var appVersion: String = "",
+        var language: String = "",
 
         /**Environment**/
-        var deviceId: String = "",
         var environmentId: String = "",
         var environmentName: String = "",
+
+        /**Organization**/
         var organizationId: String = "",
+        var organizationName: String = "",
         var organizationUnitId: String = "",
-        var language: String = "",
 
         /**User**/
         var userId: String = "",
         var userName: String = "",
         var userEmail: String = "",
+        var deviceId: String = "",
 
         /**Device**/
         var deviceSerial: String = "",

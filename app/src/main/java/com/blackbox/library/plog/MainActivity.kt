@@ -6,9 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -53,21 +53,26 @@ class MainActivity : AppCompatActivity() {
         //Set MetaInfo for ELK Logs
         PLogMetaInfoProvider.elkStackSupported = true
         PLogMetaInfoProvider.setMetaInfo(MetaInfo(
+                /**App**/
                 appId = BuildConfig.APPLICATION_ID,
                 appName = getString(R.string.app_name),
                 appVersion = BuildConfig.VERSION_NAME,
                 language = "en-US",
 
                 /**Environment**/
-                deviceId = "12",
                 environmentId = BuildConfig.APPLICATION_ID,
                 environmentName = BuildConfig.BUILD_TYPE,
-                organizationId = "9778",
+
+                /**Organization**/
+                organizationId = "9975",
+                organizationUnitId = "24",
+                organizationName = "BlackBox",
 
                 /**User**/
                 userId = "12112",
                 userName = "Umair",
                 userEmail = "m.umair.adil@gmail.com",
+                deviceId = "12",
 
                 /**Device**/
                 deviceSerial = "SK-78",
@@ -76,6 +81,7 @@ class MainActivity : AppCompatActivity() {
                 deviceManufacturer = Build.MANUFACTURER,
                 deviceModel = Build.MODEL,
                 deviceSdkInt = Build.VERSION.SDK_INT.toString(),
+                batteryPercent = "87",
 
                 /**Location**/
                 latitude = 0.0,
@@ -99,19 +105,19 @@ class MainActivity : AppCompatActivity() {
         //If permission granted
         setupLoggerControls()
 
-        object : CountDownTimer(5000, 1000) {
+        /*object : CountDownTimer(5000, 1000) {
             override fun onFinish() {
 
             }
 
             override fun onTick(millisUntilFinished: Long) {
                 //Write Fake Data to Logs
-                for (i in 0..100) {
+                for (i in 0..10) {
                     PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
                 }
             }
 
-        }.start();
+        }.start();*/
 
         run_test.setOnClickListener {
             startActivity(Intent(this, HourlyLogsTest::class.java))
@@ -196,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
-                            PLog.logThis(TAG, "exportPLogs", "PLogs Path: $it", LogLevel.INFO)
+                            Log.i(TAG, "exportPLogs: PLogs Path: $it")
 
                             runOnUiThread {
                                 Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
@@ -204,7 +210,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         onError = {
                             it.printStackTrace()
-                            PLog.logThis(TAG, "exportPLogs", "PLog Error: " + it.message, LogLevel.ERROR)
+                            Log.i(TAG, "exportPLogs: PLog Error: " + it.message)
                         },
                         onComplete = { }
                 )
@@ -217,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
-                            PLog.logThis(TAG, "exportDataLogs", "DataLog Path: $it", LogLevel.INFO)
+                            Log.i(TAG, "exportDataLogs: DataLog Path: $it")
 
                             runOnUiThread {
                                 Toast.makeText(this@MainActivity, "Exported to: $it", Toast.LENGTH_SHORT).show()
@@ -225,7 +231,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         onError = {
                             it.printStackTrace()
-                            PLog.logThis(TAG, "exportDataLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
+                            Log.i(TAG, "exportDataLogs: DataLogger Error: " + it.message)
                         },
                         onComplete = { }
                 )
@@ -241,7 +247,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         onError = {
                             it.printStackTrace()
-                            PLog.logThis(TAG, "printLogs", "PLog Error: " + it.message, LogLevel.ERROR)
+                            Log.i(TAG, "printLogs: PLog Error: " + it.message)
                         },
                         onComplete = { }
                 )
@@ -257,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         onError = {
                             it.printStackTrace()
-                            PLog.logThis(TAG, "printLogs", "DataLogger Error: " + it.message, LogLevel.ERROR)
+                            Log.i(TAG, "printLogs: DataLogger Error: " + it.message)
                         },
                         onComplete = { }
                 )
@@ -280,12 +286,12 @@ class MainActivity : AppCompatActivity() {
 
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Granted!", LogLevel.INFO)
+                Log.i(TAG, "onRequestPermissionsResult: Permissions Granted!")
 
                 doOnPermissionsSet()
 
             } else {
-                PLog.logThis(TAG, "onRequestPermissionsResult", "Permissions Not Granted!", LogLevel.WARNING)
+                Log.i(TAG, "onRequestPermissionsResult: Permissions Not Granted!")
             }
 
         }
@@ -316,5 +322,11 @@ class MainActivity : AppCompatActivity() {
                 PLog.logThis(TAG, "onTextChanged", p0.toString(), LogLevel.INFO)
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        PLogMQTTProvider.disposeMQTTClient()
     }
 }

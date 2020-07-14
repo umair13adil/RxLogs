@@ -1,10 +1,10 @@
 package com.blackbox.plog.mqtt.client
 
 import android.content.Context
-import android.support.annotation.RawRes
 import android.util.Log
+import androidx.annotation.RawRes
+import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
-import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.PLogUtils
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
@@ -23,6 +23,14 @@ class PahoMqqtClient {
     private var connectOptions: MqttConnectOptions? = null
     private var isConnected = false
 
+    fun setConnected() {
+        isConnected = true
+    }
+
+    fun isConnected(): Boolean {
+        return isConnected
+    }
+
     private fun setUpClient(context: Context, brokerUrl: String?, clientId: String?) {
         connectOptions = MqttConnectOptions()
         connectOptions?.connectionTimeout = PLogMQTTProvider.connectionTimeout
@@ -34,27 +42,28 @@ class PahoMqqtClient {
         mqttAndroidClient?.setCallback(object : MqttCallback {
 
             override fun messageArrived(topic: String?, message: MqttMessage?) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogMQTTProvider.debug) {
                     Log.d(TAG, "messageArrived : Topic: $topic , Message: $message")
                 }
             }
 
             override fun connectionLost(cause: Throwable?) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "connectionLost : ${PLogUtils.getStackTrace(cause)}")
+                isConnected = false
+                if (PLogMQTTProvider.debug) {
+                    Log.d(TAG, "connectionLost.")
                 }
             }
 
             override fun deliveryComplete(token: IMqttDeliveryToken?) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "deliveryComplete : ${token?.message?.payload}")
+                if (PLogMQTTProvider.debug) {
+                    MQTTSender.doOnMessageDelivered()
+                    MQTTSender.printMQTTMessagesSummary("deliveryComplete")
                 }
             }
         })
     }
 
     fun getMqttClient(context: Context, brokerUrl: String?, clientId: String?, @RawRes certFile: Int): MqttAndroidClient {
-
         setUpClient(context, brokerUrl, clientId)
 
         val socketFactoryOptions = SocketFactory.SocketFactoryOptions()
@@ -110,50 +119,61 @@ class PahoMqqtClient {
     }
 
     private fun connect() {
-        try {
-            val token = mqttAndroidClient!!.connect(connectOptions)
-            token.actionCallback = object : IMqttActionListener {
-                override fun onSuccess(asyncActionToken: IMqttToken) {
-                    mqttAndroidClient!!.setBufferOpts(disconnectedBufferOptions)
+        mqttAndroidClient?.let {
+            try {
+                val token = it.connect(connectOptions)
+                token.actionCallback = object : IMqttActionListener {
+                    override fun onSuccess(asyncActionToken: IMqttToken) {
+                        it.setBufferOpts(disconnectedBufferOptions)
 
-                    if (PLogImpl.getConfig()?.isDebuggable!!) {
-                        Log.d(TAG, "connect : Success")
+                        if (PLogMQTTProvider.debug) {
+                            Log.d(TAG, "connect : Success")
+                        }
+
+                        isConnected = true
                     }
 
-                    isConnected = true
-                    //subscribe(mqttAndroidClient, PLogMQTTProvider.topic, PLogMQTTProvider.qos)
-                }
-
-                override fun onFailure(asyncActionToken: IMqttToken, exception: Throwable) {
-                    if (PLogImpl.getConfig()?.isDebuggable!!) {
-                        Log.d(TAG, "connect : Failure $exception")
-                        Log.e(TAG, PLogUtils.getStackTrace(exception))
+                    override fun onFailure(asyncActionToken: IMqttToken, exception: Throwable) {
+                        if (PLogMQTTProvider.debug) {
+                            Log.d(TAG, "connect : Unable to connect to server. Check connection.")
+                        }
                     }
                 }
-            }
-        } catch (e: MqttException) {
-            e.printStackTrace()
-
-            if (PLogImpl.getConfig()?.isDebuggable!!) {
-                Log.e(TAG, PLogUtils.getStackTrace(e))
+            } catch (e: Exception) {
+                //e.printStackTrace()
+                isConnected = false
+                if (PLogMQTTProvider.debug) {
+                    Log.e(TAG, "MQTT connection closed.")
+                }
             }
         }
     }
 
-    @Throws(MqttException::class)
-    fun disconnect(client: MqttAndroidClient) {
-        val mqttToken = client.disconnect()
-        mqttToken.actionCallback = object : IMqttActionListener {
-            override fun onSuccess(iMqttToken: IMqttToken) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "Successfully disconnected")
-                }
-            }
+    fun dispose() {
+        mqttAndroidClient?.unregisterResources();
+        mqttAndroidClient?.close()
+    }
 
-            override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
-                    Log.d(TAG, "Failed to disconnected $throwable")
+    @Throws(MqttException::class)
+    fun disconnect() {
+        mqttAndroidClient?.let {
+            try {
+                val mqttToken = it.disconnect()
+                mqttToken.actionCallback = object : IMqttActionListener {
+                    override fun onSuccess(iMqttToken: IMqttToken) {
+                        if (PLogMQTTProvider.debug) {
+                            Log.d(TAG, "Successfully disconnected")
+                        }
+                    }
+
+                    override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
+                        if (PLogMQTTProvider.debug) {
+                            Log.d(TAG, "Failed to disconnected $throwable")
+                        }
+                    }
                 }
+            } catch (e: Exception) {
+
             }
         }
     }
@@ -186,13 +206,13 @@ class PahoMqqtClient {
         val token = client?.subscribe(topic, qos)
         token?.actionCallback = object : IMqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogMQTTProvider.debug) {
                     Log.d(TAG, "Subscribe Successfully $topic")
                 }
             }
 
             override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogMQTTProvider.debug) {
                     Log.e(TAG, "Subscribe Failed $topic")
                 }
             }
@@ -204,13 +224,13 @@ class PahoMqqtClient {
         val token = client.unsubscribe(topic)
         token.actionCallback = object : IMqttActionListener {
             override fun onSuccess(iMqttToken: IMqttToken) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogMQTTProvider.debug) {
                     Log.d(TAG, "UnSubscribe Successfully $topic")
                 }
             }
 
             override fun onFailure(iMqttToken: IMqttToken, throwable: Throwable) {
-                if (PLogImpl.getConfig()?.isDebuggable!!) {
+                if (PLogMQTTProvider.debug) {
                     Log.e(TAG, "UnSubscribe Failed $topic")
                 }
             }

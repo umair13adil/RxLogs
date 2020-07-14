@@ -82,7 +82,7 @@ object LogExporter {
                         emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
                         emitter.onNext("File: ${f.name} Start..\n")
 
-                        if (PLogImpl.getConfig()?.encryptionEnabled!! && printDecrypted) {
+                        if (PLogImpl.isEncryptionEnabled() && printDecrypted) {
                             emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
                         } else {
                             f.forEachLine {
@@ -119,7 +119,7 @@ object LogExporter {
                     emitter.onError(Throwable("No Files to zip!"))
             }
 
-            if (PLogImpl.getConfig()?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend)
             } else {
                 zipFilesOnly(emitter, filesToSend)
@@ -127,7 +127,7 @@ object LogExporter {
 
         } else {
 
-            if (PLogImpl.getConfig()?.encryptionEnabled!! && exportDecrypted) {
+            if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
                 decryptFirstThenZip(emitter,filesToSend = filesToSend, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)

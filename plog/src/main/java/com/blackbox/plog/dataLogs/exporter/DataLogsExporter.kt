@@ -59,7 +59,7 @@ object DataLogsExporter {
                             emitter.onError(Throwable("No Files to zip!"))
                 }
 
-                if (PLogImpl.getConfig()?.encryptionEnabled!! && exportDecrypted) {
+                if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
                     decryptSaveFiles(filesToSend, exportPath, this.exportFileName)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
@@ -132,7 +132,7 @@ object DataLogsExporter {
                         emitter.onNext("Start...................................................\n")
                         emitter.onNext("File: ${f.name} Start..\n")
 
-                        if (PLogImpl.getConfig()?.encryptionEnabled!! && printDecrypted) {
+                        if (PLogImpl.isEncryptionEnabled() && printDecrypted) {
                             if (!emitter.isDisposed)
                                 emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
                         } else {

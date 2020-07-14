@@ -68,7 +68,7 @@ class DataLogger(private var logFileName: String = "log") {
             Log.e(PLog.DEBUG_TAG, PLogUtils.getStackTrace(e))
 
             //Write Directly
-            writeLogsAsync(fileName, dataToWrite, shouldOverWrite)
+            //writeLogsAsync(fileName, dataToWrite, shouldOverWrite)
         }
     }
 }

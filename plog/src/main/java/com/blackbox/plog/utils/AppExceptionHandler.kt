@@ -85,7 +85,6 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
                     }
                 }
             } else {
-                PLog.logThis(TAG, "uncaughtException", "Exception Caught!, killing process..", LogLevel.ERROR)
                 killThisProcess { systemHandler.uncaughtException(t, e) }
             }
         } ?: killThisProcess {

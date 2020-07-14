@@ -1,7 +1,7 @@
 package com.blackbox.plog.mqtt
 
 import android.content.Context
-import android.support.annotation.RawRes
+import androidx.annotation.RawRes
 import android.util.Log
 import com.blackbox.plog.mqtt.client.PahoMqqtClient
 import com.blackbox.plog.pLogs.impl.PLogImpl
@@ -17,7 +17,7 @@ object PLogMQTTProvider {
     internal var mqttEnabled = false //Set this to 'true' to enable MQTT Feature
     internal var writeLogsToLocalStorage = true //Set this to 'false' if you don't want to write logs to local storage
     internal var topic: String = "" //Required
-    internal var qos: Int = 1
+    internal var qos: Int = 2
     internal var retained: Boolean = false
     private var port: String = "8883"
     private var brokerUrl: String = "" //provide URL without scheme
@@ -26,7 +26,7 @@ object PLogMQTTProvider {
     internal var connectionTimeout = 60 //Default
     internal var isCleanSession = true //Default
     internal var isAutomaticReconnect = true //Default
-
+    internal var debug = true //Default
     internal var androidClient: MqttAndroidClient? = null
 
     fun initMQTTClient(context: Context,
@@ -42,7 +42,8 @@ object PLogMQTTProvider {
                        isCleanSession: Boolean = this.isCleanSession,
                        isAutomaticReconnect: Boolean = this.isAutomaticReconnect,
                        @RawRes certificateRes: Int? = null,
-                       certificateStream: InputStream? = null) {
+                       certificateStream: InputStream? = null,
+                       debug: Boolean = this.debug) {
 
         if (!PLogUtils.permissionsGranted(context)) {
             Log.e(TAG, "initMQTTClient: Unable to setup logs. Permissions not granted.")
@@ -61,6 +62,7 @@ object PLogMQTTProvider {
         this.connectionTimeout = connectionTimeout
         this.isCleanSession = isCleanSession
         this.isAutomaticReconnect = isAutomaticReconnect
+        this.debug = debug
 
         val baseUrl = "ssl://${brokerUrl}:${port}"
 
@@ -69,9 +71,13 @@ object PLogMQTTProvider {
         } else if (certificateStream != null) {
             androidClient = PahoMqqtClient.instance?.getMqttClient(context, baseUrl, MqttClient.generateClientId(), certificateStream)
         } else {
-            if (PLogImpl.getConfig()?.isDebuggable!!) {
+            if (debug) {
                 Log.e(TAG, "No certificate provided!")
             }
         }
+    }
+
+    fun disposeMQTTClient() {
+        PahoMqqtClient.instance?.dispose()
     }
 }

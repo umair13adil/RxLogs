@@ -80,6 +80,9 @@ open class PLogImpl {
      */
     fun applyConfigurations(config: LogsConfig?, saveToFile: Boolean = false, context: Context) {
 
+        //Save context
+        PLogImpl.context = context
+
         if (config == null) {
             Log.e(TAG, "applyConfigurations: No configuration provided!")
             return
@@ -237,30 +240,23 @@ open class PLogImpl {
 
         val logData = PLog.printFormattedLogs(className, functionName, info, type.level, exception, throwable)
 
-        if (getConfig() != null) {
-
-            //Do nothing if logs are disabled
-            if (!getConfig()?.enabled!!)
-                return Pair(false, logData)
-
-            //Do nothing if log level type is disabled
-            if (!isLogLevelEnabled(type))
-                return Pair(false, logData)
-
-            //Publish to MQTT
-            if (PLogMQTTProvider.mqttEnabled) {
-                MQTTSender.publishMessage(logData)
-            }
-
-        } else {
+        if (!isEnabled())
             return Pair(false, logData)
+
+        //Do nothing if log level type is disabled
+        if (!isLogLevelEnabled(type))
+            return Pair(false, logData)
+
+        //Publish to MQTT
+        if (PLogMQTTProvider.mqttEnabled) {
+            MQTTSender.publishMessage(logData)
         }
 
         return Pair(true, logData)
     }
 
     internal fun writeAndExportLog(data: String, type: LogLevel) {
-        if (getConfig()?.encryptionEnabled!!) {
+        if (PLogImpl.isEncryptionEnabled()) {
             LogWriter.writeEncryptedLogs(data)
         } else {
             LogWriter.writeSimpleLogs(data)
@@ -286,6 +282,10 @@ open class PLogImpl {
         internal val TAG = "PLogger"
         internal val DEBUG_TAG = "PLogger_DEBUG"
 
+        private var isEnabled = true
+        private var encryptionEnabled = false
+        private var logLevelsEnabled: ArrayList<LogLevel> = arrayListOf<LogLevel>()
+
         @JvmStatic
         private var logsConfig: LogsConfig? = null
 
@@ -296,11 +296,20 @@ open class PLogImpl {
         internal val gson = Gson()
 
         @JvmStatic
+        internal var context: Context? = null
+
+        @JvmStatic
         internal fun getConfig(config: LogsConfig? = null): LogsConfig? {
             return if (logsConfig != null) {
+                isEnabled = logsConfig?.enabled!!
+                logLevelsEnabled = logsConfig?.logLevelsEnabled!!
+                encryptionEnabled = logsConfig?.encryptionEnabled!!
                 logsConfig
             } else {
                 if (config != null) {
+                    isEnabled = config.enabled
+                    logLevelsEnabled = config.logLevelsEnabled
+                    encryptionEnabled = config.encryptionEnabled
                     logsConfig = config
                 } else {
                     Log.e(TAG, "getConfig: Saved config not found.")
@@ -309,12 +318,24 @@ open class PLogImpl {
             }
         }
 
+        internal fun isEnabled(): Boolean {
+            return isEnabled
+        }
+
+        internal fun isEncryptionEnabled(): Boolean {
+            return encryptionEnabled
+        }
+
+        internal fun getLogLevelsEnabled(): ArrayList<LogLevel> {
+            return logLevelsEnabled
+        }
+
         @JvmStatic
         internal fun saveConfig(config: LogsConfig?) {
 
             if (config != null) {
                 //Set up encryption Key
-                getConfig()?.encryptionEnabled?.let {
+                isEncryptionEnabled().let {
                     getConfig()?.encryptionKey?.let {
                         if (it.isNotEmpty()) {
                             val key = encrypter.checkIfKeyValid(it)

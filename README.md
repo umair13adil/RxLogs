@@ -12,6 +12,11 @@ PLogs provides quick & simple file logging solution. All logs are saved to files
 
 ![Alt text](pictures/feature.png?raw=true "Icon")
 ![Image1](pictures/picture1.png)
+![Image2](pictures/picture2.png)
+
+##### Read more about RxLogs usage on this Medium article: 
+
+[Sending logs from apps in real-time using ELK stack & MQTT](https://itnext.io/sending-logs-from-flutter-apps-in-real-time-using-elk-stack-mqtt-c24fa0cb9802)
 
 Features
 --------
@@ -37,6 +42,7 @@ Features
 19. Exports HTML formatted exceptions
 20. ELK Stack Supported See more about it [here](https://www.elastic.co/what-is/elk-stack).
 21. MQTT Support
+22. Added logs queueing for offline support (MQTT Feature)
 
 Prerequisites
 -------------
@@ -76,18 +82,18 @@ Add module to your project:
 
 Add it in your root build.gradle at the end of repositories:
 ```groovy
-allprojects {
-  repositories {
-    maven { url 'https://jitpack.io' }
- }
+    allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 ## Step 2. Add the dependency
 
 ```groovy
-dependencies {
-   implementation 'com.github.umair13adil:RxLogs:[Latest_Version]'
-}
+    dependencies {
+    implementation 'com.github.umair13adil:RxLogs:[Latest_Version]'
+    }
 ```
     
 Usage
@@ -114,7 +120,7 @@ private fun setUpPLogger() {
                              exportPath = logsPath + File.separator + "PLogsOutput"
                      )
 
-                     PLog.applyConfigurations(logsConfig, saveToFile = true) //Initialize configurations
+                     PLog.applyConfigurations(logsConfig, saveToFile = true, context = context) //Initialize configurations
                    
          }
 }
@@ -185,21 +191,26 @@ Send additional Meta info for better filtering at LogStash dashboard. This has t
 ```kotlin
 
     PLogMetaInfoProvider.setMetaInfo(MetaInfo(
+                /**App**/
                 appId = BuildConfig.APPLICATION_ID,
                 appName = getString(R.string.app_name),
                 appVersion = BuildConfig.VERSION_NAME,
                 language = "en-US",
 
                 /**Environment**/
-                deviceId = "12",
-                environmentId = BuildConfig.FLAVOR,
+                environmentId = BuildConfig.APPLICATION_ID,
                 environmentName = BuildConfig.BUILD_TYPE,
-                organizationId = "9778",
+
+                /**Organization**/
+                organizationId = "9975",
+                organizationUnitId = "24",
+                organizationName = "BlackBox",
 
                 /**User**/
                 userId = "12112",
                 userName = "Umair",
                 userEmail = "m.umair.adil@gmail.com",
+                deviceId = "12",
 
                 /**Device**/
                 deviceSerial = "SK-78",
@@ -208,6 +219,7 @@ Send additional Meta info for better filtering at LogStash dashboard. This has t
                 deviceManufacturer = Build.MANUFACTURER,
                 deviceModel = Build.MODEL,
                 deviceSdkInt = Build.VERSION.SDK_INT.toString(),
+                batteryPercent = "87",
 
                 /**Location**/
                 latitude = 0.0,
@@ -234,7 +246,8 @@ Add following block for initializing MQTT logging.
                 topic = "YOUR_TOPIC",
                 brokerUrl = "YOUR_URL", //Without Scheme
                 certificateRes = R.raw.m2mqtt_ca,
-                clientId = "5aa39cef4d544d658ecaf23db701099c"
+                clientId = "5aa39cef4d544d658ecaf23db701099c",
+                writeLogsToLocalStorage = true
         )
 ```
 

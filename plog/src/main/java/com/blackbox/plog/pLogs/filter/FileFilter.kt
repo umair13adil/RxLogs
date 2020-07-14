@@ -24,7 +24,12 @@ internal object FileFilter {
         val path = folderPath
         val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
-        File(folderPath).copyRecursively(File(tempOutputPath), true)
+        try {
+            File(folderPath).copyRecursively(File(tempOutputPath), true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "getFilesForToday: Unable to get files for today!")
+        }
 
         return Pair(lisOfFiles, tempOutputPath)
     }
