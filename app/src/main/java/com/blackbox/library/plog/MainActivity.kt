@@ -92,12 +92,16 @@ class MainActivity : AppCompatActivity() {
         ))
 
         //MQTT Setup
-        /*PLogMQTTProvider.initMQTTClient(applicationContext,
+        //Uncomment following block to enable MQTT feature
+        PLogMQTTProvider.initMQTTClient(this,
                 topic = "",
                 brokerUrl = "", //Without Scheme
                 certificateRes = R.raw.m2mqtt_ca,
-                clientId = "5aa39cef4d544d658ecaf23db701099c"
-        )*/
+                port = "8883",
+                writeLogsToLocalStorage = true,
+                initialDelaySecondsForPublishing = 30,
+                debug = true
+        )
 
         //Initialize FakeIt
         Fakeit.initWithLocale(Locale.ENGLISH)
@@ -105,19 +109,10 @@ class MainActivity : AppCompatActivity() {
         //If permission granted
         setupLoggerControls()
 
-        /*object : CountDownTimer(5000, 1000) {
-            override fun onFinish() {
-
-            }
-
-            override fun onTick(millisUntilFinished: Long) {
-                //Write Fake Data to Logs
-                for (i in 0..10) {
-                    PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
-                }
-            }
-
-        }.start();*/
+        //Write Fake Data to Logs
+        for (i in 0..250) {
+            PLog.logThis(TAG, Fakeit.gameOfThrones().house(), Fakeit.gameOfThrones().quote(), LogLevel.INFO)
+        }
 
         run_test.setOnClickListener {
             startActivity(Intent(this, HourlyLogsTest::class.java))

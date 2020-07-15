@@ -24,6 +24,7 @@ object PLogMQTTProvider {
     private var clientId: String = MqttClient.generateClientId() //Provide if needed
     internal var keepAliveIntervalSeconds = 180 //Default
     internal var connectionTimeout = 60 //Default
+    internal var initialDelaySecondsForPublishing = 30L //Default
     internal var isCleanSession = true //Default
     internal var isAutomaticReconnect = true //Default
     internal var debug = true //Default
@@ -39,6 +40,7 @@ object PLogMQTTProvider {
                        clientId: String = this.clientId,
                        keepAliveIntervalSeconds: Int = this.keepAliveIntervalSeconds,
                        connectionTimeout: Int = this.connectionTimeout,
+                       initialDelaySecondsForPublishing: Long = this.initialDelaySecondsForPublishing,
                        isCleanSession: Boolean = this.isCleanSession,
                        isAutomaticReconnect: Boolean = this.isAutomaticReconnect,
                        @RawRes certificateRes: Int? = null,
@@ -60,6 +62,7 @@ object PLogMQTTProvider {
         this.clientId = clientId
         this.keepAliveIntervalSeconds = keepAliveIntervalSeconds
         this.connectionTimeout = connectionTimeout
+        this.initialDelaySecondsForPublishing = initialDelaySecondsForPublishing
         this.isCleanSession = isCleanSession
         this.isAutomaticReconnect = isAutomaticReconnect
         this.debug = debug

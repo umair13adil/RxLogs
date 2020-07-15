@@ -7,6 +7,12 @@ import com.blackbox.plog.mqtt.client.PahoMqqtClient
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.workers.LogsPublishWorker
 import com.blackbox.plog.utils.PLogUtils
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
+
 
 object MQTTSender {
 
@@ -34,22 +40,39 @@ object MQTTSender {
                         return
                     }
                 }
-            }
 
-            sendMessage(message)
+                sendMessage(message, context)
+                        ?.subscribeOn(Schedulers.io())
+                        ?.observeOn(AndroidSchedulers.mainThread())
+                        ?.subscribeBy(
+                                onNext = {
+                                    if (it) {
+                                        if (PLogMQTTProvider.debug) {
+                                            doOnMessageDelivered()
+                                            printMQTTMessagesSummary("deliveryComplete")
+                                        }
+                                    }
+                                },
+                                onError = {
+
+                                },
+                                onComplete = { }
+                        )
+            }
         }
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage(message: String, context: Context): Observable<Boolean>? {
         try {
             PLogMQTTProvider.androidClient?.let { androidClient ->
-                PahoMqqtClient.instance?.publishMessage(androidClient, message, PLogMQTTProvider.qos, PLogMQTTProvider.topic)
+                return PahoMqqtClient.instance?.publishMessage(androidClient, message, PLogMQTTProvider.qos, PLogMQTTProvider.topic, context)
             }
         } catch (e: Exception) {
             if (PLogMQTTProvider.debug) {
                 Log.e(TAG, PLogUtils.getStackTrace(e))
             }
         }
+        return null
     }
 
     private fun createInputData(message: String): Data {
@@ -64,11 +87,18 @@ object MQTTSender {
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-
         val request: WorkRequest = OneTimeWorkRequestBuilder<LogsPublishWorker>()
                 .setConstraints(constraints)
+                .setInitialDelay(PLogMQTTProvider.initialDelaySecondsForPublishing, TimeUnit.SECONDS)
                 .setInputData(createInputData(message))
                 .build()
+
+
+        /*val request = PeriodicWorkRequest.Builder(LogsPublishWorker::class.java,
+                10, TimeUnit.SECONDS, 10, TimeUnit.SECONDS)
+                .setInitialDelay(20, TimeUnit.SECONDS)
+                .setConstraints(constraints)
+                .build()*/
 
         WorkManager.getInstance(context)
                 .enqueue(request)
@@ -85,7 +115,8 @@ object MQTTSender {
             if (totalQueued > 0) {
                 Log.i(TAG, "Event: [$eventName] Total Messages: $totalAdded, Total Delivered: $totalSent, Total Queued: $totalQueued")
             } else {
-                Log.i(TAG, "Event: [$eventName] Total Messages: $totalAdded, Total Delivered: $totalSent")
+                if (totalSent <= totalAdded)
+                    Log.i(TAG, "Event: [$eventName] Total Messages: $totalAdded, Total Delivered: $totalSent")
             }
         }
     }

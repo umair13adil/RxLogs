@@ -3,9 +3,8 @@ package com.blackbox.plog.mqtt.client
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RawRes
-import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
-import com.blackbox.plog.utils.PLogUtils
+import io.reactivex.Observable
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
 import java.io.IOException
@@ -55,10 +54,7 @@ class PahoMqqtClient {
             }
 
             override fun deliveryComplete(token: IMqttDeliveryToken?) {
-                if (PLogMQTTProvider.debug) {
-                    MQTTSender.doOnMessageDelivered()
-                    MQTTSender.printMQTTMessagesSummary("deliveryComplete")
-                }
+
             }
         })
     }
@@ -189,15 +185,31 @@ class PahoMqqtClient {
         }
 
     @Throws(MqttException::class, UnsupportedEncodingException::class)
-    fun publishMessage(client: MqttAndroidClient, msg: String, qos: Int, topic: String) {
-        if (isConnected) {
-            var encodedPayload = ByteArray(0)
-            encodedPayload = msg.toByteArray(charset("UTF-8"))
-            val message = MqttMessage(encodedPayload)
-            message.id = msg.hashCode()
-            message.isRetained = PLogMQTTProvider.retained
-            message.qos = qos
-            client.publish(topic, message)
+    fun publishMessage(client: MqttAndroidClient?, msg: String, qos: Int, topic: String, context: Context): Observable<Boolean> {
+        return Observable.create { emitter ->
+            if (isConnected) {
+                var encodedPayload = ByteArray(0)
+                encodedPayload = msg.toByteArray(charset("UTF-8"))
+                val message = MqttMessage(encodedPayload)
+                message.id = msg.hashCode()
+                message.isRetained = PLogMQTTProvider.retained
+                message.qos = qos
+                client?.publish(topic, message, context, object : IMqttActionListener {
+                    override fun onSuccess(asyncActionToken: IMqttToken?) {
+                        if (!emitter.isDisposed) {
+                            emitter.onNext(true)
+                            emitter.onComplete()
+                        }
+                    }
+
+                    override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                        if (!emitter.isDisposed) {
+                            emitter.onNext(false)
+                            emitter.onComplete()
+                        }
+                    }
+                })
+            }
         }
     }
 

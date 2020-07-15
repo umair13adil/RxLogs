@@ -247,7 +247,9 @@ Add following block for initializing MQTT logging.
                 brokerUrl = "YOUR_URL", //Without Scheme
                 certificateRes = R.raw.m2mqtt_ca,
                 clientId = "5aa39cef4d544d658ecaf23db701099c",
-                writeLogsToLocalStorage = true
+                writeLogsToLocalStorage = true,
+                initialDelaySecondsForPublishing = 30,
+                debug = true
         )
 ```
 
