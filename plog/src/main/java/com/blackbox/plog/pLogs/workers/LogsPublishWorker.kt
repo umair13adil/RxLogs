@@ -1,13 +1,11 @@
 package com.blackbox.plog.pLogs.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.RxWorker
 import androidx.work.WorkerParameters
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.mqtt.client.PahoMqqtClient
-import com.blackbox.plog.utils.PLogUtils
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers

@@ -1,6 +1,5 @@
 package com.blackbox.plog.dataLogs
 
-import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.LogWriter
@@ -9,9 +8,6 @@ import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.pLogs.utils.CURRENT_PART_FILE_PATH_DATALOG
 import com.blackbox.plog.pLogs.utils.PART_FILE_CREATED_DATALOG
 import com.blackbox.plog.utils.*
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import java.io.File
 
 /**

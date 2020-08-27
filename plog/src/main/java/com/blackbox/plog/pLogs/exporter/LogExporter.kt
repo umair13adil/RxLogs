@@ -128,7 +128,7 @@ object LogExporter {
         } else {
 
             if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
-                decryptFirstThenZip(emitter,filesToSend = filesToSend, exportedPath = "")
+                decryptFirstThenZip(emitter, filesToSend = filesToSend, exportedPath = "")
             } else {
                 zipFilesAndFolder(emitter, this.files.third)
             }

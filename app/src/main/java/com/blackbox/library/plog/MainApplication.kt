@@ -2,7 +2,6 @@ package com.blackbox.library.plog
 
 import android.app.Application
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
@@ -37,7 +36,7 @@ class MainApplication : Application() {
                     exportFileNamePostFix = "]",
                     autoExportErrors = true,
                     encryptionEnabled = true,
-                    encryptionKey = "1234567891234",
+                    encryptionKey = "357561100981901",
                     singleLogFileSize = 1, //1Mb
                     logFilesLimit = 30,
                     directoryStructure = DirectoryStructure.FOR_DATE,
@@ -52,9 +51,9 @@ class MainApplication : Application() {
                     attachNoOfFiles = true,
                     timeStampFormat = TimeStampFormat.TIME_FORMAT_READABLE,
                     zipFilesOnly = false,
-                    savePath = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs",
+                    savePath = File(context.getExternalFilesDir(null), "PLogs").path,
                     zipFileName = "MyLogs",
-                    exportPath = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs" + File.separator + "PLogsOutput",
+                    exportPath = File(context.getExternalFilesDir(null), "PLogs" + File.separator + "PLogsOutput").path,
                     exportFormatted = true
             ).also { it ->
 
@@ -73,7 +72,7 @@ class MainApplication : Application() {
                         })
             }
 
-            PLog.applyConfigurations(logsConfig, saveToFile = true, context = context)
+            PLog.applyConfigurations(logsConfig, context = context)
         }
     }
 

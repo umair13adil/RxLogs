@@ -1,8 +1,5 @@
 package com.blackbox.plog.mqtt.client
 
-import android.util.Log
-import com.blackbox.plog.mqtt.PLogMQTTProvider
-import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.IOException
 import java.io.InputStream
 import java.net.InetAddress

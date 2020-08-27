@@ -109,7 +109,7 @@ class Encrypter() {
             val t1 = cleanTextContent(text).replace(Regex("[^\\x00-\\x7f]+"), "")
             val t2 = t1.replace("[\r\n]+".toRegex(), "\n")
             val t3 = t2.trimStart()
-            val t4 =  t3.replace(Regex("[\r\t ]+"), " ")
+            val t4 = t3.replace(Regex("[\r\t ]+"), " ")
             return t4
         } catch (e: Exception) {
             e.printStackTrace()

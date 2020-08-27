@@ -2,12 +2,13 @@ package com.blackbox.plog.pLogs.operations
 
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.config.EXPORT_START_DATE_TAG
-import com.blackbox.plog.pLogs.config.LOGS_DELETE_DATE_TAG
-import com.blackbox.plog.pLogs.config.ZIP_DELETE_DATE_TAG
+import com.blackbox.plog.pLogs.config.PLogPreferences
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.PLogImpl
+import com.blackbox.plog.pLogs.utils.PREF_EXPORT_START_DATE
+import com.blackbox.plog.pLogs.utils.PREF_LOGS_CLEAR_DATE
+import com.blackbox.plog.pLogs.utils.PREF_ZIP_DELETE_DATE
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.RxBus
 import java.util.*
@@ -17,44 +18,11 @@ object Triggers {
     val TAG = "Triggers"
 
     /**
-     * Has hour passed.
-     *
-     * Emits an event, if an hour is passed. Keeps running till user is logged in.
-     */
-    fun hasHourPassed() {
-
-        try {
-            val savedTime = 121213//TODO Add time
-
-            //milliseconds
-            val different = Date().time - savedTime
-
-            val secondsInMilli: Long = 1000
-            val minutesInMilli = secondsInMilli * 60
-            val hoursInMilli = minutesInMilli * 60
-
-            val elapsedHours = different / hoursInMilli
-
-            if (Math.abs(elapsedHours) >= 1) {
-
-                if (PLogImpl.getConfig()?.isDebuggable!!)
-                    Log.i(PLog.DEBUG_TAG, "An hour has passed, sending event!")
-            }
-        } catch (e: Exception) {
-            //e.printStackTrace();
-        }
-
-    }
-
-    /**
      * Should clear Logs based on provided logs retention days.
      *
      */
     fun shouldClearLogs() {
-        //TODO Logs are cleared everyday
         try {
-            if (!PLog.localConfigurationExists())
-                return
 
             //Check if logs configuration is set
             val logsConfig = PLogImpl.getConfig() ?: return
@@ -64,7 +32,7 @@ object Triggers {
                 return
 
             //Set Default Value
-            if (logsConfig.logsDeleteDate == 0L) {
+            if (PLogPreferences.getInstance().getLong(PREF_LOGS_CLEAR_DATE) == 0L) {
 
                 val info = "No last delete date found!"
 
@@ -76,8 +44,8 @@ object Triggers {
 
             var savedTime = 0L
 
-            if (logsConfig.logsDeleteDate != 0L) {
-                savedTime = logsConfig.logsDeleteDate
+            if (PLogPreferences.getInstance().getLong(PREF_LOGS_CLEAR_DATE) != 0L) {
+                savedTime = PLogPreferences.getInstance().getLong(PREF_LOGS_CLEAR_DATE)
             }
 
             if (savedTime == 0L) {
@@ -140,9 +108,6 @@ object Triggers {
 
         try {
 
-            if (!PLog.localConfigurationExists())
-                return
-
             //Check if logs configuration is set
             val logsConfig = PLogImpl.getConfig() ?: return
 
@@ -151,14 +116,14 @@ object Triggers {
                 return
 
             //Set Default Value
-            if (logsConfig.zipDeleteDate == 0L) {
+            if (PLogPreferences.getInstance().getLong(PREF_ZIP_DELETE_DATE) == 0L) {
                 updateZipDeleteDate()
             }
 
             var savedTime = 0L
 
-            if (logsConfig.zipDeleteDate != 0L) {
-                savedTime = logsConfig.zipDeleteDate
+            if (PLogPreferences.getInstance().getLong(PREF_ZIP_DELETE_DATE) != 0L) {
+                savedTime = PLogPreferences.getInstance().getLong(PREF_ZIP_DELETE_DATE)
             }
 
             if (savedTime == 0L) {
@@ -221,9 +186,6 @@ object Triggers {
 
         try {
 
-            if (!PLog.localConfigurationExists())
-                return true
-
             //Check if logs configuration is set
             val logsConfig = PLogImpl.getConfig()!!
 
@@ -236,14 +198,14 @@ object Triggers {
                 return true
 
             //Set Default Value
-            if (logsConfig.exportStartDate.isEmpty()) {
+            if (PLogPreferences.getInstance().getString(PREF_EXPORT_START_DATE).isNullOrEmpty()) {
                 setExportStartDate()
             }
 
             var savedTime = 0L
 
-            if (!logsConfig.exportStartDate.isEmpty()) {
-                savedTime = logsConfig.exportStartDate.toLong()
+            if (!PLogPreferences.getInstance().getString(PREF_EXPORT_START_DATE).isNullOrEmpty()) {
+                savedTime = PLogPreferences.getInstance().getLong(PREF_EXPORT_START_DATE)
             }
 
             if (savedTime == 0L)
@@ -291,7 +253,7 @@ object Triggers {
         if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.DEBUG_TAG, "New Date set as logs delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", LOGS_DELETE_DATE_TAG)
+        PLogPreferences.getInstance().save(PREF_LOGS_CLEAR_DATE, time)
     }
 
     private fun updateZipDeleteDate() {
@@ -300,7 +262,7 @@ object Triggers {
         if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.DEBUG_TAG, "New Date set as zip delete date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", ZIP_DELETE_DATE_TAG)
+        PLogPreferences.getInstance().save(PREF_ZIP_DELETE_DATE, time)
     }
 
     private fun setExportStartDate() {
@@ -309,7 +271,7 @@ object Triggers {
         if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.DEBUG_TAG, "Set export start date: ${DateTimeUtils.getFullDateTimeString(time)}")
 
-        PLogImpl.getConfig()?.updateDateForTAG(time.toString() + "", EXPORT_START_DATE_TAG)
+        PLogPreferences.getInstance().save(PREF_EXPORT_START_DATE, time)
     }
 
     private fun clearExportStartDate() {
@@ -317,7 +279,7 @@ object Triggers {
         if (PLogImpl.getConfig()?.isDebuggable!!)
             Log.i(PLog.DEBUG_TAG, "Clear export start date!")
 
-        PLogImpl.getConfig()?.updateDateForTAG("", EXPORT_START_DATE_TAG)
+        PLogPreferences.getInstance().save(PREF_EXPORT_START_DATE, 0L)
     }
 
 }

@@ -11,7 +11,6 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.tests.PLogTestHelper
 import com.blackbox.plog.utils.DateTimeUtils
-import com.google.gson.GsonBuilder
 import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy

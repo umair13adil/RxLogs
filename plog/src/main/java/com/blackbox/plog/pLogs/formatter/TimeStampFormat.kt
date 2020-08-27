@@ -1,7 +1,7 @@
 package com.blackbox.plog.pLogs.formatter
 
 
-object  TimeStampFormat {
+object TimeStampFormat {
 
     val DATE_FORMAT_1 = "ddMMyyyy"
     val DATE_FORMAT_2 = "MM/dd/yyyy"

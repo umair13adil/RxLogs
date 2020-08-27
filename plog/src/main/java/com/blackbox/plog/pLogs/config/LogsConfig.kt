@@ -1,17 +1,14 @@
 package com.blackbox.plog.pLogs.config
 
-import android.os.Environment
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
-import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogExtension
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.operations.Triggers
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import io.reactivex.Observable
-import java.io.File
 import javax.crypto.SecretKey
 
 /*
@@ -51,21 +48,18 @@ data class LogsConfig(
         var logSystemCrashes: Boolean = false,
         var autoExportLogTypes: ArrayList<String> = arrayListOf<String>(),
         var autoExportLogTypesPeriod: Int = 0,
-        var logsDeleteDate: Long = 0L, //Last Time logs were cleared
-        var zipDeleteDate: Long = 0L, //Last Time exported zip files were cleared
-        var exportStartDate: String = "", //Last Time auto-export was triggered
-        var savePath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be created
-        var exportPath: String = Environment.getExternalStorageDirectory().toString() + File.separator + "PLogs", //Path where log files will be exported as zip
+        var savePath: String = "PLogs", //Path where log files will be created
+        var exportPath: String = "PLogs", //Path where log files will be exported as zip
         var csvDelimiter: String = "", //Delimiter for CSV files
         var exportFormatted: Boolean? = true
 ) {
 
     val TAG = "LogsConfig"
 
-    fun doOnSetup(saveToFile: Boolean = false) {
+    fun doOnSetup() {
 
         //Validate Configurations
-        validateConfigurations(saveToFile)
+        validateConfigurations()
 
         //Check if Logs need to be cleared, after 5 seconds delay
         //Only run if logs are enabled
@@ -73,23 +67,6 @@ data class LogsConfig(
             Triggers.shouldClearLogs()
             Triggers.shouldClearExports()
         }
-    }
-
-    /*
-     * This will update value of date in XML for specified TAG.
-     */
-    fun updateDateForTAG(date: String, tag: String) {
-
-        if (PLog.localConfigurationExists()) {
-            updateValue(date, tag)
-
-            //Reload configurations from XML file
-            PLog.getLogsConfigFromXML()?.let {
-                PLogImpl.saveConfig(it)
-            }
-
-        } else
-            throw Exception(Throwable("No local XML configuration file found!"))
     }
 
     internal var secretKey: SecretKey? = null//SecretKey for Encryption
@@ -115,7 +92,7 @@ data class LogsConfig(
     /*
      * Validate configurations provided.
      */
-    private fun validateConfigurations(saveToFile: Boolean = false) {
+    private fun validateConfigurations() {
 
         //Only validate if logs are enabled
         if (enabled) {
@@ -128,26 +105,11 @@ data class LogsConfig(
                 }
             }
 
-            if (logsRetentionPeriodInDays > 0 && !saveToFile) {
-                throw Exception(Throwable("'logsRetentionPeriodInDays=$logsRetentionPeriodInDays' is set without saving local XML config file. To use 'Auto Clear' logs feature, local XML configuration must be enabled using: " +
-                        "'PLog.applyConfigurations(logsConfig, saveToFile = true)' or use 'PLog.forceWriteLogsConfig(logsConfig)'"))
-            }
-
-            if (zipsRetentionPeriodInDays > 0 && !saveToFile) {
-                throw Exception(Throwable("'zipsRetentionPeriodInDays=$zipsRetentionPeriodInDays' is set without saving local XML config file. To use 'Auto Clear' logs feature, local XML configuration must be enabled using: " +
-                        "'PLog.applyConfigurations(logsConfig, saveToFile = true)' or use 'PLog.forceWriteLogsConfig(logsConfig)'"))
-            }
-
-            if (autoDeleteZipOnExport && !saveToFile) {
-                throw Exception(Throwable("'autoDeleteZipOnExport=$autoDeleteZipOnExport' is set without saving local XML config file. To use 'Auto Clear' logs feature, local XML configuration must be enabled using: " +
-                        "'PLog.applyConfigurations(logsConfig, saveToFile = true)' or use 'PLog.forceWriteLogsConfig(logsConfig)'"))
-            }
-
-            if (logsRetentionPeriodInDays < 1 && autoClearLogs && !saveToFile) {
+            if (logsRetentionPeriodInDays < 1 && autoClearLogs) {
                 throw Exception(Throwable("'logsRetentionPeriodInDays=$logsRetentionPeriodInDays' can not be less than 1!"))
             }
 
-            if (zipsRetentionPeriodInDays < 1 && autoDeleteZipOnExport && !saveToFile) {
+            if (zipsRetentionPeriodInDays < 1 && autoDeleteZipOnExport) {
                 throw Exception(Throwable("'zipsRetentionPeriodInDays=$zipsRetentionPeriodInDays' can not be less than 1!"))
             }
         }

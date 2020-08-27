@@ -4,8 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
-import android.os.Environment
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.blackbox.plog.pLogs.PLog
@@ -23,7 +21,7 @@ object PLogUtils {
 
     internal fun isConnected(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo= connectivityManager.activeNetworkInfo
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 
@@ -116,18 +114,5 @@ object PLogUtils {
         }
 
         return xmlString
-    }
-
-    fun permissionsGranted(context: Context): Boolean {
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-    }
-
-    internal fun createDir(pathName: String?): String {
-        val file = File(Environment.getExternalStorageDirectory().toString() + File.separator + pathName)
-        return if (!file.exists()) {
-            val result = file.mkdirs()
-            file.path
-        } else file.path
     }
 }

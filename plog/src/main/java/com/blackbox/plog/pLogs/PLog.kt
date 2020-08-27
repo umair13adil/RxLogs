@@ -315,7 +315,6 @@ object PLog : PLogImpl() {
                 SaveAsync(dataToWrite, logLevel).execute()
             } catch (e: Exception) {
                 e.printStackTrace()
-                Log.e(DEBUG_TAG, PLogUtils.getStackTrace(e))
 
                 //Write directly
                 writeAndExportLog(dataToWrite, logLevel)

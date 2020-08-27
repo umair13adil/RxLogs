@@ -8,9 +8,8 @@ import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.config.ConfigReader
-import com.blackbox.plog.pLogs.config.ConfigWriter
 import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.config.PLogPreferences
 import com.blackbox.plog.pLogs.config.isLogLevelEnabled
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
@@ -22,13 +21,11 @@ import com.blackbox.plog.pLogs.operations.doOnInit
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.Encrypter
-import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.PLogUtils
 import com.blackbox.plog.utils.PLogUtils.createDirIfNotExists
-import com.blackbox.plog.utils.PLogUtils.permissionsGranted
+import com.blackbox.plog.utils.RxBus
 import com.google.gson.Gson
 import io.reactivex.Observable
-import io.reactivex.rxkotlin.subscribeBy
 import java.io.File
 
 
@@ -78,18 +75,16 @@ open class PLogImpl {
      *
      * @param 'saveToFile' if true, file will be written to storage
      */
-    fun applyConfigurations(config: LogsConfig?, saveToFile: Boolean = false, context: Context) {
+    fun applyConfigurations(config: LogsConfig?, context: Context) {
+
+        //Initialize Preferences Class here
+        PLogPreferences.init(context)
 
         //Save context
         PLogImpl.context = context
 
         if (config == null) {
             Log.e(TAG, "applyConfigurations: No configuration provided!")
-            return
-        }
-
-        if (!permissionsGranted(context)) {
-            Log.e(TAG, "applyConfigurations: Unable to setup logs. Permissions not granted.")
             return
         }
 
@@ -107,31 +102,8 @@ open class PLogImpl {
             }
         }
 
-        if (saveToFile) {
-            //Only save if parameter value 'true'
-
-            //Copy logs & zip delete data from saved XML configuration if it exists
-            copyDataFromSavedConfig()
-
-            getConfig()?.let {
-
-                ConfigWriter.saveToXML(it)
-                        .subscribeBy(
-                                onNext = {
-                                    //Perform operations on Initializing.
-                                    doOnInit(saveToFile)
-                                },
-                                onError = {
-                                    it.printStackTrace()
-                                },
-                                onComplete = {}
-                        )
-            }
-        } else {
-
-            //Perform operations on Initializing.
-            doOnInit(saveToFile)
-        }
+        //Perform operations on Initializing.
+        doOnInit()
     }
 
     /*
@@ -141,58 +113,11 @@ open class PLogImpl {
 
         PLogImpl.saveConfig(config)
 
-        //Copy logs & zip delete data from saved XML configuration if it exists
-        copyDataFromSavedConfig()
-
         getConfig()?.let {
 
-            ConfigWriter.saveToXML(it)
-                    .subscribeBy(
-                            onNext = {
-                                //Perform operations on Initializing.
-                                doOnInit(true)
-                            },
-                            onError = {
-                                it.printStackTrace()
-                            },
-                            onComplete = {}
-                    )
+            //Perform operations on Initializing.
+            doOnInit()
         }
-    }
-
-    private fun copyDataFromSavedConfig() {
-
-        //Load XML config file if exists
-        if (PLog.localConfigurationExists()) {
-            PLog.getLogsConfigFromXML()?.let { xmlConfig ->
-
-                //Save previous saved dates
-                getConfig()?.logsDeleteDate = xmlConfig.logsDeleteDate
-                getConfig()?.zipDeleteDate = xmlConfig.zipDeleteDate
-            }
-        }
-    }
-
-    /*
-     * Get LogsConfig XML file.
-     */
-    fun getLogsConfigFromXML(): LogsConfig? {
-
-        if (localConfigurationExists()) {
-
-            ConfigReader.readXML().let { savedConfig ->
-                return savedConfig
-            }
-        }
-
-        return null
-    }
-
-    /*
-     * Will send 'true' if local configuration XML exists.
-     */
-    internal fun localConfigurationExists(): Boolean {
-        return File(XML_PATH, CONFIG_FILE_NAME).exists()
     }
 
     /*
@@ -311,8 +236,6 @@ open class PLogImpl {
                     logLevelsEnabled = config.logLevelsEnabled
                     encryptionEnabled = config.encryptionEnabled
                     logsConfig = config
-                } else {
-                    Log.e(TAG, "getConfig: Saved config not found.")
                 }
                 logsConfig
             }

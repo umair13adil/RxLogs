@@ -5,14 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.CountDownTimer
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.elk.models.fields.MetaInfo
 import com.blackbox.plog.mqtt.PLogMQTTProvider
@@ -20,7 +19,6 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
-import com.blackbox.plog.utils.PLogUtils
 import com.mooveit.library.BuildConfig
 import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -39,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (PLogUtils.permissionsGranted(this)) {
+        if (arePermissionsGranted()) {
             doOnPermissionsSet()
         }
 
@@ -51,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         MainApplication.setUpPLogger(this)
 
         //Set MetaInfo for ELK Logs
-        PLogMetaInfoProvider.elkStackSupported = true
+        PLogMetaInfoProvider.elkStackSupported = false
         PLogMetaInfoProvider.setMetaInfo(MetaInfo(
                 /**App**/
                 appId = BuildConfig.APPLICATION_ID,
@@ -93,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
         //MQTT Setup
         //Uncomment following block to enable MQTT feature
-        PLogMQTTProvider.initMQTTClient(this,
+        /*PLogMQTTProvider.initMQTTClient(this,
                 topic = "",
                 brokerUrl = "", //Without Scheme
                 certificateRes = R.raw.m2mqtt_ca,
@@ -101,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                 writeLogsToLocalStorage = true,
                 initialDelaySecondsForPublishing = 30,
                 debug = true
-        )
+        )*/
 
         //Initialize FakeIt
         Fakeit.initWithLocale(Locale.ENGLISH)
@@ -294,12 +292,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkPermissions() {
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (!arePermissionsGranted()) {
 
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_CODE)
             return
         }
+    }
+
+    private fun arePermissionsGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun listenForInputText() {

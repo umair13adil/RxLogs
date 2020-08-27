@@ -1,10 +1,9 @@
 package com.blackbox.plog.mqtt
 
 import android.content.Context
-import androidx.annotation.RawRes
 import android.util.Log
+import androidx.annotation.RawRes
 import com.blackbox.plog.mqtt.client.PahoMqqtClient
-import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.PLogUtils
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.MqttClient
@@ -46,11 +45,6 @@ object PLogMQTTProvider {
                        @RawRes certificateRes: Int? = null,
                        certificateStream: InputStream? = null,
                        debug: Boolean = this.debug) {
-
-        if (!PLogUtils.permissionsGranted(context)) {
-            Log.e(TAG, "initMQTTClient: Unable to setup logs. Permissions not granted.")
-            return
-        }
 
         this.mqttEnabled = true
         this.writeLogsToLocalStorage = writeLogsToLocalStorage

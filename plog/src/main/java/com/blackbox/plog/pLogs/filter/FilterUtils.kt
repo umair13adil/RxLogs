@@ -97,7 +97,8 @@ object FilterUtils {
                 if (PLogImpl.getConfig()?.isDebuggable!!)
                     Log.i(FileFilter.TAG, entry.name)
             }
-        } catch (e: ZipException) { }
+        } catch (e: ZipException) {
+        }
     }
 
     /*

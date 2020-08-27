@@ -54,7 +54,7 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
 
                 if (!File(outputPath).exists())
                     zipFilesOnly(decryptedFiles, outputPath, exportFileName, tempPath, emitter)
-                else{
+                else {
                     if (PLogImpl.getConfig()?.debugFileOperations!!)
                         Log.i(PLog.DEBUG_TAG, "decryptSaveFiles: Unable to zip, $outputPath doesnt exists!")
                 }

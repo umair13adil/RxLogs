@@ -3,7 +3,9 @@ package com.blackbox.plog.pLogs.impl
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.utils.*
-import com.blackbox.plog.utils.*
+import com.blackbox.plog.utils.appendToFile
+import com.blackbox.plog.utils.checkFileExists
+import com.blackbox.plog.utils.setupFilePaths
 import java.io.File
 import javax.crypto.SecretKey
 
@@ -98,23 +100,8 @@ object LogWriter {
                     //Create part file
                     createPartFile(file, isPLog, logFileName)
                 }
-            } /*else {
-
-                if (PLogImpl.getConfig()?.debugFileOperations!!)
-                    Log.i(PLog.TAG, "File Length: ${Utils.bytesToReadable(length.toInt())} < ${Utils.bytesToReadable(maxLength)}")
-            }*/
+            }
         }
-
-        //TODO update no of files created in config XML for easy access
-        /*val totalFiles = FilterUtils.listFiles(logPath, arrayListOf())
-        if (totalFiles.isNotEmpty()) {
-            if (totalFiles.size > PLog.getLogsConfig()?.logFilesLimit!!)
-
-                if (PLog.getLogsConfig()?.isDebuggable!!)
-                    Log.i(PLog.TAG, "No of log files exceeded!")
-
-            return false
-        }*/
 
         return Pair(true, path)
     }

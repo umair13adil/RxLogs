@@ -2,7 +2,9 @@ package com.blackbox.plog.elk
 
 import android.util.Log
 import com.blackbox.plog.elk.models.fields.*
-import com.blackbox.plog.elk.models.schema.*
+import com.blackbox.plog.elk.models.schema.ECSDebug
+import com.blackbox.plog.elk.models.schema.ECSError
+import com.blackbox.plog.elk.models.schema.ECSInfo
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogData
 import com.blackbox.plog.pLogs.models.LogLevel

@@ -18,7 +18,7 @@ object DateTimeUtils {
         return f1.format(date)
     }
 
-    fun getHourlyFolderName(currentTimeLong:Long): String {
+    fun getHourlyFolderName(currentTimeLong: Long): String {
         val currentTime = Date(currentTimeLong)
         val sdf1 = SimpleDateFormat(TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
         val day = sdf1.format(currentTime)
