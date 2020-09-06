@@ -8,9 +8,7 @@ import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
-import com.blackbox.plog.pLogs.config.LogsConfig
-import com.blackbox.plog.pLogs.config.PLogPreferences
-import com.blackbox.plog.pLogs.config.isLogLevelEnabled
+import com.blackbox.plog.pLogs.config.*
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.formatter.LogFormatter
@@ -84,7 +82,6 @@ open class PLogImpl {
         PLogImpl.context = context
 
         if (config == null) {
-            Log.e(TAG, "applyConfigurations: No configuration provided!")
             return
         }
 
@@ -226,18 +223,19 @@ open class PLogImpl {
         @JvmStatic
         internal fun getConfig(config: LogsConfig? = null): LogsConfig? {
             return if (logsConfig != null) {
-                isEnabled = logsConfig?.enabled!!
-                logLevelsEnabled = logsConfig?.logLevelsEnabled!!
-                encryptionEnabled = logsConfig?.encryptionEnabled!!
-                logsConfig
-            } else {
-                if (config != null) {
-                    isEnabled = config.enabled
-                    logLevelsEnabled = config.logLevelsEnabled
-                    encryptionEnabled = config.encryptionEnabled
-                    logsConfig = config
+                logsConfig?.let { logsConfig ->
+                    isEnabled = logsConfig.enabled
+                    logLevelsEnabled = logsConfig.logLevelsEnabled
+                    encryptionEnabled = logsConfig.encryptionEnabled
+                    logsConfig
                 }
-                logsConfig
+            } else {
+                getLogsConfig(PREF_LOGS_CONFIG, LogsConfig::class.java, config)?.let { logsConfig ->
+                    isEnabled = logsConfig.enabled
+                    logLevelsEnabled = logsConfig.logLevelsEnabled
+                    encryptionEnabled = logsConfig.encryptionEnabled
+                    logsConfig
+                }
             }
         }
 
@@ -256,12 +254,12 @@ open class PLogImpl {
         @JvmStatic
         internal fun saveConfig(config: LogsConfig?) {
 
-            if (config != null) {
+            config?.let {
                 //Set up encryption Key
-                isEncryptionEnabled().let {
-                    getConfig()?.encryptionKey?.let {
-                        if (it.isNotEmpty()) {
-                            val key = encrypter.checkIfKeyValid(it)
+                if (config.encryptionEnabled) {
+                    config.encryptionKey.let { key ->
+                        if (key.isNotEmpty()) {
+                            val key = encrypter.checkIfKeyValid(key)
                             config.secretKey = encrypter.generateKey(key)
                         }
                     }
@@ -269,9 +267,11 @@ open class PLogImpl {
 
                 //Set Logs Configuration
                 logsConfig = config
-            } else {
-                Log.e(TAG, "saveConfig: Configurations not provided.")
-            }
+
+                //Save Configuration
+                saveLogsConfig(PREF_LOGS_CONFIG, it)
+            } ?: Log.e(TAG, "saveConfig: Configurations not provided.")
+
         }
     }
 }

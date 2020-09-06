@@ -41,3 +41,4 @@ fun getTempExportPath(logsConfig: LogsConfig?): String {
 val PREF_LOGS_CLEAR_DATE = "sp_plogs_library_logs_clear_date"
 val PREF_ZIP_DELETE_DATE = "sp_plogs_library_zip_delete_date"
 val PREF_EXPORT_START_DATE = "sp_plogs_library_export_start_date"
+val PREF_LOGS_CONFIG = "sp_plogs_logs_config"

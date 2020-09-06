@@ -234,6 +234,7 @@ class MainActivity : AppCompatActivity() {
         PLog.printLogsForType(ExportType.TODAY, printDecrypted = true)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             Log.i("PLog", it)
@@ -242,7 +243,9 @@ class MainActivity : AppCompatActivity() {
                             it.printStackTrace()
                             Log.i(TAG, "printLogs: PLog Error: " + it.message)
                         },
-                        onComplete = { }
+                        onComplete = {
+                            PLog.logThis(TAG,"print_plogs","Print PLogs Completed.")
+                        }
                 )
     }
 
@@ -250,6 +253,7 @@ class MainActivity : AppCompatActivity() {
         PLog.printDataLogsForName(LogType.Location.type, printDecrypted = true)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             Log.i("DataLog", it)

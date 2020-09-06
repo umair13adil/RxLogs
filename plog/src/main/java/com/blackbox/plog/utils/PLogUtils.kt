@@ -26,13 +26,17 @@ object PLogUtils {
     }
 
     internal fun createDirIfNotExists(path: String, config: LogsConfig? = null): Boolean {
-        val file = File(path)
-        if (!file.exists()) {
+        config?.let {
+            if(config.enabled) {
+                val file = File(path)
+                if (!file.exists()) {
 
-            if (PLogImpl.getConfig(config = config)?.debugFileOperations!!)
-                Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
+                    if (PLogImpl.getConfig(config = config)?.debugFileOperations!!)
+                        Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
 
-            return file.mkdirs()
+                    return file.mkdirs()
+                }
+            }
         }
         return false
     }
