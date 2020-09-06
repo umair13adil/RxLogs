@@ -17,7 +17,6 @@ import com.blackbox.plog.pLogs.impl.AutoExportHelper
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
-import com.blackbox.plog.utils.PLogUtils
 import com.blackbox.plog.utils.getLogsSavedPaths
 import io.reactivex.Observable
 import java.io.File
@@ -329,8 +328,13 @@ object PLog : PLogImpl() {
 
             if (getConfig()?.isDebuggable!!) {
 
-                if (dataToWrite.isNotEmpty())
-                    Log.i(TAG, dataToWrite)
+                if (dataToWrite.isNotEmpty()) {
+                    if (logLevel == LogLevel.INFO) {
+                        Log.i(Companion.TAG, dataToWrite)
+                    } else {
+                        Log.e(Companion.TAG, dataToWrite)
+                    }
+                }
             }
 
             //Check if log level is of Error

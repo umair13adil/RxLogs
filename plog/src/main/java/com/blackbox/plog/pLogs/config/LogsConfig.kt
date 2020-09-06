@@ -20,7 +20,7 @@ data class LogsConfig(
         var isDebuggable: Boolean = true, //Debug for LogCat
         var debugFileOperations: Boolean = false, //Debug for File operations
         var forceWriteLogs: Boolean = true, //Forcefully write logs even if size exceeds
-        var enabled: Boolean = true, //Logs are enabled
+        var enableLogsWriteToFile: Boolean = true, //Logs will be written to Storage Directory if 'true' otherwise just be printed in LogCat
         var logLevelsEnabled: ArrayList<LogLevel> = arrayListOf<LogLevel>(), //Levels like Info, Warning, Error, Severe
         var logTypesEnabled: ArrayList<String> = arrayListOf<String>(),
         var formatType: FormatType = FormatType.FORMAT_CURLY, //Default format of '{String}' log data
@@ -63,7 +63,7 @@ data class LogsConfig(
 
         //Check if Logs need to be cleared, after 5 seconds delay
         //Only run if logs are enabled
-        if (enabled) {
+        if (enableLogsWriteToFile) {
             Triggers.shouldClearLogs()
             Triggers.shouldClearExports()
         }
@@ -95,10 +95,10 @@ data class LogsConfig(
     private fun validateConfigurations() {
 
         //Only validate if logs are enabled
-        if (enabled) {
+        if (enableLogsWriteToFile) {
 
             //Check Directory Structure
-            if (directoryStructure == DirectoryStructure.FOR_EVENT && enabled) {
+            if (directoryStructure == DirectoryStructure.FOR_EVENT && enableLogsWriteToFile) {
                 if (nameForEventDirectory.isEmpty()) {
                     throw Exception(Throwable("Name for event must be provided. Set name using this method 'PLogger.setEventNameForDirectory(name)' or set in" +
                             "'PLogBuilder().also {it.setEventNameForDirectory()}'"))

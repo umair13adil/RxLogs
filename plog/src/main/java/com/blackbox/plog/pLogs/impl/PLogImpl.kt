@@ -162,8 +162,14 @@ open class PLogImpl {
 
         val logData = PLog.printFormattedLogs(className, functionName, info, type.level, exception, throwable)
 
-        if (!isEnabled())
+        if (!isEnabled()) {
+            if (type == LogLevel.INFO) {
+                Log.i(TAG, logData)
+            } else {
+                Log.e(TAG, logData)
+            }
             return Pair(false, logData)
+        }
 
         //Do nothing if log level type is disabled
         if (!isLogLevelEnabled(type))
@@ -224,14 +230,14 @@ open class PLogImpl {
         internal fun getConfig(config: LogsConfig? = null): LogsConfig? {
             return if (logsConfig != null) {
                 logsConfig?.let { logsConfig ->
-                    isEnabled = logsConfig.enabled
+                    isEnabled = logsConfig.enableLogsWriteToFile
                     logLevelsEnabled = logsConfig.logLevelsEnabled
                     encryptionEnabled = logsConfig.encryptionEnabled
                     logsConfig
                 }
             } else {
                 getLogsConfig(PREF_LOGS_CONFIG, LogsConfig::class.java, config)?.let { logsConfig ->
-                    isEnabled = logsConfig.enabled
+                    isEnabled = logsConfig.enableLogsWriteToFile
                     logLevelsEnabled = logsConfig.logLevelsEnabled
                     encryptionEnabled = logsConfig.encryptionEnabled
                     logsConfig

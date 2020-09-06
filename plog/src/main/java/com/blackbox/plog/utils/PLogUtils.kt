@@ -1,11 +1,8 @@
 package com.blackbox.plog.utils
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.util.Log
-import androidx.core.content.ContextCompat
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.impl.PLogImpl
@@ -27,7 +24,7 @@ object PLogUtils {
 
     internal fun createDirIfNotExists(path: String, config: LogsConfig? = null): Boolean {
         config?.let {
-            if(config.enabled) {
+            if(config.enableLogsWriteToFile) {
                 val file = File(path)
                 if (!file.exists()) {
 

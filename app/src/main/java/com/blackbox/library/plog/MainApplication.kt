@@ -31,7 +31,7 @@ class MainApplication : Application() {
                     zipsRetentionPeriodInDays = 3, //Will not work if local XML config file is not present
                     autoDeleteZipOnExport = true,
                     autoClearLogs = true,
-                    enabled = false,
+                    enableLogsWriteToFile = true,
                     exportFileNamePreFix = "[",
                     exportFileNamePostFix = "]",
                     autoExportErrors = true,
