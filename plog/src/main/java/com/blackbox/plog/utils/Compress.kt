@@ -19,6 +19,11 @@ private const val BUFFER_SIZE = 2048
 
 fun zip(filesToSend: List<File>, outputPath: String): Observable<Boolean> {
 
+    val file = File(outputPath)
+    if (!file.exists()) {
+        file.createNewFile()
+    }
+
     return Observable.create {
         if (File(outputPath).exists() && filesToSend.isNotEmpty()) {
             try {
@@ -47,6 +52,7 @@ fun zip(filesToSend: List<File>, outputPath: String): Observable<Boolean> {
                 it.onComplete()
             }
         } else {
+            Log.e(TAG, "$outputPath File doesn't exist or list of files provided is empty.")
             if (!it.isDisposed) {
                 it.onNext(false)
                 it.onComplete()

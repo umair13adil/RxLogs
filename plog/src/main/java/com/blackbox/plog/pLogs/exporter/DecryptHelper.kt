@@ -48,20 +48,19 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
         val outputDirectory = File(tempPath)
         val outputPath = exportPath + exportFileName
 
-        if (exportFilesOnly) {
-            val decryptedFiles = outputDirectory.listFiles().toList()
-            if (decryptedFiles.isNotEmpty()) {
+        val file = File(outputPath)
+        if (!file.exists()) {
+            file.createNewFile()
+        }
 
-                if (!File(outputPath).exists())
+        if (exportFilesOnly) {
+            outputDirectory.listFiles()?.toList()?.let { decryptedFiles ->
+                if (decryptedFiles.isNotEmpty()) {
                     zipFilesOnly(decryptedFiles, outputPath, exportFileName, tempPath, emitter)
-                else {
-                    if (PLogImpl.getConfig()?.debugFileOperations!!)
-                        Log.i(PLog.DEBUG_TAG, "decryptSaveFiles: Unable to zip, $outputPath doesnt exists!")
                 }
             }
         } else {
-            if (File(outputPath).exists())
-                zipFilesAndFolder(outputPath, exportFileName, tempPath, emitter)
+            zipFilesAndFolder(outputPath, exportFileName, tempPath, emitter)
         }
     }
 }

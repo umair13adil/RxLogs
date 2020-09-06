@@ -1,7 +1,6 @@
 package com.blackbox.plog.pLogs.exporter
 
 import android.util.Log
-import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
@@ -72,7 +71,7 @@ object LogExporter {
                 Log.i(TAG, "printLogsForType: Found ${files.second.size} files.")
 
                 if (files.second.isEmpty()) {
-                    Log.e(TAG,"No logs found for type '$type'")
+                    Log.e(TAG, "No logs found for type '$type'")
                 }
 
                 files.second.forEach { f ->
@@ -131,9 +130,6 @@ object LogExporter {
 
     private fun decryptFirstThenZip(emitter: ObservableEmitter<String>, filesToSend: List<File> = arrayListOf<File>(), exportedPath: String = "") {
         decryptSaveFiles(filesToSend, exportPath, zipName)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)
@@ -154,9 +150,6 @@ object LogExporter {
 
     private fun zipFilesOnly(emitter: ObservableEmitter<String>, filesToSend: List<File>) {
         zip(filesToSend, exportPath + zipName)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)
@@ -177,9 +170,6 @@ object LogExporter {
 
     private fun zipFilesAndFolder(emitter: ObservableEmitter<String>, directory: String) {
         zipAll(directory, exportPath + zipName)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             if (PLogImpl.getConfig()?.isDebuggable!!)

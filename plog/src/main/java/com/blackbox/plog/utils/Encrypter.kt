@@ -86,7 +86,6 @@ class Encrypter() {
                     ByteArrayOutputStream().use { os ->
                         os.write(cipherInputStream.readBytes())
                         data = os.toByteArray().toString(Charsets.UTF_8)
-                        Log.i("readFileDecrypted", data)
                     }
                 }
             }
