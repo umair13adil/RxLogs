@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.exporter
 
+import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FileFilter
 import com.blackbox.plog.pLogs.filter.FilterUtils.getPathForType
@@ -9,6 +10,8 @@ import java.io.File
 private val path = PLog.logPath
 private var timeStamp = ""
 private var noOfFiles = ""
+
+private val TAG = "ExportTypes"
 
 /*
  * Get logs for export type.
@@ -49,6 +52,7 @@ private fun getLogsForToday(): Triple<String, List<File>, String> {
     val files = FileFilter.getFilesForToday(path)
     val zipName = composeZipName(files, ExportType.TODAY)
 
+    Log.i(TAG,"getLogsForToday: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
 
@@ -61,6 +65,7 @@ private fun getLogsForLastHour(): Triple<String, List<File>, String> {
     val files = FileFilter.getFilesForLastHour(path)
     val zipName = composeZipName(files, ExportType.LAST_HOUR)
 
+    Log.i(TAG,"getLogsForLastHour: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
 
@@ -73,6 +78,7 @@ private fun getLogsForWeek(): Triple<String, List<File>, String> {
     val files = FileFilter.getFilesForLastWeek(path)
     val zipName = composeZipName(files, ExportType.WEEKS)
 
+    Log.i(TAG,"getLogsForWeek: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
 
@@ -85,6 +91,7 @@ private fun getLogsForLast24Hours(): Triple<String, List<File>, String> {
     val files = FileFilter.getFilesForLast24Hours(path)
     val zipName = composeZipName(files, ExportType.LAST_24_HOURS)
 
+    Log.i(TAG,"getLogsForLast24Hours: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
 
@@ -97,6 +104,7 @@ private fun getLogsForAllInRoot(): Triple<String, List<File>, String> {
     val files = FileFilter.getFilesForAll(path)
     val zipName = composeZipName(files, ExportType.ALL)
 
+    Log.i(TAG,"getLogsForAllInRoot: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
 

@@ -20,31 +20,37 @@ private const val BUFFER_SIZE = 2048
 fun zip(filesToSend: List<File>, outputPath: String): Observable<Boolean> {
 
     return Observable.create {
+        if (File(outputPath).exists() && filesToSend.isNotEmpty()) {
+            try {
+                ZipOutputStream(BufferedOutputStream(FileOutputStream(outputPath))).use { zos ->
 
-        try {
-            ZipOutputStream(BufferedOutputStream(FileOutputStream(outputPath))).use { zos ->
+                    for (f in filesToSend) {
+                        if (f.exists() && !f.name.contains(".zip")) {
 
-                for (f in filesToSend) {
-                    if (f.exists() && !f.name.contains(".zip")) {
-
-                        //Write file to zip
-                        writeToZip(f, zos, createZipEntry(f.name, f))
+                            //Write file to zip
+                            writeToZip(f, zos, createZipEntry(f.name, f))
+                        }
                     }
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+
+                if (!it.isDisposed) {
+                    it.onError(e)
+                    it.onComplete()
                 }
             }
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-
             if (!it.isDisposed) {
-                it.onError(e)
+                it.onNext(true)
                 it.onComplete()
             }
-        }
-
-        if (!it.isDisposed) {
-            it.onNext(true)
-            it.onComplete()
+        } else {
+            if (!it.isDisposed) {
+                it.onNext(false)
+                it.onComplete()
+            }
         }
     }
 }

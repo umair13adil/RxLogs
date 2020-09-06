@@ -60,7 +60,7 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
                 }
             }
         } else {
-            if (!File(outputPath).exists())
+            if (File(outputPath).exists())
                 zipFilesAndFolder(outputPath, exportFileName, tempPath, emitter)
         }
     }

@@ -18,6 +18,7 @@ import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
 import com.blackbox.plog.utils.getLogsSavedPaths
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import java.io.File
 
@@ -282,7 +283,7 @@ object PLog : PLogImpl() {
      *
      * @return the String data
      */
-    fun printLogsForType(type: ExportType, printDecrypted: Boolean = false): Observable<String> {
+    fun printLogsForType(type: ExportType, printDecrypted: Boolean = false): Flowable<String> {
         return LogExporter.printLogsForType(type.type, printDecrypted)
     }
 

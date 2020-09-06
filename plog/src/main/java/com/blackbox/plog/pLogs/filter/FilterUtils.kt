@@ -18,7 +18,7 @@ object FilterUtils {
     }
 
     internal fun extractHour(name: String): Int {
-        return Integer.parseInt(name.substring(8, 10))
+        return Integer.parseInt(name.substring(7, 10))
     }
 
     fun prepareOutputFile(outputPath: String) {

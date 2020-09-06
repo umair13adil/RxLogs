@@ -20,6 +20,7 @@ class MainApplication : Application() {
     companion object {
         private val TAG = "MainApplication"
         var logsConfig: LogsConfig? = null
+        var isEncryptionEnabled = true
 
         fun setUpPLogger(context: Context) {
 
@@ -35,7 +36,7 @@ class MainApplication : Application() {
                     exportFileNamePreFix = "[",
                     exportFileNamePostFix = "]",
                     autoExportErrors = true,
-                    encryptionEnabled = true,
+                    encryptionEnabled = isEncryptionEnabled,
                     encryptionKey = "866214031427313",
                     singleLogFileSize = 1, //1Mb
                     logFilesLimit = 30,

@@ -44,11 +44,25 @@
                 android:text="PLog Event" />
 
             <Button
-                android:id="@+id/print_plogs"
+                android:id="@+id/print_plogs_hour"
                 style="@style/ButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Print PLogs" />
+                android:text="Print Last Hour" />
+
+            <Button
+                android:id="@+id/print_plogs_day"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Print Day" />
+
+            <Button
+                android:id="@+id/print_all"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Print All" />
 
             <Button
                 android:id="@+id/export_plogs"

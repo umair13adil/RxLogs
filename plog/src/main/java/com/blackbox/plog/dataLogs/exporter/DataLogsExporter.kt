@@ -54,9 +54,9 @@ object DataLogsExporter {
                     if (!emitter.isDisposed)
 
                         if (name.isNotEmpty())
-                            emitter.onError(Throwable("No Files to zip for $name"))
+                            Log.e(TAG, "No Files to zip for $name")
                         else
-                            emitter.onError(Throwable("No Files to zip!"))
+                            Log.e(TAG, "No Files to zip!")
                 }
 
                 if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
@@ -124,7 +124,7 @@ object DataLogsExporter {
 
                 if (files.isEmpty()) {
                     if (!emitter.isDisposed)
-                        emitter.onError(Throwable("No data log files found to read for type '$logFileName'"))
+                        Log.e(TAG,"No data log files found to read for type '$logFileName'")
                 }
 
                 for (f in files) {
@@ -152,7 +152,7 @@ object DataLogsExporter {
             } else {
 
                 if (!emitter.isDisposed) {
-                    emitter.onError(Throwable("No Logs configuration provided! Can not perform this action with logs configuration."))
+                    Log.e(TAG,"No Logs configuration provided! Can not perform this action with logs configuration.")
                 }
             }
         }

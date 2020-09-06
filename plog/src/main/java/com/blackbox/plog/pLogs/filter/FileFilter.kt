@@ -24,11 +24,13 @@ internal object FileFilter {
         val path = folderPath
         val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
-        try {
-            File(folderPath).copyRecursively(File(tempOutputPath), true)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "getFilesForToday: Unable to get files for today!")
+        if (lisOfFiles.isNotEmpty()) {
+            try {
+                File(folderPath).copyRecursively(File(tempOutputPath), true)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "getFilesForToday: Unable to get files for today!")
+            }
         }
 
         return Pair(lisOfFiles, tempOutputPath)
@@ -111,13 +113,17 @@ internal object FileFilter {
         if (files.isNotEmpty()) {
 
             for (i in files.indices) {
-                val fileHour = FilterUtils.extractHour(files[i].name)
+                try {
+                    val fileHour = FilterUtils.extractHour(files[i].name)
 
-                if (PLogImpl.getConfig()?.debugFileOperations!!)
-                    Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
+                    if (PLogImpl.getConfig()?.debugFileOperations!!)
+                        Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
 
-                if (fileHour == lastHour) {
-                    lisOfFiles.add(files[i])
+                    if (fileHour == lastHour) {
+                        lisOfFiles.add(files[i])
+                    }
+                } catch (e: NumberFormatException) {
+
                 }
             }
 
@@ -133,13 +139,11 @@ internal object FileFilter {
 
         val lisOfFiles = FilterUtils.listFiles(folderPath, arrayListOf())
 
-        //Copy Files to temp folder
-        File(folderPath).copyRecursively(File(tempOutputPath), true)
-
-        return if (PLogImpl.getConfig()?.zipFilesOnly!!) {
-            Pair(lisOfFiles, tempOutputPath)
-        } else {
-            Pair(lisOfFiles, tempOutputPath)
+        if (lisOfFiles.isNotEmpty()) {
+            //Copy Files to temp folder
+            File(folderPath).copyRecursively(File(tempOutputPath), true)
         }
+
+        return Pair(lisOfFiles, tempOutputPath)
     }
 }

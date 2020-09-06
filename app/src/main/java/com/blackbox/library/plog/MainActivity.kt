@@ -166,8 +166,16 @@ class MainActivity : AppCompatActivity() {
 
 
         //Will print logged data in PLogs
-        print_plogs.setOnClickListener {
-            printPLogs()
+        print_plogs_hour.setOnClickListener {
+            printPLogs(ExportType.LAST_HOUR)
+        }
+
+        print_plogs_day.setOnClickListener {
+            printPLogs(ExportType.TODAY)
+        }
+
+        print_all.setOnClickListener {
+            printPLogs(ExportType.ALL)
         }
 
         //Will print logged data in DataLogs
@@ -189,10 +197,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun exportPLogs() {
-        PLog.exportLogsForType(ExportType.TODAY, exportDecrypted = true)
+        PLog.exportLogsForType(ExportType.TODAY, exportDecrypted = MainApplication.isEncryptionEnabled)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             Log.i(TAG, "exportPLogs: PLogs Path: $it")
@@ -210,10 +217,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun exportDataLogs() {
-        PLog.exportAllDataLogs()
+        PLog.exportAllDataLogs(exportDecrypted = MainApplication.isEncryptionEnabled)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             Log.i(TAG, "exportDataLogs: DataLog Path: $it")
@@ -230,11 +236,9 @@ class MainActivity : AppCompatActivity() {
                 )
     }
 
-    private fun printPLogs() {
-        PLog.printLogsForType(ExportType.TODAY, printDecrypted = true)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
+    private fun printPLogs(exportType: ExportType) {
+        PLog.printLogsForType(exportType, printDecrypted = MainApplication.isEncryptionEnabled)
+                .retry(2)
                 .subscribeBy(
                         onNext = {
                             Log.i("PLog", it)
@@ -250,10 +254,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun printDataLogs() {
-        PLog.printDataLogsForName(LogType.Location.type, printDecrypted = true)
+        PLog.printDataLogsForName(LogType.Location.type, printDecrypted = MainApplication.isEncryptionEnabled)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .debounce(500, TimeUnit.MILLISECONDS)
                 .subscribeBy(
                         onNext = {
                             Log.i("DataLog", it)

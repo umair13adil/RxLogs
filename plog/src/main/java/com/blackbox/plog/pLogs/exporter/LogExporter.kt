@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.exporter
 
 import android.util.Log
+import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
@@ -9,13 +10,13 @@ import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.zip
 import com.blackbox.plog.utils.zipAll
-import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
+import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.util.concurrent.TimeUnit
+
 
 /**
  * Created by umair on 04/01/2018.
@@ -61,48 +62,40 @@ object LogExporter {
     /*
      * Will return logged data in log files.
      */
-    fun printLogsForType(type: String, printDecrypted: Boolean): Observable<String> {
+    fun printLogsForType(type: String, printDecrypted: Boolean): Flowable<String> {
 
-
-        return Observable.create {
-
-            val emitter = it
+        val flowableOnSubscribe = FlowableOnSubscribe<String> { emitter ->
 
             if (PLog.isLogsConfigSet()) {
 
                 val files = getFilesForRequestedType(type)
+                Log.i(TAG, "printLogsForType: Found ${files.second.size} files.")
 
                 if (files.second.isEmpty()) {
-                    if (!emitter.isDisposed)
-                        emitter.onError(Throwable("No logs found for type '$type'"))
+                    Log.e(TAG,"No logs found for type '$type'")
                 }
 
-                for (f in files.second) {
-                    if (!emitter.isDisposed) {
-                        emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                        emitter.onNext("File: ${f.name} Start..\n")
+                files.second.forEach { f ->
+                    emitter.onNext("Start<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
+                    emitter.onNext("File: ${f.name} Start..\n")
 
-                        if (PLogImpl.isEncryptionEnabled() && printDecrypted) {
-                            emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
-                        } else {
-                            f.forEachLine {
-                                emitter.onNext(it)
-                            }
+                    if (PLogImpl.isEncryptionEnabled() && printDecrypted) {
+                        emitter.onNext(PLogImpl.encrypter.readFileDecrypted(f.absolutePath))
+                    } else {
+                        f.forEachLine {
+                            emitter.onNext(it)
                         }
-
-                        emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
                     }
-                }
 
-                if (!emitter.isDisposed)
-                    emitter.onComplete()
+                    emitter.onNext(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End\n")
+                }
+                emitter.onComplete()
             } else {
-
-                if (!emitter.isDisposed) {
-                    emitter.onError(Throwable("No Logs configuration provided! Can not perform this action with logs configuration."))
-                }
+                Log.e(TAG, "No Logs configuration provided! Can not perform this action with logs configuration.")
             }
         }
+
+        return Flowable.create(flowableOnSubscribe, BackpressureStrategy.BUFFER)
     }
 
     private fun compressPackage(emitter: ObservableEmitter<String>, exportDecrypted: Boolean) {
@@ -130,7 +123,8 @@ object LogExporter {
             if (PLogImpl.isEncryptionEnabled() && exportDecrypted) {
                 decryptFirstThenZip(emitter, filesToSend = filesToSend, exportedPath = "")
             } else {
-                zipFilesAndFolder(emitter, this.files.third)
+                if (File(this.files.third).exists())
+                    zipFilesAndFolder(emitter, this.files.third)
             }
         }
     }

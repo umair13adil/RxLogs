@@ -3,6 +3,7 @@ package com.blackbox.plog.pLogs.impl
 import android.content.Context
 import android.util.Log
 import com.blackbox.plog.dataLogs.DataLogger
+import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.mqtt.MQTTSender
@@ -40,7 +41,7 @@ open class PLogImpl {
             return true
         }
 
-        print(Throwable("No logs configuration provided!"))
+        Log.e(TAG,"No logs configuration provided!")
 
         return false
     }
