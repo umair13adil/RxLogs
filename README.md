@@ -263,6 +263,9 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 
 Change Log
 ----------
+###### Version: 1.0.9
+- Changed parameter name in LogsConfig from "enabled" to "enableLogsWriteToFile"
+
 ###### Version: 1.0.3
 - Added MQTT Logging support
 
