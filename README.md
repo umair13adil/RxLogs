@@ -256,6 +256,14 @@ Add following block for initializing MQTT logging.
 That's it, MQTT setup is done.
 _______________________________________________
 
+##### ProGuard Rules: 
+
+-keep class com.blackbox.plog.pLogs.models.** { *; }
+-keepclassmembers class com.blackbox.plog.pLogs.models.** { *; }
+-keep class com.blackbox.plog.** {*; }
+-keep class com.blackbox.plog.pLogs.exporter.formatter.** {*; }
+-keep class com.blackbox.plog.pLogs.exporter.** {*; }
+
 Wiki
 --------
 

@@ -24,11 +24,11 @@
 -keep class com.google.gson.stream.** { *; }
 
 #PLogs
--keep class com.embrace.plog.pLogs.models.** { *; }
--keepclassmembers class com.embrace.plog.pLogs.models.** { *; }
+-keep class om.blackbox.plog.models.** { *; }
+-keepclassmembers class om.blackbox.plog.models.** { *; }
 -keep class com.blackbox.plog.** {*; }
--keep class com.embrace.plog.pLogs.exporter.formatter.** {*; }
--keep class com.embrace.plog.pLogs.exporter.** {*; }
+-keep class om.blackbox.plog.exporter.formatter.** {*; }
+-keep class om.blackbox.plog.exporter.** {*; }
 
 # RxJava
 -keep class rx.schedulers.Schedulers {
