@@ -13,9 +13,6 @@
 -keep public class * extends android.content.BroadcastReceiver
 -keep public class * extends android.content.ContentProvider
 
-
--libraryjars  libs/commons-io-2.2.jar
--libraryjars  libs/gson-2.2.2.jar
 -keep public class org.apache.commons.io.**
 -keep public class com.google.gson.**
 -keep public class com.google.gson.** {public private protected *;}
