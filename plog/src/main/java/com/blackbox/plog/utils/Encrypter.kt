@@ -2,6 +2,7 @@ package com.blackbox.plog.utils
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.*
 import java.security.InvalidKeyException
@@ -13,6 +14,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 @SuppressLint("GetInstance")
+@Keep
 class Encrypter() {
 
     //Algorithm type used for encryption & decryption

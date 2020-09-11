@@ -2,6 +2,7 @@ package com.blackbox.plog.dataLogs
 
 import android.os.AsyncTask
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.elk.ECSMapper
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.mqtt.MQTTSender
@@ -17,6 +18,7 @@ import com.blackbox.plog.utils.DateTimeUtils
  * Created by umair on 2019-02-12 09:10
  * for CubiVue Logs
  */
+@Keep
 class SaveDataLogsAsync(var logFileName: String, var dataToWrite: String, var overwrite: Boolean) : AsyncTask<String, String, Boolean>() {
 
     override fun onPostExecute(result: Boolean?) {

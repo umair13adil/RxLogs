@@ -3,6 +3,7 @@ package com.blackbox.plog.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.impl.PLogImpl
@@ -14,6 +15,7 @@ import java.io.StringWriter
 /**
  * Created by Umair Adil on 18/11/2016.
  */
+@Keep
 object PLogUtils {
 
     internal fun isConnected(context: Context): Boolean {

@@ -5,9 +5,11 @@ import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.models.LogLevel
 
+@Keep
 class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
                           val crashlyticsHandler: Thread.UncaughtExceptionHandler,
                           application: Application) : Thread.UncaughtExceptionHandler {

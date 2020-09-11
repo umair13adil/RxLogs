@@ -1,6 +1,7 @@
 package com.blackbox.plog.dataLogs.exporter
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.dataLogs.filter.DataLogsFilter
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
@@ -17,6 +18,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 
+@Keep
 object DataLogsExporter {
 
     private val TAG = DataLogsExporter::class.java.simpleName

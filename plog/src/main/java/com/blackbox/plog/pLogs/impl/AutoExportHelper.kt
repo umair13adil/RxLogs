@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.impl
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
@@ -10,6 +11,7 @@ import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.RxBus
 
+@Keep
 object AutoExportHelper {
 
     fun autoExportError(data: String, type: LogLevel) {

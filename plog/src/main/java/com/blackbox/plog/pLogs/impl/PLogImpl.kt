@@ -2,6 +2,7 @@ package com.blackbox.plog.pLogs.impl
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.elk.ECSMapper
@@ -27,7 +28,7 @@ import com.google.gson.Gson
 import io.reactivex.Observable
 import java.io.File
 
-
+@Keep
 open class PLogImpl {
 
     internal var logTypes = hashMapOf<String, DataLogger>()

@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.filter
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.DateControl
@@ -11,6 +12,7 @@ import java.io.File
 /**
  * Created by umair on 03/01/2018.
  */
+@Keep
 internal object FileFilter {
 
     internal val TAG = FileFilter::class.java.simpleName

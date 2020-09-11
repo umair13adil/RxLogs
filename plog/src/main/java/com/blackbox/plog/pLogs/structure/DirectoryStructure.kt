@@ -1,5 +1,8 @@
 package com.blackbox.plog.pLogs.structure
 
+import androidx.annotation.Keep
+
+@Keep
 enum class DirectoryStructure(val value: String) {
     FOR_DATE("FOR_DATE"),
     FOR_EVENT("FOR_EVENT"),

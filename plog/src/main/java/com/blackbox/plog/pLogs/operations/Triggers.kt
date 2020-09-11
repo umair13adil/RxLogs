@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.operations
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.PLogPreferences
 import com.blackbox.plog.pLogs.events.EventTypes
@@ -13,6 +14,7 @@ import com.blackbox.plog.utils.DateTimeUtils
 import com.blackbox.plog.utils.RxBus
 import java.util.*
 
+@Keep
 object Triggers {
 
     val TAG = "Triggers"

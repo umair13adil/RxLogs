@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.impl
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.utils.*
 import com.blackbox.plog.utils.appendToFile
@@ -9,6 +10,7 @@ import com.blackbox.plog.utils.setupFilePaths
 import java.io.File
 import javax.crypto.SecretKey
 
+@Keep
 object LogWriter {
 
     private val TAG = "LogWriter"

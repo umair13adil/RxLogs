@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.exporter
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by umair on 04/01/2018.
  */
-
+@Keep
 object LogExporter {
 
     private val TAG = LogExporter::class.java.simpleName

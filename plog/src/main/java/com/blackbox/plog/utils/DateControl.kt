@@ -1,5 +1,6 @@
 package com.blackbox.plog.utils
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -8,7 +9,7 @@ import java.util.*
 /**
  * Created by Umair Adil on 06/04/2017.
  */
-
+@Keep
 class DateControl {
 
     private val TAG = DateControl::class.java.simpleName

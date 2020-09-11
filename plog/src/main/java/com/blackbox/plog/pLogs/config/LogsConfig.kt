@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.config
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.formatter.FormatType
@@ -16,6 +17,7 @@ import javax.crypto.SecretKey
  * If configurations are written to an XML on storage then all configurations will be read from storage
   * instead of what's defined in 'Application' class.
  */
+@Keep
 data class LogsConfig(
         var isDebuggable: Boolean = true, //Debug for LogCat
         var debugFileOperations: Boolean = false, //Debug for File operations

@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.formatter
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogData
 
@@ -7,6 +8,7 @@ import com.blackbox.plog.pLogs.models.LogData
  * Created by umair on 03/01/2018.
  */
 
+@Keep
 object LogFormatter {
 
     private fun formatCurly(data: LogData): String {

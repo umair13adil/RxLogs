@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.workers
 
 import android.content.Context
+import androidx.annotation.Keep
 import androidx.work.RxWorker
 import androidx.work.WorkerParameters
 import com.blackbox.plog.mqtt.MQTTSender
@@ -13,6 +14,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
+@Keep
 class LogsPublishWorker(appContext: Context, workerParams: WorkerParameters) :
         RxWorker(appContext, workerParams) {
 

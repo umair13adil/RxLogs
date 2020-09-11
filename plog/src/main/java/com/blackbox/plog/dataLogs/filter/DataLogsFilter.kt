@@ -1,11 +1,13 @@
 package com.blackbox.plog.dataLogs.filter
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
+@Keep
 object DataLogsFilter {
 
     val TAG = "DataLogsFilter"

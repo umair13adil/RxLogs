@@ -7,6 +7,7 @@ package com.blackbox.plog.pLogs
 import android.os.AsyncTask
 import android.os.Handler
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.mqtt.MQTTSender
@@ -22,6 +23,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import java.io.File
 
+@Keep
 object PLog : PLogImpl() {
 
     internal val TAG = PLogImpl.TAG

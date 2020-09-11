@@ -1,5 +1,6 @@
 package com.blackbox.plog.dataLogs
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.impl.LogWriter
@@ -14,6 +15,7 @@ import java.io.File
  * Created by umair on 2019-02-12 09:12
  * for CubiVue Logs
  */
+@Keep
 object DataLogWriter {
 
     private val autoExportTypes = PLogImpl.getConfig()?.autoExportLogTypes!!

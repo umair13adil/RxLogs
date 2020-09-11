@@ -1,5 +1,6 @@
 package com.blackbox.plog.utils
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -7,6 +8,7 @@ import java.util.*
 /**
  * The type Date time utils.
  */
+@Keep
 object DateTimeUtils {
 
     private val TAG = DateTimeUtils::class.java.simpleName

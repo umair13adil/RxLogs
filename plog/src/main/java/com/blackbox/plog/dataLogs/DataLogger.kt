@@ -1,12 +1,14 @@
 package com.blackbox.plog.dataLogs
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.utils.PLogUtils
 
 /**
  * Created by umair on 04/01/2018.
  */
+@Keep
 class DataLogger(private var logFileName: String = "log") {
 
     private val TAG = "DataLogger"

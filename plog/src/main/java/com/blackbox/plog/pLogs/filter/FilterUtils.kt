@@ -1,6 +1,7 @@
 package com.blackbox.plog.pLogs.filter
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.impl.PLogImpl
@@ -11,6 +12,7 @@ import java.io.File
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
+@Keep
 object FilterUtils {
 
     internal fun extractDay(name: String): Int {

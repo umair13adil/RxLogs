@@ -1,5 +1,8 @@
 package com.blackbox.plog.pLogs.events
 
+import androidx.annotation.Keep
+
+@Keep
 enum class EventTypes(var data: String) {
 
     PLOGS_EXPORTED("1"),

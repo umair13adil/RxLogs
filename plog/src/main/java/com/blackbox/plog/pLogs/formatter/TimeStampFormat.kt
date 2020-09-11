@@ -1,6 +1,9 @@
 package com.blackbox.plog.pLogs.formatter
 
+import androidx.annotation.Keep
 
+
+@Keep
 object TimeStampFormat {
 
     val DATE_FORMAT_1 = "ddMMyyyy"
