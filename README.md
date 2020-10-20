@@ -24,7 +24,7 @@ Features
 1. Logs events in files created separately every hour with **'PLogs'** logger. (24 hours)
 2. Files can be compressed and exported for time and day filters
 3. Clear Logs easily
-4. Save logs to custom path
+4. Save logs to app's storage path
 5. Export Logs to custom path as zip file
 6. RxJava2 support
 7. Custom Log formatting
@@ -43,35 +43,6 @@ Features
 20. ELK Stack Supported See more about it [here](https://www.elastic.co/what-is/elk-stack).
 21. MQTT Support
 22. Added logs queueing for offline support (MQTT Feature)
-
-Prerequisites
--------------
-
-Logging is done on storage directory so it's very important to add these permissions to your project's manifest file first.
-
-```xml
-
-    <!--Required for MQTT logging-->
-    <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!--Required for local storage logging-->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-```
-
-**Check for Runtime permissions:**
-
-```kotlin
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), YOUR_PERMISSION_CODE)
-            return //Don't initialize logger if permissions are not granted
-        }
-```
-
-
 
 Setup
 -------------
@@ -111,7 +82,7 @@ class MainApplication : Application() {
         }
 
 private fun setUpPLogger() {
-             val logsPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "PLogs"
+             val logsPath = "PLogs"
              
                      val logsConfig = LogsConfig(
                              isDebuggable = true,
@@ -125,7 +96,16 @@ private fun setUpPLogger() {
          }
 }
 ```
-                
+
+#### Where are my logs stored?
+_______________________________________________
+ 
+ Your logs can be found in the path of your app's directory in storage:
+ 
+*--> Android/data/[YOUR_APP_PACKAGE]/files/[YOUR_LOGS_FOLDER_NAME]/Logs/*
+ 
+ ![Image3](pictures/picture3.png)
+
 #### To Log data to file simply call like this
 _______________________________________________
 
