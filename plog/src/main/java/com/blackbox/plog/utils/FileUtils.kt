@@ -34,7 +34,7 @@ fun writeToFile(path: String, data: String) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        Log.e(PLog.DEBUG_TAG, e.message)
+        e.message?.let { Log.e(PLog.DEBUG_TAG, it) }
 
         if (PLogImpl.getConfig()?.debugFileOperations!!)
             Log.i(PLog.DEBUG_TAG, "writeToFile: Unable to write to file.. ${e.message}")
@@ -58,7 +58,7 @@ fun appendToFile(path: String, data: String) {
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        Log.e(PLog.DEBUG_TAG, e.message)
+        e.message?.let { Log.e(PLog.DEBUG_TAG, it) }
 
         if (PLogImpl.getConfig()?.debugFileOperations!!)
             Log.i(PLog.DEBUG_TAG, "appendToFile: Unable to append to file.. ${e.message}")

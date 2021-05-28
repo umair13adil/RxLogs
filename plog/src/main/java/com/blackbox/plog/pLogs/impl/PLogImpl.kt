@@ -1,5 +1,6 @@
 package com.blackbox.plog.pLogs.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.annotation.Keep
@@ -42,7 +43,7 @@ open class PLogImpl {
             return true
         }
 
-        Log.e(TAG,"No logs configuration provided!")
+        Log.e(TAG, "No logs configuration provided!")
 
         return false
     }
@@ -87,22 +88,27 @@ open class PLogImpl {
             return
         }
 
-        //Create 'Save' Path
-        createDirIfNotExists(config.savePath, config = config)
+        if (PLogPreferences.getInstance() != null) {
 
-        saveConfig(config)
+            //Create 'Save' Path
+            createDirIfNotExists(config.savePath, config = config)
 
-        if (config.encryptionEnabled) {
-            if (config.encryptionKey.isNotEmpty()) {
-                config.encryptionKey.let {
-                    val key = encrypter.checkIfKeyValid(it)
-                    LogWriter.secretKey = encrypter.generateKey(key)
+            saveConfig(config)
+
+            if (config.encryptionEnabled) {
+                if (config.encryptionKey.isNotEmpty()) {
+                    config.encryptionKey.let {
+                        val key = encrypter.checkIfKeyValid(it)
+                        LogWriter.secretKey = encrypter.generateKey(key)
+                    }
                 }
             }
-        }
 
-        //Perform operations on Initializing.
-        doOnInit()
+            //Perform operations on Initializing.
+            doOnInit()
+        } else {
+            Log.e(TAG, "PLogger not properly intialized!")
+        }
     }
 
     /*
@@ -126,7 +132,14 @@ open class PLogImpl {
         return File(XML_PATH, CONFIG_FILE_NAME).delete()
     }
 
-    internal fun printFormattedLogs(className: String, functionName: String, text: String, type: String, exception: Exception? = null, throwable: Throwable? = null): String {
+    internal fun printFormattedLogs(
+        className: String,
+        functionName: String,
+        text: String,
+        type: String,
+        exception: Exception? = null,
+        throwable: Throwable? = null
+    ): String {
         val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
         return if (!PLogMetaInfoProvider.elkStackSupported) {
@@ -160,9 +173,17 @@ open class PLogImpl {
         return FilterUtils.listFiles(outputPath, arrayListOf())
     }
 
-    internal fun isLogsConfigValid(className: String, functionName: String, info: String, type: LogLevel, exception: Exception? = null, throwable: Throwable? = null): Pair<Boolean, String> {
+    internal fun isLogsConfigValid(
+        className: String,
+        functionName: String,
+        info: String,
+        type: LogLevel,
+        exception: Exception? = null,
+        throwable: Throwable? = null
+    ): Pair<Boolean, String> {
 
-        val logData = PLog.printFormattedLogs(className, functionName, info, type.level, exception, throwable)
+        val logData =
+            PLog.printFormattedLogs(className, functionName, info, type.level, exception, throwable)
 
         if (!isEnabled()) {
             if (type == LogLevel.INFO) {
@@ -193,7 +214,11 @@ open class PLogImpl {
         }
     }
 
-    internal fun formatErrorMessage(info: String, throwable: Throwable? = null, exception: Exception? = null): String {
+    internal fun formatErrorMessage(
+        info: String,
+        throwable: Throwable? = null,
+        exception: Exception? = null
+    ): String {
         return if (info.isNotEmpty()) {
             if (throwable != null)
                 "$info, ${PLogUtils.getStackTrace(throwable)}"
@@ -225,6 +250,7 @@ open class PLogImpl {
         @JvmStatic
         internal val gson = Gson()
 
+        @SuppressLint("StaticFieldLeak")
         @JvmStatic
         internal var context: Context? = null
 
@@ -238,7 +264,20 @@ open class PLogImpl {
                     logsConfig
                 }
             } else {
-                getLogsConfig(PREF_LOGS_CONFIG, LogsConfig::class.java, config)?.let { logsConfig ->
+                try {
+                    getLogsConfig(
+                        PREF_LOGS_CONFIG,
+                        LogsConfig::class.java,
+                        config
+                    )?.let { logsConfig ->
+                        isEnabled = logsConfig.enableLogsWriteToFile
+                        logLevelsEnabled = logsConfig.logLevelsEnabled
+                        encryptionEnabled = logsConfig.encryptionEnabled
+                        logsConfig
+                    }
+                } catch (e: java.lang.Exception) {
+                    //e.printStackTrace()
+                    val logsConfig = LogsConfig()
                     isEnabled = logsConfig.enableLogsWriteToFile
                     logLevelsEnabled = logsConfig.logLevelsEnabled
                     encryptionEnabled = logsConfig.encryptionEnabled

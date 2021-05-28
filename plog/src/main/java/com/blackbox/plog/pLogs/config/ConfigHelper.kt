@@ -1,9 +1,12 @@
 package com.blackbox.plog.pLogs.config
 
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.google.gson.GsonBuilder
+
+@Keep
 
 /*
  * Check if provided configuration file contains 'enabled' LogLevel.

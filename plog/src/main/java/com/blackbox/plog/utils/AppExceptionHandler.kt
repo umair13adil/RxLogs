@@ -8,11 +8,14 @@ import android.os.Process
 import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.models.LogLevel
+import kotlin.system.exitProcess
 
 @Keep
-class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
-                          val crashlyticsHandler: Thread.UncaughtExceptionHandler,
-                          application: Application) : Thread.UncaughtExceptionHandler {
+class AppExceptionHandler(
+    val systemHandler: Thread.UncaughtExceptionHandler,
+    val crashlyticsHandler: Thread.UncaughtExceptionHandler,
+    application: Application
+) : Thread.UncaughtExceptionHandler {
 
     private val TAG = "AppExceptionHandler"
     private var lastStartedActivity: Activity? = null
@@ -21,54 +24,61 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
 
     init {
         application.registerActivityLifecycleCallbacks(
-                object : Application.ActivityLifecycleCallbacks {
-                    override fun onActivityPaused(activity: Activity?) {
-                        // empty
-                    }
+            object : Application.ActivityLifecycleCallbacks {
+                override fun onActivityCreated(
+                    activity: Activity,
+                    savedInstanceState: Bundle?
+                ) {
 
-                    override fun onActivityResumed(activity: Activity?) {
-                        // empty
-                    }
+                }
 
-                    override fun onActivityStarted(activity: Activity?) {
-                        startCount++
-                        lastStartedActivity = activity
-                    }
+                override fun onActivityStarted(activity: Activity) {
+                    startCount++
+                    lastStartedActivity = activity
+                }
 
-                    override fun onActivityDestroyed(activity: Activity?) {
-                        // empty
-                    }
+                override fun onActivityResumed(activity: Activity) {
 
-                    override fun onActivitySaveInstanceState(activity: Activity?,
-                                                             outState: Bundle?) {
-                        // empty
-                    }
+                }
 
-                    override fun onActivityStopped(activity: Activity?) {
-                        startCount--
-                        if (startCount <= 0) {
-                            lastStartedActivity = null
-                        }
-                    }
+                override fun onActivityPaused(activity: Activity) {
 
-                    override fun onActivityCreated(activity: Activity?,
-                                                   savedInstanceState: Bundle?) {
-                        // empty
+                }
+
+                override fun onActivityStopped(activity: Activity) {
+                    startCount--
+                    if (startCount <= 0) {
+                        lastStartedActivity = null
                     }
-                })
+                }
+
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+
+                }
+
+                override fun onActivityDestroyed(activity: Activity) {
+
+                }
+            })
     }
 
 
     override fun uncaughtException(t: Thread?, e: Throwable) {
 
-        PLog.logThis(TAG, "uncaughtException", info = "Thread: ${t?.name}, ${PLogUtils.getStackTrace(e)}", throwable = e, level = LogLevel.SEVERE)
+        PLog.logThis(
+            TAG,
+            "uncaughtException",
+            info = "Thread: ${t?.name}, ${PLogUtils.getStackTrace(e)}",
+            throwable = e,
+            level = LogLevel.SEVERE
+        )
 
         lastStartedActivity?.let { activity ->
             val isRestarted = activity.intent
-                    .getBooleanExtra(RESTARTED, false)
+                .getBooleanExtra(RESTARTED, false)
 
             val lastException = activity.intent
-                    .getSerializableExtra(LAST_EXCEPTION) as Throwable?
+                .getSerializableExtra(LAST_EXCEPTION) as Throwable?
 
             if (!isRestarted || !isSameException(e, lastException)) {
                 killThisProcess {
@@ -76,10 +86,12 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
                     crashlyticsHandler.uncaughtException(t, e)
 
                     val intent = activity.intent
-                            .putExtra(RESTARTED, true)
-                            .putExtra(LAST_EXCEPTION, e)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        .putExtra(RESTARTED, true)
+                        .putExtra(LAST_EXCEPTION, e)
+                        .addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        )
 
                     with(activity) {
                         finish()
@@ -98,8 +110,10 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
     /**
      * Not bullet-proof, but it works well.
      */
-    private fun isSameException(originalException: Throwable,
-                                lastException: Throwable?): Boolean {
+    private fun isSameException(
+        originalException: Throwable,
+        lastException: Throwable?
+    ): Boolean {
         if (lastException == null) return false
 
         return originalException.javaClass == lastException.javaClass &&
@@ -111,7 +125,7 @@ class AppExceptionHandler(val systemHandler: Thread.UncaughtExceptionHandler,
         action()
 
         android.os.Process.killProcess(Process.myPid())
-        System.exit(10)
+        exitProcess(10)
     }
 
     companion object {

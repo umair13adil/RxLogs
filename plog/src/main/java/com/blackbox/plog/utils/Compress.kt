@@ -156,7 +156,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                 zos.putNextEntry(zipEntry)
             } catch (e: ZipException) {
                 if (PLogImpl.getConfig()?.debugFileOperations!!) {
-                    Log.e(TAG, e.message)
+                    e.message?.let { Log.e(TAG, it) }
                 }
             }
 
@@ -174,7 +174,7 @@ private fun writeToZip(f: File, zos: ZipOutputStream, zipEntry: ZipEntry) {
                     zos.write(data, 0, readBytes)
                 } catch (e: ZipException) {
                     if (PLogImpl.getConfig()?.debugFileOperations!!) {
-                        Log.e(TAG, e.message)
+                        e.message?.let { Log.e(TAG, it) }
                     }
                 }
             }

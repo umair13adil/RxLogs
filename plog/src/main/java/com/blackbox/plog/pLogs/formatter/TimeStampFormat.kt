@@ -13,5 +13,6 @@ object TimeStampFormat {
     val TIME_FORMAT_FULL_2 = "MM:dd:yyyy hh:mm:ss a"
     val TIME_FORMAT_24_FULL = "dd/MM/yyyy HH:mm:ss"
     val TIME_FORMAT_READABLE = "dd MMMM yyyy hh:mm:ss a"
+    val TIME_FORMAT_READABLE_2 = "dd MMMM yyyy hh:mm:ss.SSS a"
     val TIME_FORMAT_SIMPLE = "HH:mm:ss"
 }

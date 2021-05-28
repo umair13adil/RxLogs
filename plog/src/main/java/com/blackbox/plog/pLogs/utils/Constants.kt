@@ -1,9 +1,11 @@
 package com.blackbox.plog.pLogs.utils
 
 import android.net.Uri
+import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
+@Keep
 
 //XML Save Path
 val XML_PATH = getLogPath(PLogImpl.getConfig())

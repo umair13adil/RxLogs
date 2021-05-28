@@ -4,6 +4,7 @@ package com.blackbox.plog.pLogs
  * Created by Umair Adil on 12/04/2017.
  */
 
+import android.annotation.SuppressLint
 import android.os.AsyncTask
 import android.os.Handler
 import android.util.Log
@@ -12,17 +13,21 @@ import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
+import com.blackbox.plog.pLogs.events.EventTypes
+import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
 import com.blackbox.plog.pLogs.impl.AutoExportHelper
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.utils.LOG_FOLDER
+import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.getLogsSavedPaths
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import java.io.File
 
+@SuppressLint("StaticFieldLeak")
 @Keep
 object PLog : PLogImpl() {
 
@@ -107,6 +112,8 @@ object PLog : PLogImpl() {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, throwable = throwable)
             if (logsConfig.first) {
 
+                RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, throwable = throwable))
+
                 val data = formatErrorMessage(info, throwable = throwable)
 
                 writeLogsAsync(data, level)
@@ -131,6 +138,8 @@ object PLog : PLogImpl() {
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, throwable = throwable)
             if (logsConfig.first) {
+
+                RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, throwable = throwable))
 
                 val data = formatErrorMessage("", throwable = throwable)
 
@@ -157,6 +166,7 @@ object PLog : PLogImpl() {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, exception = exception)
             if (logsConfig.first) {
 
+                RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, exception = exception))
                 val data = formatErrorMessage(info, exception = exception)
 
                 writeLogsAsync(data, level)
@@ -177,6 +187,8 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
+
+        RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, exception = exception))
 
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, exception = exception)
