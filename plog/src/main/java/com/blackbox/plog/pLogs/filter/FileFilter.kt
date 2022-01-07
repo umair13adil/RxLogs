@@ -29,6 +29,16 @@ internal object FileFilter {
         if (lisOfFiles.isNotEmpty()) {
             try {
                 File(folderPath).copyRecursively(File(tempOutputPath), true)
+
+                //If folder is not created in targeted directory, then create specific folder and copy files into that folder directly.
+                val tempDirPath = tempOutputPath +  File(folderPath).name + File.separator
+                val tempFolder = File(tempDirPath)
+                if(!tempFolder.exists()) {
+                    tempFolder.mkdir()
+                    if(tempFolder.exists()) {
+                        File(folderPath).copyRecursively(File(tempDirPath), true)
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e(TAG, "getFilesForToday: Unable to get files for today!")
