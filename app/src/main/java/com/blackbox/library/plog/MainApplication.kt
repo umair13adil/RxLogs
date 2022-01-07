@@ -49,7 +49,7 @@ class MainApplication : Application() {
                 exportFileNamePostFix = "]",
                 autoExportErrors = true,
                 encryptionEnabled = isEncryptionEnabled,
-                encryptionKey = "357374081963637",
+                encryptionKey = "358712101823589",
                 singleLogFileSize = 1, //1Mb
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_DATE,
