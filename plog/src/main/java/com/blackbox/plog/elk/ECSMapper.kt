@@ -86,7 +86,7 @@ object ECSMapper {
             }
         }
 
-        throwable?.let {
+        throwable?.let { it ->
             it.stackTrace.forEach {
                 stackTrace.add(it.toString())
             }
