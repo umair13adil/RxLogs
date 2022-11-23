@@ -6,10 +6,10 @@ group = 'com.github.umair13adil'
 android {
     compileSdkVersion 33
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 16
         targetSdkVersion 33
-        versionCode 46
-        versionName "1.0.17"
+        versionCode 47
+        versionName "1.0.18"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
     }
