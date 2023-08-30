@@ -15,6 +15,13 @@ import java.util.zip.ZipFile
 @Keep
 object FilterUtils {
 
+    internal val rootFolderPath: String
+        get() {
+            //Create Root folder
+            val rootFolderName = LOG_FOLDER;
+            return PLog.logPath + rootFolderName + File.separator
+        }
+
     internal fun extractDay(name: String): Int {
         return Integer.parseInt(name.substring(0, 2))
     }
@@ -39,7 +46,10 @@ object FilterUtils {
             val fileHour = extractHour(files[i].name)
 
             if (PLogImpl.getConfig()?.isDebuggable!!)
-                Log.i(FileFilter.TAG, "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name)
+                Log.i(
+                    FileFilter.TAG,
+                    "Last Hour: " + lastHour + " Check File Hour: " + fileHour + " " + files[i].name
+                )
 
             if (fileHour == lastHour) {
                 found = true
