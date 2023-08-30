@@ -169,11 +169,10 @@ internal object FileFilter {
         val path = folderPath
         val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
-        val specificFiles = lisOfFiles.filter { f -> (fileNames.contains(f.nameWithoutExtension) ||
+        val finalFiles = if(fileNames.isEmpty()) lisOfFiles else lisOfFiles.filter { f -> (fileNames.contains(f.nameWithoutExtension) ||
                 fileNames.contains(f.name.postfixRemoved()))
         }
 
-        val finalFiles =  specificFiles
         val tempDirPath = tempOutputPath +  File(folderPath).name + File.separator
 
         if (finalFiles.isNotEmpty()) {

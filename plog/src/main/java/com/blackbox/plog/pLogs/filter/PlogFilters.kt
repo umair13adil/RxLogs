@@ -3,8 +3,9 @@ import androidx.annotation.Keep
 
 @Keep
 data class PlogFilters(val dates: List<String>,
-val hours: List<String>,
-val files: List<String>)
+                       val hours: List<String> = emptyList(),
+                       val files: List<String> = emptyList()
+)
 
 
 
