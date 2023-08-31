@@ -34,7 +34,7 @@ internal object FileFilter {
                 val tempDirPath = tempOutputPath +  File(folderPath).name + File.separator
                 val tempFolder = File(tempDirPath)
                 if(!tempFolder.exists()) {
-                    tempFolder.mkdir()
+                    tempFolder.mkdirs()
                     if(tempFolder.exists()) {
                         File(folderPath).copyRecursively(File(tempDirPath), true)
                     }
@@ -169,25 +169,23 @@ internal object FileFilter {
         val path = folderPath
         val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
 
-        val finalFiles = if(fileNames.isEmpty()) lisOfFiles else lisOfFiles.filter { f -> (fileNames.contains(f.nameWithoutExtension) ||
-                fileNames.contains(f.name.postfixRemoved()))
+        val finalFiles = if(fileNames.isEmpty()) lisOfFiles else lisOfFiles.filter { f -> fileNames.contains(f.nameWithoutExtension) ||
+                fileNames.contains(f.name.postfixRemoved())
         }
 
         val tempDirPath = tempOutputPath +  File(folderPath).name + File.separator
 
         if (finalFiles.isNotEmpty()) {
             try {
-//                try { File(tempDirPath).deleteRecursively() } catch (e: Exception) {}
-
                 //If folder is not created in targeted directory, then create specific folder and copy files into that folder directly.
                 val tempFolder = File(tempDirPath)
                 if(!tempFolder.exists()) {
-                    tempFolder.mkdir()
+                    tempFolder.mkdirs()
                 }
 
                 if(tempFolder.exists()) {
                     finalFiles.forEach { f ->
-                        f.copyRecursively(tempFolder, true)
+                        f.copyRecursively(File(tempDirPath + f.name), true)
                     }
                 }
             } catch (e: Exception) {
