@@ -3,7 +3,9 @@ package com.blackbox.plog.pLogs.exporter
 import android.util.Log
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.filter.FileFilter
+import com.blackbox.plog.pLogs.filter.FilterUtils
 import com.blackbox.plog.pLogs.filter.FilterUtils.getPathForType
+import com.blackbox.plog.pLogs.filter.PlogFilters
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import java.io.File
 
@@ -55,6 +57,28 @@ private fun getLogsForToday(): Triple<String, List<File>, String> {
     Log.i(TAG,"getLogsForToday: Path: $path, Files: ${files.first.size}")
     return Triple(zipName, files.first, files.second)
 }
+
+
+
+/*
+ * Get file path of logs for Custom dates
+ */
+fun getLogsForCustomFilter(filters: PlogFilters): Triple<String, List<File>, String> {
+    val allFiles = mutableListOf<File>()
+    var tempOutfile = ""
+    filters.dates.forEach { date ->
+        val path = FilterUtils.rootFolderPath + date
+        var fileNames = filters.files + filters.hours.map {h -> "$date$h" }
+        val files = FileFilter.getFilesForDate(path, fileNames)
+        tempOutfile = files.third
+        allFiles.addAll(files.first)
+    }
+
+    val zipName = composeZipName(allFiles, "custom")
+    Log.i(TAG,"getLogsForCustomFilter: Path: $path, Files: ${allFiles.size}")
+    return Triple(zipName, allFiles, tempOutfile)
+}
+
 
 /*
  * Get file path of logs for 'Last Hour'
@@ -115,6 +139,21 @@ private fun composeZipName(files: Pair<List<File>, String>, exportType: ExportTy
 
     if (PLogImpl.getConfig()?.attachNoOfFiles!!)
         noOfFiles = "_[${files.first.size}]"
+
+    val preName = PLogImpl.getConfig()?.exportFileNamePreFix!!
+    val zName = PLogImpl.getConfig()?.zipFileName!!
+    val postName = PLogImpl.getConfig()?.exportFileNamePostFix!!
+
+    return "$preName$zName$timeStamp$noOfFiles$postName.zip"
+}
+
+private fun composeZipName(files: List<File>, name: String): String {
+
+    if (PLogImpl.getConfig()?.attachTimeStamp!!)
+        timeStamp = PLog.getTimeStampForOutputFile() + "_" + name
+
+    if (PLogImpl.getConfig()?.attachNoOfFiles!!)
+        noOfFiles = "_[${files.size}]"
 
     val preName = PLogImpl.getConfig()?.exportFileNamePreFix!!
     val zName = PLogImpl.getConfig()?.zipFileName!!

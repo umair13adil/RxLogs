@@ -17,6 +17,7 @@ import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
 import com.blackbox.plog.pLogs.exporter.LogExporter
+import com.blackbox.plog.pLogs.filter.PlogFilters
 import com.blackbox.plog.pLogs.impl.AutoExportHelper
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.pLogs.models.LogLevel
@@ -288,6 +289,18 @@ object PLog : PLogImpl() {
      */
     fun exportLogsForType(type: ExportType, exportDecrypted: Boolean = false): Observable<String> {
         return LogExporter.getZippedLogs(type.type, exportDecrypted)
+    }
+
+    /**
+     * Gets logs.
+     *
+     * This will export logs based on filters to export location with export name provided.
+     *
+     * @param filters the filters for the files
+     * @return the logs
+     */
+    fun exportLogsForFilters(filters: PlogFilters, exportDecrypted: Boolean = false): Observable<String> {
+        return LogExporter.getZippedLogs(filters, exportDecrypted)
     }
 
     /**

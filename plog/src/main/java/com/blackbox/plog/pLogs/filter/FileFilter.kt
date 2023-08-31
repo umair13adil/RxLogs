@@ -158,4 +158,51 @@ internal object FileFilter {
 
         return Pair(lisOfFiles, tempOutputPath)
     }
+
+
+
+    /*
+     * Filter files by 'Date'.
+     */
+    fun getFilesForDate(folderPath: String, fileNames: List<String>): Triple<List<File>, String, String> {
+
+        val path = folderPath
+        val lisOfFiles = FilterUtils.listFiles(path, arrayListOf())
+
+        val finalFiles = if(fileNames.isEmpty()) lisOfFiles else lisOfFiles.filter { f -> (fileNames.contains(f.nameWithoutExtension) ||
+                fileNames.contains(f.name.postfixRemoved()))
+        }
+
+        val tempDirPath = tempOutputPath +  File(folderPath).name + File.separator
+
+        if (finalFiles.isNotEmpty()) {
+            try {
+//                try { File(tempDirPath).deleteRecursively() } catch (e: Exception) {}
+
+                //If folder is not created in targeted directory, then create specific folder and copy files into that folder directly.
+                val tempFolder = File(tempDirPath)
+                if(!tempFolder.exists()) {
+                    tempFolder.mkdir()
+                }
+
+                if(tempFolder.exists()) {
+                    finalFiles.forEach { f ->
+                        f.copyRecursively(tempFolder, true)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "getFilesForDate: Unable to get files for today!")
+            }
+        }
+
+        return Triple(finalFiles, tempDirPath, tempOutputPath)
+    }
+
+
+}
+
+
+private fun  String.postfixRemoved(): String {
+    return this.split("_").first()
 }

@@ -6,6 +6,7 @@ import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
+import com.blackbox.plog.pLogs.filter.PlogFilters
 import com.blackbox.plog.pLogs.impl.PLogImpl
 import com.blackbox.plog.utils.RxBus
 import com.blackbox.plog.utils.zip
@@ -48,6 +49,32 @@ object LogExporter {
                 FilterUtils.prepareOutputFile(exportPath)
 
                 this.files = getFilesForRequestedType(type)
+
+                compressPackage(emitter, exportDecrypted)
+            } else {
+
+                if (!emitter.isDisposed) {
+                    emitter.onError(Throwable("No Logs configuration provided! Can not perform this action with logs configuration."))
+                }
+            }
+        }
+    }
+
+
+    /*
+ * Will filter & export log files to zip package.
+ */
+    fun getZippedLogs(filters: PlogFilters, exportDecrypted: Boolean): Observable<String> {
+
+        return Observable.create {
+
+            val emitter = it
+
+            if (PLog.isLogsConfigSet()) {
+
+                FilterUtils.prepareOutputFile(exportPath)
+
+                this.files = getLogsForCustomFilter(filters)
 
                 compressPackage(emitter, exportDecrypted)
             } else {
