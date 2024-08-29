@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatTextView
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.events.EventTypes
@@ -15,7 +16,6 @@ import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_hourly_logs_test.*
 import java.util.*
 
 
@@ -33,10 +33,14 @@ class HourlyLogsTest : AppCompatActivity() {
     private var mHandlerTime: Handler? = null
     private var mHandlerLog: Handler? = null
 
+    private var eventsTV: AppCompatTextView? =null
+
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hourly_logs_test)
+
+        eventsTV = findViewById(R.id.events);
 
         PLogTestHelper.isTestingHourlyLogs = true
         PLogMetaInfoProvider.elkStackSupported = false
@@ -58,7 +62,7 @@ class HourlyLogsTest : AppCompatActivity() {
                                 EventTypes.NEW_EVENT_LOG_FILE_CREATED -> {
                                     PLog.logThis(TAG, "getLogEventsListener", "New log file created: " + it.data, LogLevel.INFO)
 
-                                    events?.text = "New log file created: " + it.data
+                                    eventsTV?.text = "New log file created: " + it.data
                                 }
                                 EventTypes.NEW_EVENT_DIRECTORY_CREATED -> {
                                     PLog.logThis(TAG, "getLogEventsListener", "New directory created: " + it.data, LogLevel.INFO)
@@ -85,7 +89,7 @@ class HourlyLogsTest : AppCompatActivity() {
         PLog.logThis(TAG, Fakeit.ancient().titan(), Fakeit.friends().quote(), LogLevel.INFO)
         logsPrinted++
 
-        status?.text = "Logs Printed: $logsPrinted\nCurrent Time: $currentTime"
+        eventsTV?.text = "Logs Printed: $logsPrinted\nCurrent Time: $currentTime"
     }
 
     private var timeRunner: Runnable = object : Runnable {

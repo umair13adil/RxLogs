@@ -19,6 +19,7 @@ import javax.crypto.SecretKey
  */
 @Keep
 data class LogsConfig(
+        var isEnabled: Boolean = true, //Should disable the logs entirely
         var isDebuggable: Boolean = true, //Debug for LogCat
         var debugFileOperations: Boolean = false, //Debug for File operations
         var forceWriteLogs: Boolean = true, //Forcefully write logs even if size exceeds

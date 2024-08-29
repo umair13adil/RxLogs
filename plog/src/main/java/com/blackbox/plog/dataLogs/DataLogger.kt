@@ -3,6 +3,7 @@ package com.blackbox.plog.dataLogs
 import android.util.Log
 import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.impl.PLogImpl.Companion.getConfig
 import com.blackbox.plog.utils.PLogUtils
 
 /**
@@ -26,7 +27,9 @@ class DataLogger(private var logFileName: String = "log") {
      * @param dataToWrite the data to write can be any string data formatted or unformatted
      */
     fun overwriteToFile(dataToWrite: String) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         if (PLog.isLogsConfigSet()) {
             val runnable = Runnable {
                 writeLogsAsync(logFileName, dataToWrite, true)
@@ -50,7 +53,9 @@ class DataLogger(private var logFileName: String = "log") {
      * @param dataToWrite the data to write can be any string data formatted or unformatted
      */
     fun appendToFile(dataToWrite: String) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         if (PLog.isLogsConfigSet()) {
             val runnable = Runnable {
                 writeLogsAsync(logFileName, dataToWrite, false)
@@ -62,6 +67,9 @@ class DataLogger(private var logFileName: String = "log") {
     }
 
     private fun writeLogsAsync(fileName: String, dataToWrite: String, shouldOverWrite: Boolean) {
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         try {
             val save = SaveDataLogsAsync(fileName, dataToWrite, shouldOverWrite)
             save.execute()

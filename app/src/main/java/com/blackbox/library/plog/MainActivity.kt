@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.blackbox.plog.elk.PLogMetaInfoProvider
@@ -24,7 +26,6 @@ import com.mooveit.library.Fakeit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -32,9 +33,35 @@ class MainActivity : AppCompatActivity() {
     private val _tag: String = MainActivity::class.java.simpleName
     private var code = 9234
 
+    private var run_test: Button? = null
+    private var log_plog_event: Button? = null
+    private var log_data_log_event: Button? = null
+    private var delete: Button? = null
+    private var export_plogs: Button? = null
+    private var export_data_logs: Button? = null
+    private var print_plogs_hour: Button? = null
+    private var print_plogs_day: Button? = null
+    private var print_all: Button? = null
+    private var print_data_logs: Button? = null
+    private var print_error: Button? = null
+    private var editText: AppCompatEditText? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        run_test = findViewById(R.id.run_test)
+        log_plog_event = findViewById(R.id.log_plog_event)
+        log_data_log_event = findViewById(R.id.log_data_log_event)
+        delete = findViewById(R.id.delete)
+        export_plogs = findViewById(R.id.export_plogs)
+        export_data_logs = findViewById(R.id.export_data_logs)
+        print_plogs_hour = findViewById(R.id.print_plogs_hour)
+        print_plogs_day = findViewById(R.id.print_plogs_day)
+        print_all = findViewById(R.id.print_all)
+        print_data_logs = findViewById(R.id.print_data_logs)
+        print_error = findViewById(R.id.print_error)
+        editText = findViewById(R.id.editText)
 
         doOnPermissionsSet()
 
@@ -116,7 +143,7 @@ class MainActivity : AppCompatActivity() {
             )
         }*/
 
-        run_test.setOnClickListener {
+        run_test?.setOnClickListener {
             startActivity(Intent(this, HourlyLogsTest::class.java))
         }
     }
@@ -132,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         val booksLogs = PLog.getLoggerFor("Books")
 
         //Will log to PLogs
-        log_plog_event.setOnClickListener {
+        log_plog_event?.setOnClickListener {
 
             //This will take care of putting logged data to current time & date's file
             PLog.logThis(
@@ -144,7 +171,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Will Log to custom data logs, in Log File name & path provided in Builder
-        log_data_log_event.setOnClickListener {
+        log_data_log_event?.setOnClickListener {
 
             val dataToLog = "Book: " + Fakeit.book().title() + "\n"
             booksLogs?.appendToFile("Book: $dataToLog")
@@ -159,40 +186,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Will delete all Logs
-        delete.setOnClickListener {
+        delete?.setOnClickListener {
             clearLogs()
         }
 
         //Will export PLogs
-        export_plogs.setOnClickListener {
+        export_plogs?.setOnClickListener {
             exportPLogs()
         }
 
         //Will Export custom data log
-        export_data_logs.setOnClickListener {
+        export_data_logs?.setOnClickListener {
             exportDataLogs()
         }
 
 
         //Will print logged data in PLogs
-        print_plogs_hour.setOnClickListener {
+        print_plogs_hour?.setOnClickListener {
             printPLogs(ExportType.LAST_HOUR)
         }
 
-        print_plogs_day.setOnClickListener {
+        print_plogs_day?.setOnClickListener {
             printPLogs(ExportType.TODAY)
         }
 
-        print_all.setOnClickListener {
+        print_all?.setOnClickListener {
             printPLogs(ExportType.ALL)
         }
 
         //Will print logged data in DataLogs
-        print_data_logs.setOnClickListener {
+        print_data_logs?.setOnClickListener {
             printDataLogs()
         }
 
-        print_error.setOnClickListener {
+        print_error?.setOnClickListener {
             printException()
         }
     }

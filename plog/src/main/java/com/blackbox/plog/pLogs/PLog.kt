@@ -45,7 +45,9 @@ object PLog : PLogImpl() {
      * @param text         the text
      */
     fun logThis(className: String, info: String) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
             if (logsConfig.first) {
@@ -65,7 +67,9 @@ object PLog : PLogImpl() {
      * @param text         the text
      */
     fun logThis(className: String, functionName: String, info: String) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
             if (logsConfig.first) {
@@ -86,7 +90,9 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String, functionName: String, info: String, level: LogLevel) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, info, level)
 
@@ -108,7 +114,9 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, throwable = throwable)
             if (logsConfig.first) {
@@ -135,7 +143,9 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String = "", functionName: String = "", throwable: Throwable, level: LogLevel = LogLevel.ERROR) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, throwable = throwable)
             if (logsConfig.first) {
@@ -162,7 +172,9 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String = "", functionName: String = "", info: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         val runnable = Runnable {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, exception = exception)
             if (logsConfig.first) {
@@ -188,7 +200,9 @@ object PLog : PLogImpl() {
      * @param type         the type
      */
     fun logThis(className: String = "", functionName: String = "", exception: Exception, level: LogLevel = LogLevel.ERROR) {
-
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, exception = exception))
 
         val runnable = Runnable {
@@ -335,6 +349,10 @@ object PLog : PLogImpl() {
 
     private fun writeLogsAsync(dataToWrite: String, logLevel: LogLevel) {
 
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
+
         //Only write to local storage if this flag is set 'true'
         if (PLogMQTTProvider.writeLogsToLocalStorage) {
 
@@ -353,6 +371,10 @@ object PLog : PLogImpl() {
 
         override fun onPostExecute(result: Boolean?) {
             super.onPostExecute(result)
+
+            if (getConfig()?.isEnabled == false) {
+                return
+            }
 
             if (getConfig()?.isDebuggable!!) {
 

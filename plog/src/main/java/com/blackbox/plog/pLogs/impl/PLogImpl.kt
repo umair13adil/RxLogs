@@ -207,6 +207,9 @@ open class PLogImpl {
     }
 
     internal fun writeAndExportLog(data: String, type: LogLevel) {
+        if (getConfig()?.isEnabled == false) {
+            return
+        }
         if (PLogImpl.isEncryptionEnabled()) {
             LogWriter.writeEncryptedLogs(data)
         } else {

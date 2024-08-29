@@ -49,7 +49,7 @@ class MainApplication : Application() {
                 exportFileNamePostFix = "]",
                 autoExportErrors = true,
                 encryptionEnabled = isEncryptionEnabled,
-                encryptionKey = "358712101823589",
+                encryptionKey = "12345",
                 singleLogFileSize = 1, //1Mb
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_DATE,
@@ -70,7 +70,8 @@ class MainApplication : Application() {
                     context.getExternalFilesDir(null),
                     "PLogs" + File.separator + "PLogsOutput"
                 ).path,
-                exportFormatted = true
+                exportFormatted = true,
+                isEnabled = true
             ).also { it ->
 
                 //Subscribe to Events listener
