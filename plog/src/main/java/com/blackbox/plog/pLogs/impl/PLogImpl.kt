@@ -261,7 +261,7 @@ open class PLogImpl {
         internal fun getConfig(config: LogsConfig? = null): LogsConfig? {
             return if (logsConfig != null) {
                 logsConfig?.let { logsConfig ->
-                    isEnabled = logsConfig.enableLogsWriteToFile
+                    isEnabled = logsConfig.isEnabled
                     logLevelsEnabled = logsConfig.logLevelsEnabled
                     encryptionEnabled = logsConfig.encryptionEnabled
                     logsConfig
@@ -273,7 +273,7 @@ open class PLogImpl {
                         LogsConfig::class.java,
                         config
                     )?.let { logsConfig ->
-                        isEnabled = logsConfig.enableLogsWriteToFile
+                        isEnabled = logsConfig.isEnabled
                         logLevelsEnabled = logsConfig.logLevelsEnabled
                         encryptionEnabled = logsConfig.encryptionEnabled
                         logsConfig
@@ -281,7 +281,7 @@ open class PLogImpl {
                 } catch (e: java.lang.Exception) {
                     //e.printStackTrace()
                     val logsConfig = LogsConfig()
-                    isEnabled = logsConfig.enableLogsWriteToFile
+                    isEnabled = logsConfig.isEnabled
                     logLevelsEnabled = logsConfig.logLevelsEnabled
                     encryptionEnabled = logsConfig.encryptionEnabled
                     logsConfig
