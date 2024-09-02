@@ -71,7 +71,7 @@ class MainApplication : Application() {
                     "PLogs" + File.separator + "PLogsOutput"
                 ).path,
                 exportFormatted = true,
-                isEnabled = false
+                isEnabled = true
             ).also { it ->
 
                 //Subscribe to Events listener
