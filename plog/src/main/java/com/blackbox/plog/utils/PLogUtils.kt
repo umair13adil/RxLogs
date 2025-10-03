@@ -19,25 +19,38 @@ import java.io.StringWriter
 object PLogUtils {
 
     internal fun isConnected(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 
     internal fun createDirIfNotExists(path: String, config: LogsConfig? = null): Boolean {
-        config?.let {
-            if(config.enableLogsWriteToFile) {
-                val file = File(path)
-                if (!file.exists()) {
-
-                    if (PLogImpl.getConfig(config = config)?.debugFileOperations!!)
-                        Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
-
-                    return file.mkdirs()
-                }
-            }
+        // If config is provided, check if file writing is enabled
+        if (config != null && !config.enableLogsWriteToFile) {
+            return false
         }
-        return false
+
+        try {
+            val file = File(path)
+            // Check if directory already exists
+            if (file.exists()) {
+                return true
+            }
+
+            // Create all necessary parent directories
+            val success = file.mkdirs()
+
+            // Log after creation attempt
+            if (success && config != null && PLogImpl.getConfig(config = config)?.debugFileOperations == true) {
+                Log.i(PLog.DEBUG_TAG, "createDirIfNotExists: Directory created: $path")
+            }
+
+            return success
+        } catch (e: Exception) {
+            Log.e(PLog.DEBUG_TAG, "Failed to create directory: ${e.message}")
+            return false
+        }
     }
 
     internal fun getStackTrace(e: Exception?): String {

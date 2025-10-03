@@ -1,8 +1,6 @@
 package com.blackbox.library.plog
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -12,8 +10,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatEditText
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.elk.models.fields.MetaInfo
 import com.blackbox.plog.mqtt.PLogMQTTProvider
@@ -31,9 +27,9 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private val _tag: String = MainActivity::class.java.simpleName
-    private var code = 9234
 
     private var run_test: Button? = null
+    private var run_auto_clear: Button? = null
     private var log_plog_event: Button? = null
     private var log_data_log_event: Button? = null
     private var delete: Button? = null
@@ -51,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         run_test = findViewById(R.id.run_test)
+        run_auto_clear = findViewById(R.id.run_auto_clear)
         log_plog_event = findViewById(R.id.log_plog_event)
         log_data_log_event = findViewById(R.id.log_data_log_event)
         delete = findViewById(R.id.delete)
@@ -63,13 +60,10 @@ class MainActivity : AppCompatActivity() {
         print_error = findViewById(R.id.print_error)
         editText = findViewById(R.id.editText)
 
-        doOnPermissionsSet()
-
-        //Check read write permissions
-        checkPermissions()
+        doOnInit()
     }
 
-    private fun doOnPermissionsSet() {
+    private fun doOnInit() {
         MainApplication.setUpPLogger(this)
 
         //Set MetaInfo for ELK Logs
@@ -133,18 +127,12 @@ class MainActivity : AppCompatActivity() {
         //If permission granted
         setupLoggerControls()
 
-        //Write Fake Data to Logs
-        /*for (i in 0..250) {
-            PLog.logThis(
-                _tag,
-                Fakeit.gameOfThrones().house(),
-                Fakeit.gameOfThrones().quote(),
-                LogLevel.INFO
-            )
-        }*/
-
         run_test?.setOnClickListener {
             startActivity(Intent(this, HourlyLogsTest::class.java))
+        }
+
+        run_auto_clear?.setOnClickListener {
+            startActivity(Intent(this, AutClearLogsTester::class.java))
         }
     }
 
@@ -161,12 +149,29 @@ class MainActivity : AppCompatActivity() {
         //Will log to PLogs
         log_plog_event?.setOnClickListener {
 
+            //Write Fake Data to Logs
+            for (i in 0..250) {
+                PLog.logThis(
+                    _tag,
+                    Fakeit.gameOfThrones().house(),
+                    Fakeit.gameOfThrones().quote(),
+                    LogLevel.INFO
+                )
+            }
+
             //This will take care of putting logged data to current time & date's file
             PLog.logThis(
                 _tag,
                 "buttonOnClick",
                 "Quote: " + Fakeit.harryPotter().quote(),
                 LogLevel.INFO
+            )
+
+            PLog.logThis(
+                _tag,
+                "getProductionDateFromServer",
+                Exception("TestException"),
+                LogLevel.ERROR
             )
         }
 
@@ -348,56 +353,6 @@ class MainActivity : AppCompatActivity() {
         } catch (throwable: Throwable) {
             PLog.logThis(_tag, "printException", throwable = throwable, level = LogLevel.ERROR)
         }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == code) {
-
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.i(_tag, "onRequestPermissionsResult: Permissions Granted!")
-
-                doOnPermissionsSet()
-
-            } else {
-                Log.i(_tag, "onRequestPermissionsResult: Permissions Not Granted!")
-            }
-
-        }
-    }
-
-    private fun checkPermissions() {
-
-        if (!arePermissionsGranted()) {
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ),
-                code
-            )
-            return
-        }
-    }
-
-    private fun arePermissionsGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun listenForInputText() {

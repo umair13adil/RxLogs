@@ -13,6 +13,7 @@ import com.blackbox.plog.pLogs.models.LogLevel
 import com.blackbox.plog.pLogs.models.LogType
 import com.blackbox.plog.pLogs.structure.DirectoryStructure
 import com.blackbox.plog.utils.AppExceptionHandler
+import io.reactivex.disposables.CompositeDisposable
 import java.io.File
 
 
@@ -22,6 +23,8 @@ class MainApplication : Application() {
         private val TAG = "MainApplication"
         var logsConfig: LogsConfig? = null
         var isEncryptionEnabled = true
+
+        private val compositeDisposable = CompositeDisposable()
 
         fun setUpPLogger(context: Context) {
 
@@ -37,14 +40,13 @@ class MainApplication : Application() {
                     LogType.Location.type,
                     LogType.Navigation.type,
                     LogType.Errors.type,
-                    "Deliveries"
+                    "Work"
                 ),
                 formatType = FormatType.FORMAT_CURLY,
                 logsRetentionPeriodInDays = 7, //Will not work if local XML config file is not present
                 zipsRetentionPeriodInDays = 3, //Will not work if local XML config file is not present
                 autoDeleteZipOnExport = true,
                 autoClearLogs = true,
-                enableLogsWriteToFile = true,
                 exportFileNamePreFix = "[",
                 exportFileNamePostFix = "]",
                 autoExportErrors = true,
@@ -71,33 +73,47 @@ class MainApplication : Application() {
                     "PLogs" + File.separator + "PLogsOutput"
                 ).path,
                 exportFormatted = true,
+                enableLogsWriteToFile = true,
                 isEnabled = true
             ).also { it ->
 
                 //Subscribe to Events listener
-                it.getLogEventsListener()
-                    .doOnError {
-                        it.printStackTrace()
+                val disposable = it.getLogEventsListener()
+                    .doOnError { error ->
+                        Log.e(TAG, "Error in log events listener", error)
                     }
-                    .doOnNext { it ->
-                        if (it.event == EventTypes.NON_FATAL_EXCEPTION_REPORTED) {
-                            it.exception?.let {
-                                Log.i(TAG, "Caught Exception: $it")
-                                it.printStackTrace()
+                    .doOnNext { event ->
+                        when (event.event) {
+                            EventTypes.NON_FATAL_EXCEPTION_REPORTED -> {
+                                event.exception?.let { exception ->
+                                    Log.i(TAG, "Caught Exception: $exception")
+                                    exception.printStackTrace()
+                                }
+                                event.throwable?.let { throwable ->
+                                    Log.i(TAG, "Caught Throwable: $throwable")
+                                    throwable.printStackTrace()
+                                }
                             }
-                            it.throwable?.let {
-                                Log.i(TAG, "Caught Throwable: $it")
-                                it.printStackTrace()
+
+                            else -> {
+                                Log.i(TAG, "Event: ${event.event} Data: ${event.event.data}")
                             }
-                        } else {
-                            Log.i(TAG, "Event: ${it.event} Data: ${it.event.data}")
                         }
                     }
-                    .subscribe({ result ->
-                        // updating view
-                    }, { throwable ->
-                        throwable.printStackTrace()
-                    })
+                    .subscribe(
+                        { _ ->
+                            // No-op: view updates would go here if needed
+                        },
+                        { throwable ->
+                            Log.e(TAG, "Error in subscription", throwable)
+                        },
+                        {
+                            Log.d(TAG, "Events subscription completed")
+                        }
+                    )
+
+                // Store the disposable for later cleanup
+                compositeDisposable.add(disposable)
             }
 
             PLog.applyConfigurations(logsConfig, context = context)
@@ -113,19 +129,22 @@ class MainApplication : Application() {
     private fun setupCrashHandler() {
         val systemHandler = Thread.getDefaultUncaughtExceptionHandler()
 
-        Thread.setDefaultUncaughtExceptionHandler { t, e -> /* do nothing */ }
-
-        val fabricExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-
-        Thread.setDefaultUncaughtExceptionHandler(
-            AppExceptionHandler(
-                systemHandler,
-                fabricExceptionHandler,
-                this
+        Thread.getDefaultUncaughtExceptionHandler()?.let { fabricExceptionHandler ->
+            Thread.setDefaultUncaughtExceptionHandler(
+                systemHandler?.let {
+                    AppExceptionHandler(
+                        it,
+                        fabricExceptionHandler,
+                        this
+                    )
+                }
             )
-        )
+        }
     }
 
+    override fun onTerminate() {
+        // Clean up all subscriptions to prevent memory leaks
+        compositeDisposable.clear()
+        super.onTerminate()
+    }
 }
-
-

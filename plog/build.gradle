@@ -13,6 +13,9 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
     }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
     buildTypes {
         release {
             minifyEnabled true
@@ -51,6 +54,12 @@ dependencies {
     //WorkManager
     implementation "androidx.work:work-runtime-ktx:2.7.1"
     implementation "androidx.work:work-rxjava2:2.7.1"
+
+    // Unit testing
+//    testImplementation 'junit:junit:4.13.2'
+//    testImplementation 'org.robolectric:robolectric:4.11.1'
+//    testImplementation 'org.mockito:mockito-core:5.12.0'
+//    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
 repositories {
     mavenCentral()

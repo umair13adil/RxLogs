@@ -29,5 +29,10 @@
             android:launchMode="singleTask"
             android:exported="true"/>
 
+        <activity
+            android:name=".AutClearLogsTester"
+            android:launchMode="singleTask"
+            android:exported="true"/>
+
     </application>
 </manifest>

@@ -21,6 +21,8 @@ fun writeToFile(path: String, data: String) {
 
     try {
         val file = File(path)
+        // Ensure parent directory exists
+        file.parentFile?.let { if (!it.exists()) it.mkdirs() }
         if (file.exists()) {
             file.printWriter().use { out ->
                 out.println(data)
@@ -45,7 +47,8 @@ fun appendToFile(path: String, data: String) {
 
     try {
         val file = File(path)
-
+        // Ensure parent directory exists
+        file.parentFile?.let { if (!it.exists()) it.mkdirs() }
         if (file.exists()) {
             file.appendText(data, Charsets.UTF_8)
         } else {
@@ -116,23 +119,25 @@ private fun saveFileEvent(file: File, isPLog: Boolean = true) {
 /*
  * This will setup directory structure according to provided 'Directory Structure' Value.
  */
-fun setupFilePaths(fileName: String = "", isPLog: Boolean = true): String {
+fun setupFilePaths(fileName: String = "", isPLog: Boolean = true, folderDate: String? = null): String {
 
     //Create Root folder
     val rootFolderName = LOG_FOLDER
     val rootFolderPath = PLog.logPath + rootFolderName + File.separator
     createDirIfNotExists(rootFolderPath)
 
+    val dateForFolder = folderDate ?: DateControl.instance.today
+
     when (PLogImpl.getConfig()?.directoryStructure!!) {
 
         DirectoryStructure.FOR_DATE -> {
-            val folderPath = rootFolderPath + DateControl.instance.today
+            val folderPath = rootFolderPath + dateForFolder
             createDirIfNotExists(folderPath)
 
             val hourlyFileName = if (PLogTestHelper.isTestingHourlyLogs) {
                 PLogTestHelper.hourlyLogFileName
             } else {
-                DateControl.instance.today + DateControl.instance.hour
+                dateForFolder + DateControl.instance.hour
             } //Name of File
 
             return if (fileName.isEmpty()) { //If file name is empty, then it's PLogger file

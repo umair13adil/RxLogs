@@ -27,6 +27,10 @@ import com.blackbox.plog.utils.getLogsSavedPaths
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("StaticFieldLeak")
 @Keep
@@ -337,6 +341,70 @@ object PLog : PLogImpl() {
         val rootFolderPath = PLog.logPath + rootFolderName + File.separator
         File(rootFolderPath).deleteRecursively()
         MQTTSender.clearSummaryValues()
+    }
+
+    /**
+     * Clear only logs older than the provided retention in days.
+     * Keeps logs from (today - retentionDays) and newer.
+     */
+    fun clearLogsOlderThan(retentionDays: Int) {
+        val debugEnabled = getConfig()?.debugFileOperations == true
+        if (debugEnabled) Log.d(DEBUG_TAG, "clearLogsOlderThan called with retentionDays=$retentionDays")
+        if (retentionDays <= 0) {
+            if (debugEnabled) Log.d(DEBUG_TAG, "Retention days <= 0, nothing to clear.")
+            return
+        }
+
+        val rootFolderName = LOG_FOLDER
+        val rootFolderPath = PLog.logPath + rootFolderName + File.separator
+        val root = File(rootFolderPath)
+        if (!root.exists()) {
+            if (debugEnabled) Log.d(DEBUG_TAG, "Root log folder does not exist: $rootFolderPath")
+            return
+        }
+
+        val sdf = SimpleDateFormat(com.blackbox.plog.pLogs.formatter.TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
+
+        val cal = Calendar.getInstance()
+        cal.time = Date()
+        cal.add(Calendar.DAY_OF_YEAR, -retentionDays)
+        val cutoffDate = cal.time
+        if (debugEnabled) Log.d(DEBUG_TAG, "Cutoff date for deletion: ${sdf.format(cutoffDate)}")
+
+        root.listFiles()?.forEach { child ->
+            try {
+                if (child.isDirectory) {
+                    if (debugEnabled) Log.d(DEBUG_TAG, "Checking directory: ${child.name}")
+                    if (child.name.length >= 8 && child.name.substring(0, 8).all { it.isDigit() }) {
+                        val folderDate = sdf.parse(child.name.substring(0, 8))
+                        if (folderDate != null && folderDate.before(cutoffDate)) {
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Deleting directory: ${child.absolutePath}")
+                            child.deleteRecursively()
+                        } else {
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Keeping directory: ${child.absolutePath}")
+                        }
+                    } else {
+                        if (debugEnabled) Log.d(DEBUG_TAG, "Skipping directory with malformed name: ${child.name}")
+                    }
+                } else if (child.isFile) {
+                    if (debugEnabled) Log.d(DEBUG_TAG, "Checking file: ${child.name}")
+                    if (child.name.length >= 8 && child.name.substring(0, 8).all { it.isDigit() }) {
+                        val fileDate = sdf.parse(child.name.substring(0, 8))
+                        if (fileDate != null && fileDate.before(cutoffDate)) {
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Deleting file: ${child.absolutePath}")
+                            child.delete()
+                        } else {
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Keeping file: ${child.absolutePath}")
+                        }
+                    } else {
+                        if (debugEnabled) Log.d(DEBUG_TAG, "Skipping file with malformed name: ${child.name}")
+                    }
+                }
+            } catch (e: Exception) {
+                if (debugEnabled) Log.e(DEBUG_TAG, "Exception while processing ${child.name}: ${e.message}", e)
+            }
+        }
+        if (debugEnabled) Log.d(DEBUG_TAG, "clearLogsOlderThan completed.")
     }
 
     /**

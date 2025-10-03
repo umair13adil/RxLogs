@@ -52,15 +52,16 @@ object Triggers {
 
             if (savedTime == 0L) {
 
-                val info = "Logs were found and are cleared."
+                val info = "Applying initial logs retention policy."
 
                 if (logsConfig.isDebuggable)
                     Log.i(PLog.DEBUG_TAG, info)
 
-                //Clear Logs
-                PLog.clearLogs()
-
-                RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
+                // Clear only older logs on first run
+                if (logsConfig.autoClearLogs) {
+                    PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays)
+                    RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
+                }
 
                 updateLogsDeleteDate()
 
@@ -89,8 +90,10 @@ object Triggers {
                 if (logsConfig.isDebuggable)
                     Log.i(PLog.DEBUG_TAG, info)
 
-                //Clear Logs
-                PLog.clearLogs()
+                // Clear only logs older than cutoff
+                if (logsConfig.autoClearLogs) {
+                    PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays)
+                }
 
                 RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
 

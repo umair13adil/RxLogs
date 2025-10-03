@@ -97,6 +97,24 @@ private fun setUpPLogger() {
 }
 ```
 
+#### Logs retention and auto-clear
+_______________________________________________
+
+- When `autoClearLogs = true` and `logsRetentionPeriodInDays = x`, only logs older than (today - x days) are deleted.
+- Recent logs (from the last x days including today) are preserved.
+- On first run (no previous clear date), the same selective cleanup is applied.
+
+Programmatic helper to apply retention immediately:
+
+```kotlin
+// Deletes only logs older than the cutoff. Keeps recent logs.
+PLog.clearLogsOlderThan(x)
+```
+
+Notes:
+- Works with `DirectoryStructure.FOR_DATE`, `FOR_EVENT`, and `SINGLE_FILE_FOR_DAY` using `ddMMyyyy` day prefixes.
+- `autoClearLogs` must be true for automatic cleanup triggered by the library.
+
 #### Where are my logs stored?
 _______________________________________________
  
@@ -251,6 +269,11 @@ Checkout [Wiki](https://github.com/umair13adil/RxLogs/wiki) for more information
 
 Change Log
 ----------
+###### Version: 1.0.10
+- Changed log deletion policy to retain recent logs. Only logs older than `(today - logsRetentionPeriodInDays)` are removed when `autoClearLogs = true`.
+- Added `PLog.clearLogsOlderThan(retentionDays: Int)` to apply selective cleanup on demand.
+- Updated `Triggers.shouldClearLogs()` to respect `autoClearLogs` and avoid deleting all logs.
+
 ###### Version: 1.0.9
 - Changed parameter name in LogsConfig from "enabled" to "enableLogsWriteToFile"
 
@@ -280,7 +303,7 @@ Change Log
 
 ## MIT License
 
-##### Copyright (c) 2018 Muhammad Umair Adil
+##### Copyright (c) 2025 Muhammad Umair Adil
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

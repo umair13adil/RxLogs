@@ -4,27 +4,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:padding="16dp"
     tools:context=".HourlyLogsTest">
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/runAutoClearBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Status:" />
+        android:layout_marginBottom="12dp"
+        android:text="Auto Clear Logs" />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/status"
+    <ScrollView
+        android:id="@+id/status_scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#f5f5f5"
+        android:fadeScrollbars="false"
+        android:padding="8dp"
+        android:scrollbars="vertical">
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin_150"
-        android:text="Events:" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/events"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/events"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Status:"
+                android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:scrollbars="vertical"
+                android:scrollbarStyle="insideInset"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#e0e0e0"
+                android:lineSpacingExtra="4dp"
+                android:padding="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="#222"
+                android:textIsSelectable="true" />
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
