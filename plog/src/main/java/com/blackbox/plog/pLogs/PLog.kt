@@ -347,12 +347,13 @@ object PLog : PLogImpl() {
      * Clear only logs older than the provided retention in days.
      * Keeps logs from (today - retentionDays) and newer.
      */
-    fun clearLogsOlderThan(retentionDays: Int) {
+    fun clearLogsOlderThan(retentionDays: Int): List<String> {
+        val deletedFiles = mutableListOf<String>()
         val debugEnabled = getConfig()?.debugFileOperations == true
         if (debugEnabled) Log.d(DEBUG_TAG, "clearLogsOlderThan called with retentionDays=$retentionDays")
         if (retentionDays <= 0) {
             if (debugEnabled) Log.d(DEBUG_TAG, "Retention days <= 0, nothing to clear.")
-            return
+            return deletedFiles
         }
 
         val rootFolderName = LOG_FOLDER
@@ -360,28 +361,55 @@ object PLog : PLogImpl() {
         val root = File(rootFolderPath)
         if (!root.exists()) {
             if (debugEnabled) Log.d(DEBUG_TAG, "Root log folder does not exist: $rootFolderPath")
-            return
+            return deletedFiles
         }
 
         val sdf = SimpleDateFormat(com.blackbox.plog.pLogs.formatter.TimeStampFormat.DATE_FORMAT_1, Locale.ENGLISH)
 
+        // Calculate cutoff date: today - retentionDays
         val cal = Calendar.getInstance()
-        cal.time = Date()
+        // Reset time to start of day FIRST before subtracting days
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        // Now subtract the retention days
         cal.add(Calendar.DAY_OF_YEAR, -retentionDays)
         val cutoffDate = cal.time
-        if (debugEnabled) Log.d(DEBUG_TAG, "Cutoff date for deletion: ${sdf.format(cutoffDate)}")
+
+        if (debugEnabled) {
+            val todayCal = Calendar.getInstance()
+            todayCal.set(Calendar.HOUR_OF_DAY, 0)
+            todayCal.set(Calendar.MINUTE, 0)
+            todayCal.set(Calendar.SECOND, 0)
+            todayCal.set(Calendar.MILLISECOND, 0)
+            Log.d(DEBUG_TAG, "Today: ${sdf.format(todayCal.time)}")
+            Log.d(DEBUG_TAG, "Cutoff date for deletion: ${sdf.format(cutoffDate)}")
+            Log.d(DEBUG_TAG, "Will delete logs BEFORE ${sdf.format(cutoffDate)}, keep from ${sdf.format(cutoffDate)} onwards")
+        }
 
         root.listFiles()?.forEach { child ->
             try {
                 if (child.isDirectory) {
                     if (debugEnabled) Log.d(DEBUG_TAG, "Checking directory: ${child.name}")
                     if (child.name.length >= 8 && child.name.substring(0, 8).all { it.isDigit() }) {
-                        val folderDate = sdf.parse(child.name.substring(0, 8))
-                        if (folderDate != null && folderDate.before(cutoffDate)) {
-                            if (debugEnabled) Log.d(DEBUG_TAG, "Deleting directory: ${child.absolutePath}")
-                            child.deleteRecursively()
+                        val dateStr = child.name.substring(0, 8)
+                        val folderDate = sdf.parse(dateStr)
+                        if (folderDate != null) {
+                            if (debugEnabled) {
+                                Log.d(DEBUG_TAG, "Directory date: $dateStr (${sdf.format(folderDate)})")
+                                Log.d(DEBUG_TAG, "Comparing: folderDate.before(cutoffDate) = ${folderDate.before(cutoffDate)}")
+                                Log.d(DEBUG_TAG, "folderDate.time=${folderDate.time}, cutoffDate.time=${cutoffDate.time}")
+                            }
+                            if (folderDate.before(cutoffDate)) {
+                                if (debugEnabled) Log.d(DEBUG_TAG, "Deleting directory: ${child.absolutePath}")
+                                deletedFiles.add(child.absolutePath)
+                                child.deleteRecursively()
+                            } else {
+                                if (debugEnabled) Log.d(DEBUG_TAG, "Keeping directory: ${child.absolutePath} (within retention period)")
+                            }
                         } else {
-                            if (debugEnabled) Log.d(DEBUG_TAG, "Keeping directory: ${child.absolutePath}")
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Failed to parse directory date: $dateStr")
                         }
                     } else {
                         if (debugEnabled) Log.d(DEBUG_TAG, "Skipping directory with malformed name: ${child.name}")
@@ -389,12 +417,21 @@ object PLog : PLogImpl() {
                 } else if (child.isFile) {
                     if (debugEnabled) Log.d(DEBUG_TAG, "Checking file: ${child.name}")
                     if (child.name.length >= 8 && child.name.substring(0, 8).all { it.isDigit() }) {
-                        val fileDate = sdf.parse(child.name.substring(0, 8))
-                        if (fileDate != null && fileDate.before(cutoffDate)) {
-                            if (debugEnabled) Log.d(DEBUG_TAG, "Deleting file: ${child.absolutePath}")
-                            child.delete()
+                        val dateStr = child.name.substring(0, 8)
+                        val fileDate = sdf.parse(dateStr)
+                        if (fileDate != null) {
+                            if (debugEnabled) {
+                                Log.d(DEBUG_TAG, "File date: $dateStr (${sdf.format(fileDate)})")
+                            }
+                            if (fileDate.before(cutoffDate)) {
+                                if (debugEnabled) Log.d(DEBUG_TAG, "Deleting file: ${child.absolutePath}")
+                                deletedFiles.add(child.absolutePath)
+                                child.delete()
+                            } else {
+                                if (debugEnabled) Log.d(DEBUG_TAG, "Keeping file: ${child.absolutePath} (within retention period)")
+                            }
                         } else {
-                            if (debugEnabled) Log.d(DEBUG_TAG, "Keeping file: ${child.absolutePath}")
+                            if (debugEnabled) Log.d(DEBUG_TAG, "Failed to parse file date: $dateStr")
                         }
                     } else {
                         if (debugEnabled) Log.d(DEBUG_TAG, "Skipping file with malformed name: ${child.name}")
@@ -404,7 +441,8 @@ object PLog : PLogImpl() {
                 if (debugEnabled) Log.e(DEBUG_TAG, "Exception while processing ${child.name}: ${e.message}", e)
             }
         }
-        if (debugEnabled) Log.d(DEBUG_TAG, "clearLogsOlderThan completed.")
+        if (debugEnabled) Log.d(DEBUG_TAG, "clearLogsOlderThan completed. Deleted ${deletedFiles.size} items.")
+        return deletedFiles
     }
 
     /**

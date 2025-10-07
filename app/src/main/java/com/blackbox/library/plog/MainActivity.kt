@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         run_auto_clear?.setOnClickListener {
-            startActivity(Intent(this, AutClearLogsTester::class.java))
+            startActivity(Intent(this, AutoClearLogsTester::class.java))
         }
     }
 

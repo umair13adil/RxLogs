@@ -8,10 +8,9 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.blackbox.plog.utils.appendToFile
 import com.blackbox.plog.utils.setupFilePaths
 import com.mooveit.library.Fakeit
-import java.text.SimpleDateFormat
 import java.util.*
 
-class AutClearLogsTester : AppCompatActivity() {
+class AutoClearLogsTester : AppCompatActivity() {
 
     private val TAG = "AutClearLogsTester"
     private var eventsTV: AppCompatTextView? = null
@@ -31,17 +30,42 @@ class AutClearLogsTester : AppCompatActivity() {
         writeLogsFor30Days()
 
         clearBtn?.setOnClickListener {
-            // Use Triggers.shouldClearLogs() to invoke auto-clear logic
-            com.blackbox.plog.pLogs.operations.Triggers.shouldClearLogs()
-            eventsTV?.text = "Auto-clear logs triggered!"
+            // Use Triggers.shouldClearLogs() with forceRun=true to bypass time check
+            val deletedFiles = com.blackbox.plog.pLogs.operations.Triggers.shouldClearLogs(forceRun = true)
+
+            // Display the deleted files
+            val sb = StringBuilder()
+            sb.append("Auto-clear logs triggered!\n\n")
+            sb.append("===== DELETION SUMMARY =====\n")
+            sb.append("Total files/folders deleted: ${deletedFiles.size}\n\n")
+
+            if (deletedFiles.isNotEmpty()) {
+                sb.append("Deleted items:\n")
+                deletedFiles.forEachIndexed { index, path ->
+                    // Extract just the filename/folder name for cleaner display
+                    val name = path.substringAfterLast('/')
+                    sb.append("${index + 1}. $name\n")
+                }
+            } else {
+                sb.append("No files were deleted.\n")
+                sb.append("(All logs are within retention period)")
+            }
+
+            eventsTV?.text = sb.toString()
         }
     }
 
     private fun writeLogsFor30Days() {
         val calendar = Calendar.getInstance()
+        // Start from 29 days ago (so we include today, making it 30 days total)
+        calendar.add(Calendar.DATE, -29)
+
         val logsPerDay = 5 // Adjust as needed
         val sb = StringBuilder()
         val dateFormat = java.text.SimpleDateFormat("ddMMyyyy", java.util.Locale.ENGLISH)
+
+        sb.append("Writing logs for the last 30 days...\n\n")
+
         for (i in 0 until 30) {
             val dateStr = dateFormat.format(calendar.time)
             // Use the date as a custom folder name for test logs

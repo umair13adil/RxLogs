@@ -22,16 +22,28 @@ object Triggers {
     /**
      * Should clear Logs based on provided logs retention days.
      *
+     * @param forceRun If true, bypasses time check and forces log clearing
+     * @return List of deleted file paths
      */
-    fun shouldClearLogs() {
+    fun shouldClearLogs(forceRun: Boolean = false): List<String> {
+        val deletedFiles = mutableListOf<String>()
         try {
 
             //Check if logs configuration is set
-            val logsConfig = PLogImpl.getConfig() ?: return
+            val logsConfig = PLogImpl.getConfig() ?: return deletedFiles
+
+            if (logsConfig.isDebuggable)
+                Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Starting logs retention check (forceRun=$forceRun)")
 
             //Do nothing if retention days == 0
-            if (logsConfig.logsRetentionPeriodInDays <= 0)
-                return
+            if (logsConfig.logsRetentionPeriodInDays <= 0) {
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Retention period is 0, skipping")
+                return deletedFiles
+            }
+
+            if (logsConfig.isDebuggable)
+                Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Logs retention period: ${logsConfig.logsRetentionPeriodInDays} days")
 
             //Set Default Value
             if (PLogPreferences.getInstance().getLong(PREF_LOGS_CLEAR_DATE) == 0L) {
@@ -58,18 +70,34 @@ object Triggers {
                     Log.i(PLog.DEBUG_TAG, info)
 
                 // Clear only older logs on first run
-                if (logsConfig.autoClearLogs) {
-                    PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays)
+                if (logsConfig.autoClearLogs || forceRun) {
+                    if (logsConfig.isDebuggable)
+                        Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Auto-clear is enabled, clearing logs older than ${logsConfig.logsRetentionPeriodInDays} days")
+                    deletedFiles.addAll(PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays))
                     RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
+                } else {
+                    if (logsConfig.isDebuggable)
+                        Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Auto-clear is disabled")
                 }
 
                 updateLogsDeleteDate()
 
-                return
+                return deletedFiles
             }
 
             if (logsConfig.isDebuggable)
                 Log.i(PLog.DEBUG_TAG, "Last Logs delete date: ${DateTimeUtils.getFullDateTimeString(savedTime)}")
+
+            // If forceRun is true, skip time check
+            if (forceRun) {
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Force run enabled, bypassing time check")
+
+                deletedFiles.addAll(PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays))
+                RxBus.send(LogEvents(EventTypes.DELETE_LOGS, "Force clear executed"))
+                updateLogsDeleteDate()
+                return deletedFiles
+            }
 
             //milliseconds
             val different = Date().time - savedTime
@@ -83,6 +111,9 @@ object Triggers {
 
             val elapsedDays = different / daysInMilli
 
+            if (logsConfig.isDebuggable)
+                Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Elapsed days since last clear: $elapsedDays")
+
             if (Math.abs(elapsedDays) >= logsConfig.logsRetentionPeriodInDays) {
 
                 val info = "$elapsedDays days has passed!"
@@ -92,17 +123,26 @@ object Triggers {
 
                 // Clear only logs older than cutoff
                 if (logsConfig.autoClearLogs) {
-                    PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays)
+                    if (logsConfig.isDebuggable)
+                        Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Triggering log clear for logs older than ${logsConfig.logsRetentionPeriodInDays} days")
+                    deletedFiles.addAll(PLog.clearLogsOlderThan(logsConfig.logsRetentionPeriodInDays))
+                } else {
+                    if (logsConfig.isDebuggable)
+                        Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Auto-clear is disabled, skipping deletion")
                 }
 
                 RxBus.send(LogEvents(EventTypes.DELETE_LOGS, info))
 
                 updateLogsDeleteDate()
+            } else {
+                if (logsConfig.isDebuggable)
+                    Log.i(PLog.DEBUG_TAG, "shouldClearLogs: Not enough time elapsed, retention period not met")
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        return deletedFiles
     }
 
     /**

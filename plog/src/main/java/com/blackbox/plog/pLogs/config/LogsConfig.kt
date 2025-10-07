@@ -67,8 +67,12 @@ data class LogsConfig(
         //Check if Logs need to be cleared, after 5 seconds delay
         //Only run if logs are enabled
         if (enableLogsWriteToFile) {
-            Triggers.shouldClearLogs()
-            Triggers.shouldClearExports()
+            try {
+                Triggers.shouldClearLogs()
+                Triggers.shouldClearExports()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

@@ -1,8 +1,8 @@
 package com.blackbox.library.plog
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.multidex.MultiDexApplication
 import com.blackbox.plog.pLogs.PLog
 import com.blackbox.plog.pLogs.config.LogsConfig
 import com.blackbox.plog.pLogs.events.EventTypes
@@ -17,7 +17,7 @@ import io.reactivex.disposables.CompositeDisposable
 import java.io.File
 
 
-class MainApplication : Application() {
+class MainApplication : MultiDexApplication() {
 
     companion object {
         private val TAG = "MainApplication"

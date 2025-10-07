@@ -54,6 +54,7 @@ dependencies {
     //WorkManager
     implementation "androidx.work:work-runtime-ktx:2.7.1"
     implementation "androidx.work:work-rxjava2:2.7.1"
+    implementation "org.jetbrains.kotlin:kotlin-test:1.7.10"
 
     // Unit testing
 //    testImplementation 'junit:junit:4.13.2'
