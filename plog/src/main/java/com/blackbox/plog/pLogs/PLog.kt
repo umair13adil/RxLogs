@@ -13,6 +13,9 @@ import com.blackbox.plog.dataLogs.DataLogger
 import com.blackbox.plog.dataLogs.exporter.DataLogsExporter
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
+import com.blackbox.plog.pLogs.backpressure.BackpressureGuard
+import com.blackbox.plog.pLogs.backpressure.DroppedReason
+import com.blackbox.plog.pLogs.redaction.Redactor
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.exporter.ExportType
@@ -31,6 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 @SuppressLint("StaticFieldLeak")
 @Keep
@@ -39,6 +43,73 @@ object PLog : PLogImpl() {
     internal val TAG = PLogImpl.TAG
     internal val DEBUG_TAG = PLogImpl.DEBUG_TAG
     internal val handler = Handler()
+
+    // Tracks Runnables posted to the Handler but not yet processed.
+    private val pendingCount = AtomicInteger(0)
+
+    /**
+     * Checks backpressure + quota via [BackpressureGuard] before posting to the Handler.
+     * Dropped logs increment the guard's counters and invoke the configured callback.
+     */
+    private fun tryPost(level: LogLevel, block: () -> Unit) {
+        val reason = BackpressureGuard.shouldDrop(level, pendingCount.get())
+        if (reason != null) {
+            BackpressureGuard.recordDropped(level, reason)
+            return
+        }
+        pendingCount.incrementAndGet()
+        handler.post {
+            try {
+                block()
+            } finally {
+                pendingCount.decrementAndGet()
+            }
+        }
+    }
+
+    /** Current number of log entries waiting in the Handler queue. */
+    fun getPendingLogCount(): Int = pendingCount.get()
+
+    /**
+     * Cumulative count of logs dropped for [level] by the given [reason]
+     * since the last [resetDroppedCounts] call (or process start).
+     */
+    fun getDroppedCount(level: LogLevel, reason: DroppedReason): Long =
+        BackpressureGuard.droppedCount(level, reason)
+
+    /** Resets all per-(level, reason) dropped counters to zero. */
+    fun resetDroppedCounts() = BackpressureGuard.resetDroppedCounts()
+
+    /**
+     * Registers a callback invoked on the calling thread whenever a log entry is dropped.
+     * Receives the log level, the drop reason, and the running total dropped for that pair.
+     * Pass null to remove a previously registered callback.
+     */
+    fun setBackpressureDropCallback(callback: ((LogLevel, DroppedReason, Long) -> Unit)?) {
+        BackpressureGuard.onDropped = callback
+    }
+
+    /**
+     * Serializes [obj] to a log-safe string, masking any fields annotated with @Sensitive and
+     * applying all regex redaction rules configured in [LogsConfig.redactionConfig].
+     *
+     * Use this when you want to log a structured object without writing the raw value of
+     * sensitive fields. Pass the result as the [info] argument to any [logThis] overload, or
+     * use the convenience overload below that accepts [Any] directly.
+     *
+     * Example:
+     *   data class Customer(@field:Sensitive val phone: String, val id: String)
+     *   PLog.logThis("OrderService", "checkout", PLog.redact(customer), LogLevel.INFO)
+     */
+    fun redact(obj: Any): String = Redactor.redactObject(obj)
+
+    /**
+     * Logs [obj] after redacting all @Sensitive fields and applying regex rules.
+     * Equivalent to: logThis(className, functionName, PLog.redact(obj), level)
+     */
+    fun logThis(className: String, functionName: String, obj: Any, level: LogLevel) {
+        logThis(className, functionName, Redactor.redactObject(obj), level)
+    }
 
     /**
      * Log this.
@@ -52,13 +123,12 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(LogLevel.INFO) {
             val logsConfig = isLogsConfigValid(className, "", info, LogLevel.INFO)
             if (logsConfig.first) {
                 writeLogsAsync(logsConfig.second, LogLevel.INFO)
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -74,13 +144,12 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(LogLevel.INFO) {
             val logsConfig = isLogsConfigValid(className, functionName, info, LogLevel.INFO)
             if (logsConfig.first) {
                 writeLogsAsync(logsConfig.second, LogLevel.INFO)
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -97,14 +166,12 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(level) {
             val logsConfig = isLogsConfigValid(className, functionName, info, level)
-
             if (logsConfig.first) {
                 writeLogsAsync(logsConfig.second, level)
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -121,19 +188,14 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(level) {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, throwable = throwable)
             if (logsConfig.first) {
-
                 RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, throwable = throwable))
-
                 val data = formatErrorMessage(info, throwable = throwable)
-
                 writeLogsAsync(data, level)
-
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -150,19 +212,14 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(level) {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, throwable = throwable)
             if (logsConfig.first) {
-
                 RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, throwable = throwable))
-
                 val data = formatErrorMessage("", throwable = throwable)
-
                 writeLogsAsync(data, level)
-
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -179,18 +236,14 @@ object PLog : PLogImpl() {
         if (getConfig()?.isEnabled == false) {
             return
         }
-        val runnable = Runnable {
+        tryPost(level) {
             val logsConfig = isLogsConfigValid(className, functionName, info, level, exception = exception)
             if (logsConfig.first) {
-
                 RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, exception = exception))
                 val data = formatErrorMessage(info, exception = exception)
-
                 writeLogsAsync(data, level)
-
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -208,15 +261,13 @@ object PLog : PLogImpl() {
             return
         }
         RxBus.send(LogEvents(EventTypes.NON_FATAL_EXCEPTION_REPORTED, exception = exception))
-
-        val runnable = Runnable {
+        tryPost(level) {
             val logsConfig = isLogsConfigValid(className, functionName, "", level, exception = exception)
             if (logsConfig.first) {
                 val data = formatErrorMessage("", exception = exception)
                 writeLogsAsync(data, level)
             }
         }
-        handler.post(runnable)
     }
 
     /**
@@ -330,6 +381,48 @@ object PLog : PLogImpl() {
      */
     fun printLogsForType(type: ExportType, printDecrypted: Boolean = false): Flowable<String> {
         return LogExporter.printLogsForType(type.type, printDecrypted)
+    }
+
+    /**
+     * Searches all log files matching [type] for lines containing [keywords]
+     * and exports only those lines to a zip file.
+     *
+     * @param keywords     words to search for
+     * @param filterType   "AND" — all keywords must appear in a line;
+     *                     "OR"  — any keyword is enough
+     * @param ignoreCase   when true the match is case-insensitive
+     * @param type         time-range scope for which files to scan
+     * @param exportDecrypted decrypt encrypted logs before searching
+     */
+    fun exportFilteredLogs(
+        keywords: List<String>,
+        filterType: String,
+        ignoreCase: Boolean = true,
+        type: ExportType = ExportType.ALL,
+        exportDecrypted: Boolean = false
+    ): Observable<String> {
+        return LogExporter.getFilteredZippedLogs(keywords, filterType, ignoreCase, type.type, exportDecrypted)
+    }
+
+    /**
+     * Searches all log files matching [type] for lines containing [keywords]
+     * and emits only matching lines as a stream.
+     *
+     * @param keywords     words to search for
+     * @param filterType   "AND" — all keywords must appear in a line;
+     *                     "OR"  — any keyword is enough
+     * @param ignoreCase   when true the match is case-insensitive
+     * @param type         time-range scope for which files to scan
+     * @param printDecrypted decrypt encrypted logs before searching
+     */
+    fun printFilteredLogs(
+        keywords: List<String>,
+        filterType: String,
+        ignoreCase: Boolean = true,
+        type: ExportType = ExportType.ALL,
+        printDecrypted: Boolean = false
+    ): Flowable<String> {
+        return LogExporter.printFilteredLogsForType(keywords, filterType, ignoreCase, type.type, printDecrypted)
     }
 
     /**

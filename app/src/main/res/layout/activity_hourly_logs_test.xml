@@ -7,13 +7,66 @@
     android:padding="16dp"
     tools:context=".HourlyLogsTest">
 
+    <!-- ── Backpressure controls ── -->
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/runAutoClearBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="6dp"
         android:text="Auto Clear Logs" />
 
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/burstBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:text="Burst 1000 Logs (500 INFO + 500 WARNING)" />
+
+    <!-- ── Redaction demo ── -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Redaction demo"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/redactInputET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:hint="Type text with PII (phone, email, card number…)"
+        android:inputType="textMultiLine"
+        android:minLines="2"
+        android:maxLines="3"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/redactTextBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Redact Text" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/redactObjectBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Log @Sensitive Object" />
+
+    </LinearLayout>
+
+    <!-- ── Scrollable output ── -->
     <ScrollView
         android:id="@+id/status_scroll"
         android:layout_width="match_parent"
@@ -26,30 +79,44 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Periodic log events -->
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/events"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="6dp"
                 android:text="Status:"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
-                android:scrollbars="vertical"
-                android:scrollbarStyle="insideInset"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
+            <!-- Backpressure stats -->
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:background="#e0e0e0"
-                android:lineSpacingExtra="4dp"
-                android:padding="4dp"
+                android:lineSpacingExtra="2dp"
+                android:padding="6dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 android:textColor="#222"
                 android:textIsSelectable="true" />
+
+            <!-- Redaction output -->
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/redactOutput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#e8f5e9"
+                android:lineSpacingExtra="3dp"
+                android:padding="6dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="#1b5e20"
+                android:textIsSelectable="true"
+                android:visibility="gone" />
+
         </LinearLayout>
     </ScrollView>
 

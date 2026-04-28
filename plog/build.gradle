@@ -4,10 +4,11 @@ apply plugin: 'kotlin-android'
 group = 'com.github.umair13adil'
 
 android {
-    compileSdkVersion 33
+    namespace 'com.blackbox.plog'
+    compileSdkVersion 36
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 33
+        targetSdkVersion 36
         versionCode 53
         versionName "1.0.24"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'

@@ -18,7 +18,11 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
-fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName: String): Observable<String> {
+fun decryptSaveFiles(
+    filesToSend: List<File>,
+    exportPath: String,
+    exportFileName: String
+): Observable<String> {
 
     val exportFilesOnly = PLogImpl.getConfig()?.zipFilesOnly!!
 
@@ -65,51 +69,62 @@ fun decryptSaveFiles(filesToSend: List<File>, exportPath: String, exportFileName
     }
 }
 
-private fun zipFilesOnly(decryptedFiles: List<File>, outputPath: String, exportFileName: String, tempPath: String, emitter: ObservableEmitter<String>) {
+private fun zipFilesOnly(
+    decryptedFiles: List<File>,
+    outputPath: String,
+    exportFileName: String,
+    tempPath: String,
+    emitter: ObservableEmitter<String>
+) {
     zip(decryptedFiles, outputPath)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .delay(5000, TimeUnit.MILLISECONDS) //Add delay to make sure files are decrypted
-            .subscribeBy(
-                    onNext = {
-                        if (!emitter.isDisposed)
-                            emitter.onNext(exportFileName)
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .delay(5000, TimeUnit.MILLISECONDS) //Add delay to make sure files are decrypted
+        .subscribeBy(
+            onNext = {
+                if (!emitter.isDisposed)
+                    emitter.onNext(exportFileName)
 
-                        File(tempPath).deleteRecursively() //delete temp file after zip is completed
-                    },
-                    onError = {
-                        if (!emitter.isDisposed)
-                            emitter.onError(it)
+                File(tempPath).deleteRecursively() //delete temp file after zip is completed
+            },
+            onError = {
+                if (!emitter.isDisposed)
+                    emitter.onError(it)
 
-                        if (PLogImpl.getConfig()?.debugFileOperations!!)
-                            Log.i(PLog.DEBUG_TAG, "zipFilesOnly: Unable to zip, ${it.message}")
-                    },
-                    onComplete = { }
-            )
+                if (PLogImpl.getConfig()?.debugFileOperations!!)
+                    Log.i(PLog.DEBUG_TAG, "zipFilesOnly: Unable to zip, ${it.message}")
+            },
+            onComplete = { }
+        )
 }
 
-private fun zipFilesAndFolder(outputPath: String, exportFileName: String, tempPath: String, emitter: ObservableEmitter<String>) {
+private fun zipFilesAndFolder(
+    outputPath: String,
+    exportFileName: String,
+    tempPath: String,
+    emitter: ObservableEmitter<String>
+) {
 
     zipAll(tempPath, outputPath)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeBy(
-                    onNext = {
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeBy(
+            onNext = {
 
-                        if (!emitter.isDisposed)
-                            emitter.onNext(outputPath)
-                    },
-                    onError = {
-                        if (!emitter.isDisposed)
-                            emitter.onError(it)
+                if (!emitter.isDisposed)
+                    emitter.onNext(outputPath)
+            },
+            onError = {
+                if (!emitter.isDisposed)
+                    emitter.onError(it)
 
-                        if (PLogImpl.getConfig()?.debugFileOperations!!)
-                            Log.i(PLog.DEBUG_TAG, "zipFilesAndFolder: Unable to zip, ${it.message}")
-                    },
-                    onComplete = {
-                        doOnZipComplete(outputPath)
-                    }
-            )
+                if (PLogImpl.getConfig()?.debugFileOperations!!)
+                    Log.i(PLog.DEBUG_TAG, "zipFilesAndFolder: Unable to zip, ${it.message}")
+            },
+            onComplete = {
+                doOnZipComplete(outputPath)
+            }
+        )
 }
 
 private fun doOnZipComplete(path: String) {

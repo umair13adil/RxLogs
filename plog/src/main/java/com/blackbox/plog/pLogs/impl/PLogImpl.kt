@@ -11,6 +11,8 @@ import com.blackbox.plog.elk.PLogMetaInfoProvider
 import com.blackbox.plog.mqtt.MQTTSender
 import com.blackbox.plog.mqtt.PLogMQTTProvider
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.backpressure.BackpressureGuard
+import com.blackbox.plog.pLogs.redaction.Redactor
 import com.blackbox.plog.pLogs.config.*
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.filter.FilterUtils
@@ -95,6 +97,9 @@ open class PLogImpl {
 
             saveConfig(config)
 
+            BackpressureGuard.configure(config.backpressureConfig)
+            Redactor.configure(config.redactionConfig)
+
             if (config.encryptionEnabled) {
                 if (config.encryptionKey.isNotEmpty()) {
                     config.encryptionKey.let {
@@ -117,6 +122,9 @@ open class PLogImpl {
     fun forceWriteLogsConfig(config: LogsConfig) {
 
         PLogImpl.saveConfig(config)
+
+        BackpressureGuard.configure(config.backpressureConfig)
+        Redactor.configure(config.redactionConfig)
 
         getConfig()?.let {
 
@@ -142,11 +150,12 @@ open class PLogImpl {
     ): String {
         val logData = LogData(className, functionName, text, getFormattedTimeStamp(), type)
 
-        return if (!PLogMetaInfoProvider.elkStackSupported) {
+        val formatted = if (!PLogMetaInfoProvider.elkStackSupported) {
             LogFormatter.getFormatType(logData)
         } else {
             ECSMapper.getECSMappedLogString(logData, exception, throwable)
         }
+        return Redactor.applyToString(formatted)
     }
 
     /*

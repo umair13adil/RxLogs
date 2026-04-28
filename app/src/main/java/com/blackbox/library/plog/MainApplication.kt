@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.multidex.MultiDexApplication
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.backpressure.BackpressureConfig
 import com.blackbox.plog.pLogs.config.LogsConfig
+import com.blackbox.plog.pLogs.redaction.BuiltInPattern
+import com.blackbox.plog.pLogs.redaction.RedactionConfig
 import com.blackbox.plog.pLogs.events.EventTypes
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
@@ -51,7 +54,7 @@ class MainApplication : MultiDexApplication() {
                 exportFileNamePostFix = "]",
                 autoExportErrors = true,
                 encryptionEnabled = isEncryptionEnabled,
-                encryptionKey = "12345",
+                encryptionKey = "358712103065866",
                 singleLogFileSize = 1, //1Mb
                 logFilesLimit = 30,
                 directoryStructure = DirectoryStructure.FOR_DATE,
@@ -74,7 +77,22 @@ class MainApplication : MultiDexApplication() {
                 ).path,
                 exportFormatted = true,
                 enableLogsWriteToFile = true,
-                isEnabled = true
+                isEnabled = true,
+                // Low thresholds so HourlyLogsTest burst can trigger both drop reasons.
+                backpressureConfig = BackpressureConfig(
+                    queueCapacity     = 30,
+                    warnQueueCapacity = 50,
+                    perLevelQuotas    = mapOf(LogLevel.INFO to 20),
+                    quotaWindowMillis = 60_000L
+                ),
+                redactionConfig = RedactionConfig(
+                    enableBuiltInPatterns = setOf(
+                        BuiltInPattern.PHONE_NUMBER,
+                        BuiltInPattern.EMAIL,
+                        BuiltInPattern.CREDIT_CARD,
+                        BuiltInPattern.JWT_TOKEN
+                    )
+                )
             ).also { it ->
 
                 //Subscribe to Events listener

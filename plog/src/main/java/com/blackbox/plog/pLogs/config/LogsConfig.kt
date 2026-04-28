@@ -2,6 +2,8 @@ package com.blackbox.plog.pLogs.config
 
 import androidx.annotation.Keep
 import com.blackbox.plog.pLogs.PLog
+import com.blackbox.plog.pLogs.backpressure.BackpressureConfig
+import com.blackbox.plog.pLogs.redaction.RedactionConfig
 import com.blackbox.plog.pLogs.events.LogEvents
 import com.blackbox.plog.pLogs.formatter.FormatType
 import com.blackbox.plog.pLogs.formatter.TimeStampFormat
@@ -54,7 +56,9 @@ data class LogsConfig(
         var savePath: String = "PLogs", //Path where log files will be created
         var exportPath: String = "PLogs", //Path where log files will be exported as zip
         var csvDelimiter: String = "", //Delimiter for CSV files
-        var exportFormatted: Boolean? = true
+        var exportFormatted: Boolean? = true,
+        var backpressureConfig: BackpressureConfig? = null,
+        var redactionConfig: RedactionConfig? = null
 ) {
 
     val TAG = "LogsConfig"

@@ -87,6 +87,148 @@ object LogExporter {
     }
 
     /*
+     * Searches log files for lines matching the given keywords and exports only
+     * those lines to a zip file.
+     * filterType: "AND" = all keywords must be present in a line,
+     *             "OR"  = any keyword must be present in a line.
+     */
+    fun getFilteredZippedLogs(
+        keywords: List<String>,
+        filterType: String,
+        ignoreCase: Boolean,
+        type: String,
+        exportDecrypted: Boolean
+    ): Observable<String> {
+        return Observable.create { emitter ->
+            if (!PLog.isLogsConfigSet()) {
+                if (!emitter.isDisposed)
+                    emitter.onError(Throwable("No Logs configuration provided!"))
+                return@create
+            }
+
+            FilterUtils.prepareOutputFile(exportPath)
+
+            val files = getFilesForRequestedType(type)
+            val matchedFiles = ArrayList<File>()
+
+            val tempDir = File(PLog.exportTempPath + "filtered" + File.separator)
+            tempDir.mkdirs()
+
+            files.second.forEach { sourceFile ->
+                val lines = if (PLogImpl.isEncryptionEnabled() && exportDecrypted)
+                    PLogImpl.encrypter.readFileDecrypted(sourceFile.absolutePath).lines()
+                else
+                    sourceFile.readLines()
+
+                val matchingLines = lines.filter { line ->
+                    lineMatchesFilter(line, keywords, filterType, ignoreCase)
+                }
+
+                if (matchingLines.isNotEmpty()) {
+                    val outFile = File(tempDir, sourceFile.name)
+                    outFile.writeText(matchingLines.joinToString("\n"))
+                    matchedFiles.add(outFile)
+                }
+            }
+
+            if (matchedFiles.isEmpty()) {
+                if (!emitter.isDisposed)
+                    emitter.onError(Throwable("No matching log lines found for the given keywords."))
+                return@create
+            }
+
+            val zipName = composeFilteredZipName(matchedFiles.size)
+            zip(matchedFiles, exportPath + zipName)
+                .subscribeBy(
+                    onNext = {
+                        if (PLogImpl.getConfig()?.isDebuggable == true)
+                            Log.i(PLog.DEBUG_TAG, "Filtered Output Zip: $zipName")
+                        if (!emitter.isDisposed)
+                            emitter.onNext(exportPath + zipName)
+                    },
+                    onError = {
+                        if (!emitter.isDisposed) emitter.onError(it)
+                    },
+                    onComplete = {
+                        RxBus.send(LogEvents(EventTypes.PLOGS_EXPORTED))
+                        FilterUtils.deleteFilesExceptZip()
+                    }
+                )
+        }
+    }
+
+    /*
+     * Searches log files for lines matching the given keywords and emits only
+     * those lines as a stream.
+     * filterType: "AND" = all keywords must be present in a line,
+     *             "OR"  = any keyword must be present in a line.
+     */
+    fun printFilteredLogsForType(
+        keywords: List<String>,
+        filterType: String,
+        ignoreCase: Boolean,
+        type: String,
+        printDecrypted: Boolean
+    ): Flowable<String> {
+        val flowableOnSubscribe = FlowableOnSubscribe<String> { emitter ->
+            if (!PLog.isLogsConfigSet()) {
+                Log.e(TAG, "No Logs configuration provided!")
+                emitter.onComplete()
+                return@FlowableOnSubscribe
+            }
+
+            val files = getFilesForRequestedType(type)
+            Log.i(TAG, "printFilteredLogsForType: Found ${files.second.size} files.")
+
+            files.second.forEach { f ->
+                val lines = if (PLogImpl.isEncryptionEnabled() && printDecrypted)
+                    PLogImpl.encrypter.readFileDecrypted(f.absolutePath).lines()
+                else
+                    f.readLines()
+
+                val matchingLines = lines.filter { line ->
+                    lineMatchesFilter(line, keywords, filterType, ignoreCase)
+                }
+
+                if (matchingLines.isNotEmpty()) {
+                    emitter.onNext("File: ${f.name} [${matchingLines.size} match(es)]\n")
+                    matchingLines.forEach { emitter.onNext(it) }
+                }
+            }
+            emitter.onComplete()
+        }
+        return Flowable.create(flowableOnSubscribe, BackpressureStrategy.BUFFER)
+    }
+
+    private fun lineMatchesFilter(
+        line: String,
+        keywords: List<String>,
+        filterType: String,
+        ignoreCase: Boolean
+    ): Boolean {
+        val target = if (ignoreCase) line.lowercase() else line
+        val terms = if (ignoreCase) keywords.map { it.lowercase() } else keywords
+        return if (filterType.equals("AND", ignoreCase = true))
+            terms.all { target.contains(it) }
+        else
+            terms.any { target.contains(it) }
+    }
+
+    private fun composeFilteredZipName(matchCount: Int): String {
+        val config = PLogImpl.getConfig()
+        var timestamp = ""
+        var count = ""
+        if (config?.attachTimeStamp == true)
+            timestamp = "_" + PLog.getTimeStampForOutputFile() + "_filtered"
+        if (config?.attachNoOfFiles == true)
+            count = "_[$matchCount]"
+        val pre = config?.exportFileNamePreFix ?: ""
+        val base = config?.zipFileName ?: ""
+        val post = config?.exportFileNamePostFix ?: ""
+        return "$pre${base}${timestamp}${count}$post.zip"
+    }
+
+    /*
      * Will return logged data in log files.
      */
     fun printLogsForType(type: String, printDecrypted: Boolean): Flowable<String> {
