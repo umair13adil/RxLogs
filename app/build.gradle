@@ -10,8 +10,8 @@ android {
         applicationId "com.blackbox.library.plog"
         minSdkVersion 16
         targetSdkVersion 33
-        versionCode 43
-        versionName "1.0.25"
+        versionCode 44
+        versionName "1.0.27"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
     }
@@ -35,6 +35,7 @@ dependencies {
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10"
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
