@@ -1,14 +1,15 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
 
 group = 'com.github.umair13adil'
 
 android {
     namespace 'com.blackbox.plog'
-    compileSdkVersion 36
+    compileSdkVersion 35
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 36
+        targetSdkVersion 35
         versionCode 53
         versionName "1.0.24"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -65,4 +66,17 @@ dependencies {
 }
 repositories {
     mavenCentral()
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.umair13adil'
+                artifactId = 'RxLogs'
+                version = android.defaultConfig.versionName
+            }
+        }
+    }
 }
